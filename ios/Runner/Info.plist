@@ -58,5 +58,16 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>사진첩좀 써도 됩니까</string>
+    <key>NSCameraUsageDescription</key>
+    <string>카메라 써도 됩니까</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>마이크 권한 좀요</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+    <string>cafe-owner</string>
+
+    </array>
 </dict>
 </plist>

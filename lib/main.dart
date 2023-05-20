@@ -1,27 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:owner/common/model/CafeInfo.dart';
 import 'package:owner/register.dart';
+import 'package:owner/screen/RegisterStore.dart';
+
 import 'package:owner/screen/cafelist/cafelist_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-// void main() {
-//   runApp(const MyApp());
-// }
-
-// Future<void> main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp();
-
-//   runApp(const MyApp());
-// }
+import 'screen/LoginPage.dart';
+import 'screen/Register/DocumentGuidePage.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
+  // await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   // This widget is the root of your application.
   @override
@@ -31,7 +29,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      routes: {
+        '/': (context) => const LoginScreen(),
+        // '/': (context) => const MyHomePage(
+        //       title: 'my page',
+        //     ),
+        '/add': (context) => const CafeList(),
+        '/edit': (context) => const DocumentGuidePage(),
+      },
+      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
@@ -47,12 +53,31 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  final firestore = FirebaseFirestore.instance;
 
   void _incrementCounter() {
     setState(() {
       _counter++;
     });
   }
+
+  // getData() async {
+  //   var result = await firestore.collection('cafe').get();
+  //   List<CafeInfo> cafeInfo = [];
+  //   for (var snapShot in result.docs) {
+  //     CafeInfo info = CafeInfo.fromQuerySnapshot(snapShot);
+  //     print("sujin1" + info.toString());
+
+  //     print(info.logo);
+  //     // print(info.open_yn);
+  //     print(info.store_name);
+  //     print(info.store_telephone);
+
+  //     cafeInfo.add(info);
+  //   }
+  //   print("sujin2" + cafeInfo.toString());
+  //   print("sujin3" + result.toString());
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -66,9 +91,13 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             TextButton(
               onPressed: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => CafeList()));
-                // MaterialPageRoute(builder: (context) => Register()));
+                // getData();
+                Navigator.pushNamed(context, '/edit');
+
+                // Navigator.push(
+                //     context,
+                // MaterialPageRoute(builder: (context) => CafeList()));
+                // MaterialPageRoute(builder: (context) => EmployeeScreen()));
               },
               child: Text("회원가입"),
             ),

@@ -5,6 +5,7 @@
     "version": "0.2.0",
     "configurations": [
 
+
         {
             "name": "owner",
             "request": "launch",
@@ -17,6 +18,18 @@
             "type": "dart",
             "args": ["-d","chrome"]
         },
+        // {
+        //     "name": "Android 9 (API 28) (Pixel 2)",
+        //     "request": "launch",
+        //     "type": "dart",
+        //     "args" : ["-d", "emulator-5554"]
+        // },
+        // {
+        //     "name": "iPhone Device",
+        //     "request": "launch",
+        //     "type": "dart",
+        //     "deviceId": "iphone"
+        // }
 
     ]
 }

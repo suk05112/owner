@@ -1,5 +1,4 @@
-import 'package:flutter/material.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -34,7 +33,6 @@ class Register extends StatefulWidget {
 
 class _RegisterState extends State<Register> {
   int _counter = 0;
-
   void _incrementCounter() {
     setState(() {
       _counter++;

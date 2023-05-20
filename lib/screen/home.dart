@@ -1,0 +1,135 @@
+import 'package:flutter/material.dart';
+import 'package:owner/common/model/CafeInfo.dart';
+import 'package:owner/screen/cafelist/cafelist_page.dart';
+
+import 'QRScanPage.dart';
+import 'cafe_detail/cafe_detail_page.dart';
+
+class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  String qrResult = '';
+
+  int currentTab = 0;
+
+  final List<Widget> screens = [
+    CafeList(),
+    CafeDetailScreen(
+      storeId: '0000001',
+    )
+  ];
+
+  final PageStorageBucket bucket = PageStorageBucket();
+  Widget currentScreen = CafeDetailScreen(
+    storeId: '0000001',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: PageStorage(bucket: bucket, child: currentScreen),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: () async {
+          dynamic result = await Navigator.push(context,
+              MaterialPageRoute(builder: (context) {
+            return QRCheckScreen(eventKeyword: 'userId');
+          }));
+
+          if (result != null) {
+            setState(() {
+              //qr스캐너에서 받은 결과값을 화면의 qrResult 에 적용하도록 한다.
+              qrResult = result.toString();
+            });
+          }
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 10,
+        child: Container(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MaterialButton(
+                    minWidth: 40,
+                    onPressed: () {
+                      setState(() {
+                        currentScreen = CafeList();
+                        currentTab = 0;
+                      });
+                    },
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.dashboard,
+                            color: currentTab == 0 ? Colors.blue : Colors.grey,
+                          ),
+                          Text(
+                            'Dashboard menu',
+                            style: TextStyle(
+                              color:
+                                  currentTab == 0 ? Colors.blue : Colors.grey,
+                            ),
+                          )
+                        ]),
+                  ),
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MaterialButton(
+                    minWidth: 40,
+                    onPressed: () {
+                      setState(() {
+                        currentScreen = CafeDetailScreen(
+                          storeId: '0000001',
+                        );
+                        currentTab = 1;
+                      });
+                    },
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat,
+                            color: currentTab == 1 ? Colors.blue : Colors.grey,
+                          ),
+                          Text(
+                            'Chat menu',
+                            style: TextStyle(
+                              color:
+                                  currentTab == 1 ? Colors.blue : Colors.grey,
+                            ),
+                          )
+                        ]),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  //비동기 함수
+  // Future _scan() async {
+  //   //스캔 시작 - 이때 스캔 될때까지 blocking
+  //   String barcode = await scanner.scan();
+  //   //스캔 완료하면 _output 에 문자열 저장하면서 상태 변경 요청.
+  //   setState(() => _output = barcode);
+  // }
+}

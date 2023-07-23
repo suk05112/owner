@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:owner/main.dart';
 import 'package:intl/intl.dart';
 
-import '../cafelist/cafelist_page.dart';
 import 'RegisterStoreCompletePage.dart';
 
 class OperatingHoursSettingPage extends StatefulWidget {
@@ -72,7 +71,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage> {
               onChanged: (val) {
                 _showDatePicker(context);
                 setState(() {
-                  radioItem = val!;
+                  // radioItem = val!;
                   _isSameEveryDay = true;
                   _isWeekdDay = false;
                   _isDiffEveryDay = false;
@@ -105,7 +104,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage> {
                 Text('adfds');
                 // _selectDate(context);
                 setState(() {
-                  radioItem = val!;
+                  // radioItem = val!;
                   _isSameEveryDay = false;
                   _isWeekdDay = true;
                   _isDiffEveryDay = false;
@@ -120,7 +119,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage> {
                 Text('adfds');
                 // _selectDate(context);
                 setState(() {
-                  radioItem = val!;
+                  // radioItem = val!;
                   _isSameEveryDay = false;
                   _isWeekdDay = false;
                   _isDiffEveryDay = true;

@@ -1,26 +1,36 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:owner/common/model/CafeInfo.dart';
+import 'package:owner/common/api/API.dart';
+import 'package:owner/common/api/APIDioClient.dart';
+import 'package:owner/common/api/request/store/register_store_post.dart';
+import 'package:owner/common/api/response/store/store.dart';
+import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/register.dart';
 import 'package:owner/screen/Store/CafeDetailPage.dart';
-import 'package:owner/screen/cafelist/cafelist_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../common/DatabaseService.dart';
-import '../common/model/Store.dart';
-import 'Register/OperatingHoursSettingPage.dart';
-import 'Register/PhotoUploadPage.dart';
-import 'Register/SettingOpeningDatePage.dart';
-import 'cafe_detail/cafe_detail_page.dart';
+// import '../../common/DatabaseService.dart';
+import 'OperatingHoursSettingPage.dart';
+import 'PhotoUploadPage.dart';
+import 'SettingOpeningDatePage.dart';
+import '../Store/cafe_detail_page.dart';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:http/http.dart' as http;
+
+import 'package:kpostal/kpostal.dart';
+
+import 'package:path_provider/path_provider.dart';
+import 'dart:async';
 
 class RegisterStorePage extends StatefulWidget {
   const RegisterStorePage(
@@ -33,7 +43,7 @@ class RegisterStorePage extends StatefulWidget {
 }
 
 class _RegisterStorePageState extends State<RegisterStorePage> {
-  DatabaseService service = DatabaseService();
+  // DatabaseService service = DatabaseService();
 
   TextEditingController nameController = TextEditingController();
   TextEditingController addressController = TextEditingController();
@@ -44,6 +54,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   late CafeInfo? _store;
   final _formKey = GlobalKey<FormState>();
   var storePhoto = [];
+
+  File? _imageFile;
 
   @override
   void initState() {
@@ -87,19 +99,66 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                       : Text('not register ${_store?.store_name}'),
                   Text("주소"),
                   _isRegister
-                      ? TextFormField(
-                          controller: addressController,
-                          keyboardType: TextInputType.text,
-                          decoration: inputDecoration.copyWith(
-                              hintText: "Enter your Store Address"),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter Address';
-                            }
-                            return null;
-                          },
-                        )
+                      ? Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                              Flexible(
+                                  flex: 2,
+                                  child: TextFormField(
+                                    controller: addressController,
+                                    keyboardType: TextInputType.text,
+                                    decoration: inputDecoration.copyWith(
+                                        hintText: "Enter your Store Address"),
+                                    validator: (value) {
+                                      if (value == null || value.isEmpty) {
+                                        return 'Please enter Address';
+                                      }
+                                      return null;
+                                    },
+                                  )),
+                              Container(
+                                width: 5,
+                              ),
+                              Flexible(
+                                  flex: 1,
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor:
+                                          Color.fromARGB(255, 151, 125, 253),
+                                      minimumSize:
+                                          const Size.fromHeight(50), // NEW
+                                    ),
+                                    onPressed: () async {
+                                      _addressAPI();
+                                      // Kpostal model = await Navigator.push(
+                                      //   context,
+                                      //   CupertinoPageRoute(
+                                      //     builder: (context) => KpostalView(
+                                      //       kakaoKey:
+                                      //           '8ba72a270b2ab65050c15f1aa2cce9a9',
+                                      //       useLocalServer: false,
+                                      //     ),
+                                      //   ),
+                                      // );
+                                      // addressController.text = model.address;
+                                    },
+                                    child: Text('주소 검색'),
+                                  ))
+                            ])
                       : Text('not register ${_store?.store_name}'),
+                  Text("상세주소"),
+                  TextFormField(
+                    controller: telePhoneController,
+                    keyboardType: TextInputType.text,
+                    decoration: inputDecoration.copyWith(
+                        hintText: "Enter your Store TelePhone"),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter TelePhone';
+                      }
+                      return null;
+                    },
+                  ),
                   Text("전화번호"),
                   TextFormField(
                     controller: telePhoneController,
@@ -177,7 +236,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                       minimumSize: const Size.fromHeight(50), // NEW
                     ),
                     onPressed: () {
-                      _navigateUploadPhoto(context);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => MyHomePage(title: 'test')));
+                      // _navigateUploadPhoto(context);
                     },
                     child: Text('업로드'),
                   ),
@@ -191,16 +254,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                       minimumSize: const Size.fromHeight(50), // NEW
                     ),
                     onPressed: () async {
-                      Store store = Store(
-                          logo: "new logo",
-                          store_name: nameController.text,
-                          store_telephone: telePhoneController.text,
-                          owner_id: "0000001",
-                          open_yn: false,
-                          operatingHourId: "operatingHourId",
-                          introduce: introController.text);
-                      service.registerStore("ownerId", store);
-
+                      registerStore();
                       storePhoto
                           .asMap()
                           .forEach((index, value) => uploadImg(index, value));
@@ -221,6 +275,52 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
             ),
           ),
         ));
+  }
+
+  Future<void> _saveAssetImageAsFile() async {
+    final directory = await getTemporaryDirectory();
+    final imagePath = '${directory.path}/profile.png';
+
+    final ByteData imageData = await rootBundle.load('assets/logo.jpeg');
+    final bytes = imageData.buffer.asUint8List();
+
+    await File(imagePath).writeAsBytes(bytes);
+
+    setState(() {
+      _imageFile = File(imagePath);
+    });
+  }
+
+  void registerStore() async {
+    print("register store 호출");
+
+    RegisterStorePost store = RegisterStorePost(
+        owner_id: 1,
+        store_logo: "new logo",
+        store_name: nameController.text,
+        store_telephone: telePhoneController.text,
+        store_photo_cnt: 5,
+        store_address: "Adr",
+        store_lat: 1,
+        store_lng: 1,
+        business_registration: "busi",
+        store_description: introController.text);
+
+    await Api().client.registerStore(store).then((response) {
+      var storeId = response.storeId;
+      print("등록성공" + storeId.toString());
+      ApiServiceImpl().uploadImage();
+
+    }).onError((error, stackTrace) {
+      DioError dioError = error as DioError;
+      print("등록 실패" + dioError.message);
+      if (dioError.response?.statusCode == 404) {
+        // showToastMsg(Strings.error_network);
+      } else {
+        // showToastMsg("Error : [${dioError.message}]");
+      }
+      // result = false;
+    });
   }
 
   void getImge() async {
@@ -279,6 +379,40 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     if (message != null) {
       scaffoldMessenger.showSnackBar(SnackBar(content: Text(message)));
     }
+  }
+
+  _addressAPI() async {
+    Kpostal model = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => KpostalView(
+              kakaoKey: '8ba72a270b2ab65050c15f1aa2cce9a9',
+              useLocalServer: false,
+              callback: (Kpostal result) {
+                setState(() {
+                  print("주소callback");
+                  print(result.postCode);
+                  // this.address = result.address;
+                  // this.latitude = result.latitude.toString();
+                  // this.longitude = result.longitude.toString();
+                  // this.kakaoLatitude = result.kakaoLatitude.toString();
+                  // this.kakaoLongitude = result.kakaoLongitude.toString();
+                });
+              }),
+        )
+        // CupertinoPageRoute(
+        //   builder: (context) => KpostalView(
+        //     kakaoKey: '8ba72a270b2ab65050c15f1aa2cce9a9',
+        //     useLocalServer: false,
+        //   ),
+
+        // ),
+        );
+
+    // Kpostal result = await Navigator.push(context, MaterialPageRoute(builder: (_) => KpostalView()));
+    //     print(result.address);
+    print("검색된 주소");
+    print('${model.addressEng!} ${model.address!} ${model.buildingName!}');
   }
 
   Future<void> uploadImg(index, value) async {
@@ -353,228 +487,90 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     );
     // );
   }
-  // return GridView.builder(
-  //     shrinkWrap: true,
-  //     physics: ScrollPhysics(),
-  //     primary: true,
-  //     padding: EdgeInsets.only(top: 15.0),
-  //     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-  //       crossAxisCount: 3,
-  //       mainAxisSpacing: 0.2, //1.0
-  //       crossAxisSpacing: 4.0, //1.0
-  //       // mainAxisExtent: 100,
-  //     ),
-  //     itemCount: _storePhoto.length,
-  //     itemBuilder: (context, index) {
-  //       return Container(
-  //         width: 50, // <-- Your width
-  //         height: 50,
-  //         padding: EdgeInsets.all(1),
-  //         child: Image.file(
-  //           _storePhoto[index],
-  //           fit: BoxFit.cover,
-  //         ),
-  //       );
-  //     });
-  // }
 }
 
-class EmployeeScreen extends StatefulWidget {
-  const EmployeeScreen({Key? key}) : super(key: key);
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key? key, required this.title}) : super(key: key);
+
+  final String title;
 
   @override
-  State<EmployeeScreen> createState() => _EmployeeScreenState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _EmployeeScreenState extends State<EmployeeScreen> {
-  TextEditingController nameController = TextEditingController();
-  TextEditingController ageController = TextEditingController();
-  TextEditingController salaryController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
-  TextEditingController traitsController = TextEditingController();
-
-  final _formKey = GlobalKey<FormState>();
-
-  bool isLoading = false;
+class _MyHomePageState extends State<MyHomePage> {
+  String postCode = '-';
+  String address = '-';
+  String latitude = '-';
+  String longitude = '-';
+  String kakaoLatitude = '-';
+  String kakaoLongitude = '-';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          title: const Text("Add Employee"),
+      appBar: AppBar(
+        title: Text(widget.title),
+      ),
+      body: Container(
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextButton(
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => KpostalView(
+                      useLocalServer: false,
+                      kakaoKey: '8ba72a270b2ab65050c15f1aa2cce9a9',
+                      callback: (Kpostal result) {
+                        setState(() {
+                          this.postCode = result.postCode;
+                          this.address = result.address;
+                          this.latitude = result.latitude.toString();
+                          this.longitude = result.longitude.toString();
+                          this.kakaoLatitude = result.kakaoLatitude.toString();
+                          this.kakaoLongitude =
+                              result.kakaoLongitude.toString();
+                        });
+                      },
+                    ),
+                  ),
+                );
+              },
+              style: ButtonStyle(
+                  backgroundColor:
+                      MaterialStateProperty.all<Color>(Colors.blue)),
+              child: Text(
+                'Search Address',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(40.0),
+              child: Column(
+                children: [
+                  Text('postCode',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('result: ${this.postCode}'),
+                  Text('address',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text('result: ${this.address}'),
+                  Text('LatLng', style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                      'latitude: ${this.latitude} / longitude: ${this.longitude}'),
+                  Text('through KAKAO Geocoder',
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  Text(
+                      'latitude: ${this.kakaoLatitude} / longitude: ${this.kakaoLongitude}'),
+                ],
+              ),
+            ),
+          ],
         ),
-        body: SingleChildScrollView(
-            child: Form(
-                key: _formKey,
-                child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Name', style: textStyle),
-                          const SizedBox(height: 8.0),
-                          TextFormField(
-                            controller: nameController,
-                            keyboardType: TextInputType.text,
-                            decoration: inputDecoration.copyWith(
-                                hintText: "Enter your Name"),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Name';
-                              }
-                              return null;
-                            },
-                          ),
-                          !isLoading
-                              ? Center(
-                                  child: ElevatedButton(
-                                      style: ButtonStyle(
-                                          minimumSize:
-                                              MaterialStateProperty.all(
-                                                  const Size(200, 50)),
-                                          backgroundColor:
-                                              MaterialStateProperty.all<Color>(
-                                                  const Color.fromARGB(
-                                                      255, 83, 80, 80))),
-                                      onPressed: (() async {
-                                        if (_formKey.currentState!.validate()) {
-                                          DatabaseService service =
-                                              DatabaseService();
-                                          List<String> employeeTraits =
-                                              traitsController.text.split(",");
-                                          late Address address;
-                                          if (addressController.text
-                                              .contains(",")) {
-                                            List<String> fullAddress =
-                                                addressController.text
-                                                    .split(",");
-                                            address = Address(
-                                                streetName: fullAddress[0],
-                                                buildingName: fullAddress[1],
-                                                cityName: fullAddress[2]);
-                                          }
-                                          Employee employee = Employee(
-                                              name: nameController.text,
-                                              age:
-                                                  int.parse(ageController.text),
-                                              salary: int.parse(
-                                                  salaryController.text),
-                                              address: address,
-                                              employeeTraits: employeeTraits);
-                                          setState(() {
-                                            isLoading = true;
-                                          });
-                                          await service.addEmployee(employee);
-                                          setState(() {
-                                            isLoading = false;
-                                          });
-                                        }
-                                      }),
-                                      child: const Text(
-                                        "Submit",
-                                        style: TextStyle(fontSize: 20),
-                                      )),
-                                )
-                              : const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              // Navigator.push(
-                              //     context,
-                              //     // MaterialPageRoute(builder: (context) => CafeList()));
-                              //     MaterialPageRoute(builder: (context) => EmployeeScreen()));
-                            },
-                            child: Text("뒤로가기"),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // Navigator.pushNamed(context, '/add');
-                              Navigator.push(
-                                  context,
-                                  // MaterialPageRoute(builder: (context) => CafeList()));
-                                  MaterialPageRoute(
-                                      builder: (context) => CafeList()));
-                            },
-                            child: Text("cafe info"),
-                          ),
-                        ])))));
+      ),
+    );
   }
-
-  static const textStyle = TextStyle(
-    color: Colors.white,
-    fontSize: 22.0,
-    letterSpacing: 1,
-    fontWeight: FontWeight.bold,
-  );
-
-  final inputDecoration = InputDecoration(
-      border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-            width: 2,
-          )));
-}
-
-class Employee {
-  final String? id;
-  final String name;
-  final int age;
-  final int salary;
-  final Address address;
-  final List<String>? employeeTraits;
-  Employee(
-      {this.id,
-      required this.name,
-      required this.age,
-      required this.salary,
-      required this.address,
-      this.employeeTraits});
-
-  Map<String, dynamic> toMap() {
-    return {
-      'name': name,
-      'age': age,
-      'salary': salary,
-      'address': address.toMap(),
-      'employeeTraits': employeeTraits
-    };
-  }
-
-  Employee.fromDocumentSnapshot(DocumentSnapshot<Map<String, dynamic>> doc)
-      : id = doc.id,
-        name = doc.data()!["name"],
-        age = doc.data()!["age"],
-        salary = doc.data()!["salary"],
-        address = Address.fromMap(doc.data()!["address"]),
-        employeeTraits = doc.data()?["employeeTraits"] == null
-            ? null
-            : doc.data()?["employeeTraits"].cast<String>();
-}
-
-class Address {
-  final String streetName;
-  final String buildingName;
-  final String cityName;
-
-  Address(
-      {required this.streetName,
-      required this.buildingName,
-      required this.cityName});
-
-  Map<String, dynamic> toMap() {
-    return {
-      'streetName': streetName,
-      'buildingName': buildingName,
-      'cityName': cityName,
-    };
-  }
-
-  Address.fromMap(Map<String, dynamic> addressMap)
-      : streetName = addressMap["streetName"],
-        buildingName = addressMap["buildingName"],
-        cityName = addressMap["cityName"];
 }

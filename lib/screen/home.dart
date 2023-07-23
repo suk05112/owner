@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:owner/common/model/CafeInfo.dart';
-import 'package:owner/screen/cafelist/cafelist_page.dart';
+import 'package:owner/common/model/cafeInfo.dart';
+import 'package:owner/screen/Store/cafelist_page.dart';
 
 import 'QRScanPage.dart';
-import 'cafe_detail/cafe_detail_page.dart';
+import 'Store/cafe_detail_page.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -94,9 +94,10 @@ class _HomeState extends State<Home> {
                     minWidth: 40,
                     onPressed: () {
                       setState(() {
-                        currentScreen = CafeDetailScreen(
-                          storeId: '0000001',
-                        );
+                        currentScreen = CafeList();
+                        // currentScreen = CafeDetailScreen(
+                        //   storeId: '0000001',
+                        // );
                         currentTab = 1;
                       });
                     },

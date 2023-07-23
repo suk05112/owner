@@ -1,16 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:owner/common/StatusManager.dart';
-import 'package:owner/common/api/Provider.dart';
-import 'package:owner/common/model/provider.dart';
 
+import '../common/model/cafeInfo.dart';
 import 'Register/BasicInfoInputPage.dart';
 import 'Register/DocumentGuidePage.dart';
-import 'cafelist/cafelist_page.dart';
 import 'home.dart';
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:owner/common/api/API.dart';
+import 'package:owner/common/provier/store_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -34,25 +35,26 @@ class _LoginScreenState extends State<LoginScreen> {
           LoginFormWidget(),
           TextButton(
             onPressed: () async {
-              try {
-                final newUser = await FirebaseAuth.instance
-                    .signInWithEmailAndPassword(
-                        email: "sujineasㅇmi1l@nav.com", password: "pw1234");
-                if (newUser.user != null) {
-                  print("login success");
-                  print("new user " + newUser.user!.uid);
-                  // newUser.user.uid
-                  Provider().loginOwner(newUser.user!.uid);
-                  Navigator.push(
-                      context, MaterialPageRoute(builder: (context) => Home()));
-                }
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'user-not-found') {
-                  print('No user found for that email.');
-                } else if (e.code == 'wrong-password') {
-                  print('Wrong password provided for that user.');
-                }
-              }
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (context) => Home()));
+              // try {
+              //   final newUser = await FirebaseAuth.instance
+              //       .signInWithEmailAndPassword(
+              //           email: "sujineasㅇmi1l@nav.com", password: "pw1234");
+              //   if (newUser.user != null) {
+              //     print("login success");
+              //     print("new user " + newUser.user!.uid);
+              //     // newUser.user.uid
+              //     Navigator.push(
+              //         context, MaterialPageRoute(builder: (context) => Home()));
+              //   }
+              // } on FirebaseAuthException catch (e) {
+              //   if (e.code == 'user-not-found') {
+              //     print('No user found for that email.');
+              //   } else if (e.code == 'wrong-password') {
+              //     print('Wrong password provided for that user.');
+              //   }
+              // }
             },
             child: Text("로그인"),
           ),
@@ -60,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
             onPressed: () {
               Navigator.push(
                   // context, MaterialPageRoute(builder: (context) => MyApp()));
-
                   context,
                   MaterialPageRoute(builder: (context) => DocumentGuidePage()));
             },
@@ -68,12 +69,17 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           TextButton(
             onPressed: () async {
-              await FirebaseAuth.instance.signOut();
-              if (FirebaseAuth.instance.currentUser?.uid == null) {
-                print("로그 아웃 후 Null");
-              } else {
-                print("로그아웃 안됨");
-              }
+              print("main init state 호출");
+              StoreProvider().getStoreList();
+              // CafeInfo response = await Api().client.getStoreList(2);
+              // Api().client.getStoreList(2).then((it) => {logger.i(it));
+
+              // await FirebaseAuth.instance.signOut();
+              // if (FirebaseAuth.instance.currentUser?.uid == null) {
+              //   print("로그 아웃 후 Null");
+              // } else {
+              //   print("로그아웃 안됨");
+              // }
             },
             child: Text("로그아웃"),
           ),
@@ -141,6 +147,8 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
           )));
 }
 
+/*
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -156,13 +164,13 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
 class TodosWidget extends StatefulWidget {
   const TodosWidget({Key? key}) : super(key: key);
 
   @override
   _TodosWidgetState createState() => _TodosWidgetState();
 }
-
 class _TodosWidgetState extends State<TodosWidget> {
   List<TempStore> news = [];
   bool isLoading = true;
@@ -213,3 +221,4 @@ class _TodosWidgetState extends State<TodosWidget> {
     );
   }
 }
+*/

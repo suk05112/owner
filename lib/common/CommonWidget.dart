@@ -42,3 +42,37 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
             width: 2,
           )));
 }
+
+void showModalDialog(BuildContext context, String message) {
+  showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (BuildContext context) {
+        return Text("dialog");
+        // return LoplatDialogCenterConfirm(
+        //   children: [
+        //     Row(
+        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //       children: [
+        //         Expanded(
+        //           child : Padding(
+        //             padding: const EdgeInsets.only(top: 24, left: 24, right: 24, bottom: 24),
+        //             child: Center(
+        //               child: Text(message, textAlign: TextAlign.center,
+        //               style: const TextStyle(
+        //                   color: Colors.black,
+        //                   fontSize: 18,
+        //                   fontFamily: 'AppleSDGothicNeo',
+        //                     fontWeight: FontWeight.w700,
+        //                 ),
+        //               ),
+        //             ),
+        //           ),
+        //         ),
+        //       ],
+        //     ),
+        //   ],
+        //   confirmLabel: '확인',
+        // );
+      });
+}

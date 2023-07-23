@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:owner/common/DatabaseService.dart';
+// import 'package:owner/common/DatabaseService.dart';
 import 'package:owner/common/model/Menu.dart';
 
 class AddMenuPage extends StatefulWidget {
@@ -10,7 +10,7 @@ class AddMenuPage extends StatefulWidget {
 }
 
 class _AddMenuPageState extends State<AddMenuPage> {
-  DatabaseService service = DatabaseService();
+  // DatabaseService service = DatabaseService();
   TextEditingController menuNameInputController = TextEditingController();
   TextEditingController menuDescInputController = TextEditingController();
   TextEditingController menuPriceInputController = TextEditingController();
@@ -70,14 +70,14 @@ class _AddMenuPageState extends State<AddMenuPage> {
                   // minimumSize: const Size.fromHeight(50), // NEW
                 ),
                 onPressed: () {
-                  service.addMenu(Menu(
-                      name: "new menu",
-                      menuId: "003",
-                      storeId: "001",
-                      description: "카페라떼",
-                      price: 5000,
-                      status: "판매",
-                      categoryId: "001"));
+                  // service.addMenu(Menu(
+                  //     name: "new menu",
+                  //     menuId: "003",
+                  //     storeId: "001",
+                  //     description: "카페라떼",
+                  //     price: 5000,
+                  //     status: "판매",
+                  //     categoryId: "001"));
                   Navigator.pop(context);
                 },
                 child: Text('확인'),

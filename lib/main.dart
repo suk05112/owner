@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:owner/common/model/CafeInfo.dart';
+import 'package:owner/common/api/response/store/store.dart';
+import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/register.dart';
-import 'package:owner/screen/RegisterStore.dart';
+import 'package:owner/screen/Register/RegisterStore.dart';
 
-import 'package:owner/screen/cafelist/cafelist_page.dart';
+import 'package:owner/screen/Store/cafelist_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
+import 'common/provier/store_provider.dart';
 import 'firebase_options.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'screen/LoginPage.dart';
 import 'screen/Register/DocumentGuidePage.dart';
+
+import 'package:owner/common/api/API.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,21 +29,25 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      routes: {
-        '/': (context) => const LoginScreen(),
-        // '/': (context) => const MyHomePage(
-        //       title: 'my page',
-        //     ),
-        '/add': (context) => const CafeList(),
-        '/edit': (context) => const DocumentGuidePage(),
-      },
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => StoreProvider()),
+        ],
+        child: MaterialApp(
+          title: 'Flutter Demo',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          routes: {
+            '/': (context) => const LoginScreen(),
+            // '/': (context) => const MyHomePage(
+            //       title: 'my page',
+            //     ),
+            '/add': (context) => const CafeList(),
+            '/edit': (context) => const DocumentGuidePage(),
+          },
+          // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+        ));
   }
 }
 
@@ -90,9 +99,9 @@ class _MyHomePageState extends State<MyHomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 // getData();
-                Navigator.pushNamed(context, '/edit');
+                // Navigator.pushNamed(context, '/edit');
 
                 // Navigator.push(
                 //     context,

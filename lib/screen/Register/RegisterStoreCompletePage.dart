@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:owner/main.dart';
 
-import '../cafelist/cafelist_page.dart';
+import '../Store/cafelist_page.dart';
 
 class RegisterStoreCompletePage extends StatelessWidget {
   const RegisterStoreCompletePage({Key? key}) : super(key: key);

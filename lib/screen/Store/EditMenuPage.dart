@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:owner/common/DatabaseService.dart';
+// import 'package:owner/common/DatabaseService.dart';
 import 'package:owner/common/model/Menu.dart';
 
 class EditMenuPage extends StatefulWidget {
@@ -14,7 +14,7 @@ class EditMenuPage extends StatefulWidget {
 }
 
 class _EditMenuPageState extends State<EditMenuPage> {
-  DatabaseService service = DatabaseService();
+  // DatabaseService service = DatabaseService();
   TextEditingController menuNameInputController = TextEditingController();
   TextEditingController menuDescInputController = TextEditingController();
   TextEditingController menuPriceInputController = TextEditingController();

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:owner/main.dart';
 import 'package:intl/intl.dart';
 
-import '../cafelist/cafelist_page.dart';
 import 'RegisterStoreCompletePage.dart';
 
 class SettingOpeningDatePage extends StatefulWidget {
@@ -54,7 +53,7 @@ class _SettingOpeningDatePageState extends State<SettingOpeningDatePage> {
                     onChanged: (val) {
                       setState(() {
                         _isVisible = false;
-                        radioItem = val!;
+                        // radioItem = val!;
                         print("이거 불림?1 ${_isVisible}");
                       });
                     },
@@ -68,7 +67,7 @@ class _SettingOpeningDatePageState extends State<SettingOpeningDatePage> {
                       // _selectDate(context);
                       setState(() {
                         _isVisible = true;
-                        radioItem = val!;
+                        // radioItem = val!;
                         print("이거 불림?1 ${_isVisible}");
                       });
                     },

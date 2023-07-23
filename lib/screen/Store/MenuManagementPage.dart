@@ -1,7 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:owner/common/DatabaseService.dart';
+// import 'package:owner/common/DatabaseService.dart';
 import 'package:owner/common/model/Menu.dart';
 import 'package:owner/screen/Store/AddMenuPage.dart';
 import 'package:owner/screen/Store/EditMenuPage.dart';
@@ -16,7 +16,7 @@ class MenuManagementPage extends StatefulWidget {
 }
 
 class _MenuManagementPagetate extends State<MenuManagementPage> {
-  DatabaseService service = DatabaseService();
+  // DatabaseService service = DatabaseService();
   Future<List<Menu>>? menuList;
   List<Menu>? menu;
   var menuLength;
@@ -42,7 +42,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
 
   Future<void> _initRetrieval() async {
     print("이건 실행됨?");
-    menuList = service.retrieveMenu(widget.storeId);
+    // menuList = service.retrieveMenu(widget.storeId);
     menuList!.then(
       (value) {
         setState(() {
@@ -110,7 +110,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                                   menuId: menuLength.toString(),
                                 )));
 
-                    service.addMenu(modified_menu);
+                    // service.addMenu(modified_menu);
 
                     print("메뉴 추가 선택됨");
                   } else if (value == 2) {
@@ -145,7 +145,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                                       menu: menu![index],
                                       storeId: menu![index].storeId ?? "001",
                                     )));
-                        service.addMenu(modified_menu);
+                        // service.addMenu(modified_menu);
                       },
                       child: ListTile(
                         title: Text("${menu?[index].description}"),
@@ -180,7 +180,7 @@ class ReorderableExample extends StatefulWidget {
 
 class _ReorderableExampleState extends State<ReorderableExample> {
   final List<int> _items = List<int>.generate(50, (int index) => index);
-  DatabaseService service = DatabaseService();
+  // DatabaseService service = DatabaseService();
   Future<List<Menu>>? menuList;
   late String _storeId;
 
@@ -195,7 +195,7 @@ class _ReorderableExampleState extends State<ReorderableExample> {
 
   Future<void> _initRetrieval() async {
     print("이건 실행됨?");
-    menuList = service.retrieveMenu(_storeId);
+    // menuList = service.retrieveMenu(_storeId);
   }
 
   @override

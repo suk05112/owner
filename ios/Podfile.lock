@@ -1,4 +1,6 @@
 PODS:
+  - camera_avfoundation (0.0.1):
+    - Flutter
   - cloud_firestore (4.3.2):
     - Firebase/Firestore (= 10.7.0)
     - firebase_core
@@ -122,6 +124,7 @@ PODS:
     - FlutterMacOS
 
 DEPENDENCIES:
+  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -155,6 +158,8 @@ SPEC REPOS:
     - PromisesObjC
 
 EXTERNAL SOURCES:
+  camera_avfoundation:
+    :path: ".symlinks/plugins/camera_avfoundation/ios"
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   firebase_auth:
@@ -189,6 +194,7 @@ CHECKOUT OPTIONS:
     :tag: 10.7.0
 
 SPEC CHECKSUMS:
+  camera_avfoundation: 3125e8cd1a4387f6f31c6c63abb8a55892a9eeeb
   cloud_firestore: 99f5ab4992a0b85308946af974ba78a7a1179351
   Firebase: 0219acf760880eeec8ce479895bd7767466d9f81
   firebase_auth: b94604d7ea3eba03bb82e89f81547f045603b427
@@ -217,6 +223,6 @@ SPEC CHECKSUMS:
   qr_code_scanner: bb67d64904c3b9658ada8c402e8b4d406d5d796e
   shared_preferences_foundation: e2dae3258e06f44cc55f49d42024fd8dd03c590c
 
-PODFILE CHECKSUM: f9f72096a3aa4d39f34d619015cc7b9035795347
+PODFILE CHECKSUM: 7c0b4d6418ba244ee3a0a12f57f9f1eadde9517e
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1

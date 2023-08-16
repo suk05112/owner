@@ -27,7 +27,7 @@ Map<String, dynamic> _$RegisterStorePostToJson(RegisterStorePost instance) =>
       'store_logo': instance.store_logo,
       'store_telephone': instance.store_telephone,
       'store_description': instance.store_description,
-      'store_photo': instance.store_photo_cnt,
+      'store_photo_cnt': instance.store_photo_cnt,
       'store_address': instance.store_address,
       'store_lat': instance.store_lat,
       'store_lng': instance.store_lng,

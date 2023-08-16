@@ -5,6 +5,8 @@ import 'package:owner/common/StatusManager.dart';
 import '../common/model/cafeInfo.dart';
 import 'Register/BasicInfoInputPage.dart';
 import 'Register/DocumentGuidePage.dart';
+import 'Register/find_password_page.dart';
+import 'Register/find_userId_page.dart';
 import 'home.dart';
 
 import 'package:http/http.dart' as http;
@@ -58,14 +60,39 @@ class _LoginScreenState extends State<LoginScreen> {
             },
             child: Text("로그인"),
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                  // context, MaterialPageRoute(builder: (context) => MyApp()));
-                  context,
-                  MaterialPageRoute(builder: (context) => DocumentGuidePage()));
-            },
-            child: Text("회원가입"),
+          Row(
+            children: [
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                      // context, MaterialPageRoute(builder: (context) => MyApp()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => DocumentGuidePage()));
+                },
+                child: Text("회원가입"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                      // context, MaterialPageRoute(builder: (context) => MyApp()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => FindUserIDPage()));
+                },
+                child: Text("아이디 찾기"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                      // context, MaterialPageRoute(builder: (context) => MyApp()));
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => FindPasswordPage()));
+                },
+                child: Text("비밀번호 찾기"),
+              ),
+            ],
           ),
           TextButton(
             onPressed: () async {

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/model/request/OwnerPost.dart';
 
+import '../../common/widget/CommonWidget.dart';
 import 'DocumentInputPage.dart';
 import 'SingUpCompletePage.dart';
 
@@ -62,7 +63,14 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                 hintText: "Enter your name",
                 validator: validateName,
               ),
-              PhoneNumberVerificationWidget(), //전화번호
+              PhoneNumberVerificationWidget(successCallback: (phoneNumber) {
+                // 여기서 phoneNumber 변수에 인증된 전화번호가 들어옵니다.
+                if (phoneNumber != null) {
+                  print("회원가입 전화번호 인증 성공: $phoneNumber");
+                } else {
+                  print("전화번호 인증 실패");
+                }
+              }), //전화번호
               IDVerificationWidget(), //아이디
               InputInfoWidget(
                 title: "비밀번호",
@@ -267,216 +275,41 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
           )));
 }
 
-class PhoneNumberVerificationWidget extends StatefulWidget {
-  @override
-  State<PhoneNumberVerificationWidget> createState() =>
-      _PhoneNumberVerificationWidgetState();
-}
-
-class _PhoneNumberVerificationWidgetState
-    extends State<PhoneNumberVerificationWidget> {
-  FirebaseAuth _auth = FirebaseAuth.instance;
-  String _verificationId = "";
-
-  TextEditingController phoneNumberController = TextEditingController();
-  TextEditingController validationNumberController = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          const SizedBox(height: 10.0),
-          Text("전화번호"),
-          Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-            Expanded(
-              flex: 3,
-              child: TextFormField(
-                // style: TextStyle(fontSize: 15, height: 0.1),
-                controller: phoneNumberController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly, //숫자만!
-                  NumberFormatter(), // 자동하이픈
-                  LengthLimitingTextInputFormatter(13)
-                ],
-                decoration: inputDecoration.copyWith(hintText: "전화번호를 입력하세요"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "잘못된 전화번호입니다. 다시 입력하세요";
-                  }
-                  return null;
-                },
-              ),
-            ),
-            const SizedBox(width: 10.0),
-            Expanded(
-                flex: 1,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.red,
-                  ),
-                  onPressed: () {
-                    verifyPhoneNumber("+821025446458");
-                  },
-                  child: Text('인증'),
-                )),
-          ]),
-          const SizedBox(height: 10.0),
-          TextFormField(
-            controller: validationNumberController,
-            keyboardType: TextInputType.text,
-            decoration: inputDecoration.copyWith(
-              hintText: "인증번호를 입력하세요",
-              contentPadding:
-                  const EdgeInsets.only(top: 1, bottom: 1, left: 6, right: 6),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return "잘못된 인증번호입니다. 다시 입력하세요";
-              }
-              return null;
-            },
-          ),
-          ElevatedButton(
-            // style: ElevatedButton.styleFrom(
-            //   foregroundColor: Colors.white,
-            //   backgroundColor: Color.fromARGB(255, 0, 64, 255),
-            // ),
-            onPressed: () async {
-              PhoneAuthCredential credential = PhoneAuthProvider.credential(
-                  verificationId: _verificationId,
-                  smsCode: validationNumberController.text);
-              final authCredential =
-                  await _auth.signInWithCredential(credential);
-              try {
-                if (authCredential.user != null) {
-                  setState(() {
-                    print("인증완료 및 로그인성공");
-                  });
-                  await _auth.currentUser!.delete();
-                  print("auth정보삭제");
-                  _auth.signOut();
-                  print("phone로그인된것 로그아웃");
-                }
-              }
-              // signInWithPhoneAuthCredential(phoneAuthCredential);
-              catch (e) {
-                print('Error: $e');
-              }
-              ;
-            },
-            child: Text('인증확인'),
-          )
-        ]);
-  }
-
-  final inputDecoration = InputDecoration(
-    // isDense: true,
-    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 2,
-        )),
-  );
-
-  // SMS 인증을 요청합니다.
-  void verifyPhoneNumber(String phoneNumber) async {
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        // 인증 완료 콜백 함수
-        print("전화번호 인증 완료");
-        // await FirebaseAuth.instance.signInWithCredential(credential);
-        FirebaseAuth.instance.signOut(); // 로그아웃 처리
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        print("전화번호 인증 실패");
-
-        // 인증 실패 콜백 함수
-        print(e.message);
-      },
-      codeSent: (String verificationId, int? resendToken) {
-        print("코드 보내짐");
-        print(verificationId);
-        // 코드가 성공적으로 보내진 경우
-        setState(() {
-          this._verificationId = verificationId;
-        });
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        print("타임아웃");
-
-        // 타임아웃 콜백 함수
-        _verificationId = verificationId;
-      },
-    );
-  }
+final inputDecoration = InputDecoration(
+  // isDense: true,
+  border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8.0),
+      borderSide: const BorderSide(
+        color: Colors.redAccent,
+        width: 2,
+      )),
+);
 
 // 이메일과 비밀번호를 사용하여 Firebase Authentication에 새 사용자를 만듭니다.
-  void signUpWithEmail(String email, String password) async {
-    try {
-      UserCredential userCredential =
-          await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      // if (userCredential.additionalUserInfo!.isNewUser) {
-      //   userCredential(AdditionalUserInfo(isNewUser: false, username: "addinfon"))
-      // }
-      String userId = userCredential.user!.uid;
-      // Firestore에 사용자 정보를 저장합니다.
-      // await FirebaseFirestore.instance.collection('users').doc(userId).set({
-      //   'email': email,
-      //   'phoneNumber': userCredential.user.phoneNumber,
-      // });
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
-      }
-    } catch (e) {
-      print(e);
+void signUpWithEmail(String email, String password) async {
+  try {
+    UserCredential userCredential =
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+    // if (userCredential.additionalUserInfo!.isNewUser) {
+    //   userCredential(AdditionalUserInfo(isNewUser: false, username: "addinfon"))
+    // }
+    String userId = userCredential.user!.uid;
+    // Firestore에 사용자 정보를 저장합니다.
+    // await FirebaseFirestore.instance.collection('users').doc(userId).set({
+    //   'email': email,
+    //   'phoneNumber': userCredential.user.phoneNumber,
+    // });
+  } on FirebaseAuthException catch (e) {
+    if (e.code == 'weak-password') {
+      print('The password provided is too weak.');
+    } else if (e.code == 'email-already-in-use') {
+      print('The account already exists for that email.');
     }
-  }
-}
-
-//전화번호 입력시 자동 하이픈(-)
-class NumberFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    var text = newValue.text;
-
-    if (newValue.selection.baseOffset == 0) {
-      return newValue;
-    }
-
-    var buffer = StringBuffer();
-    for (int i = 0; i < text.length; i++) {
-      buffer.write(text[i]);
-      var nonZeroIndex = i + 1;
-      if (nonZeroIndex <= 3) {
-        if (nonZeroIndex % 3 == 0 && nonZeroIndex != text.length) {
-          buffer.write('-'); // Add double spaces.
-        }
-      } else {
-        if (nonZeroIndex % 7 == 0 &&
-            nonZeroIndex != text.length &&
-            nonZeroIndex > 4) {
-          buffer.write('-');
-        }
-      }
-    }
-
-    var string = buffer.toString();
-    return newValue.copyWith(
-        text: string,
-        selection: TextSelection.collapsed(offset: string.length));
+  } catch (e) {
+    print(e);
   }
 }
 

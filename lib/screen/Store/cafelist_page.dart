@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:owner/common/CommonWidget.dart';
+import 'package:owner/common/widget/CommonWidget.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/register.dart';

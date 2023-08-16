@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:owner/screen/Register/SingUpCompletePage.dart';
 import 'dart:io';
 
-import '../../common/CommonWidget.dart';
+import '../../common/widget/CommonWidget.dart';
 
 class DocumentInputPage extends StatefulWidget {
   const DocumentInputPage({Key? key}) : super(key: key);

@@ -27,11 +27,24 @@ class StoreListResponse {
 }
 
 @JsonSerializable()
+class StoreResponse {
+  int statusCode;
+  Store store;
+
+  StoreResponse({required this.statusCode, required this.store});
+
+  factory StoreResponse.fromJson(Map<String, dynamic> json) =>
+      _$StoreResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$StoreResponseToJson(this);
+}
+
+@JsonSerializable()
 class Store {
   int owner_id;
   int store_id;
   String store_name;
   String store_telephone;
+  String store_address;
   String store_description;
   String? store_photo;
   String store_logo;
@@ -46,6 +59,7 @@ class Store {
     required this.store_id,
     required this.store_name,
     required this.store_telephone,
+    required this.store_address,
     required this.store_description,
     required this.store_photo,
     required this.store_logo,
@@ -63,6 +77,7 @@ class Store {
       store_id: $store_id, 
       store_name: $store_name,  
       store_telephone: $store_telephone,
+      store_address: $store_address,
       store_description: $store_description,
       store_photo: $store_photo,
       store_logo: $store_logo,

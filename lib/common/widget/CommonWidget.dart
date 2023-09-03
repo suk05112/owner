@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 
 class InputInfoWidget extends StatefulWidget {
   InputInfoWidget(
@@ -93,12 +94,14 @@ class _PhoneNumberVerificationWidgetState
     extends State<PhoneNumberVerificationWidget> {
   FirebaseAuth _auth = FirebaseAuth.instance;
   String _verificationId = "";
+  bool isTouched = false;
 
   TextEditingController phoneNumberController = TextEditingController();
   TextEditingController validationNumberController = TextEditingController();
 
   final inputDecoration = InputDecoration(
     // isDense: true,
+    // contentPadding: EdgeInsets.fromLTRB(27, 14, 21, 18),
     border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
         borderSide: const BorderSide(
@@ -109,96 +112,119 @@ class _PhoneNumberVerificationWidgetState
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          const SizedBox(height: 10.0),
-          Text("전화번호"),
-          Row(mainAxisAlignment: MainAxisAlignment.start, children: <Widget>[
-            Expanded(
-              flex: 3,
-              child: TextFormField(
-                // style: TextStyle(fontSize: 15, height: 0.1),
-                controller: phoneNumberController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly, //숫자만!
-                  NumberFormatter(), // 자동하이픈
-                  LengthLimitingTextInputFormatter(13)
-                ],
-                decoration: inputDecoration.copyWith(hintText: "전화번호를 입력하세요"),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "잘못된 전화번호입니다. 다시 입력하세요";
-                  }
-                  return null;
-                },
-              ),
-            ),
-            const SizedBox(width: 10.0),
-            Expanded(
-                flex: 1,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: Colors.red,
-                  ),
-                  onPressed: () {
-                    verifyPhoneNumber("+821025446458");
-                  },
-                  child: Text('인증'),
-                )),
-          ]),
-          const SizedBox(height: 10.0),
-          TextFormField(
-            controller: validationNumberController,
-            keyboardType: TextInputType.text,
-            decoration: inputDecoration.copyWith(
-              hintText: "인증번호를 입력하세요",
-              contentPadding:
-                  const EdgeInsets.only(top: 1, bottom: 1, left: 6, right: 6),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return "잘못된 인증번호입니다. 다시 입력하세요";
-              }
-              return null;
-            },
-          ),
-          ElevatedButton(
-            // style: ElevatedButton.styleFrom(
-            //   foregroundColor: Colors.white,
-            //   backgroundColor: Color.fromARGB(255, 0, 64, 255),
-            // ),
-            onPressed: () async {
-              PhoneAuthCredential credential = PhoneAuthProvider.credential(
-                  verificationId: _verificationId,
-                  smsCode: validationNumberController.text);
-              final authCredential =
-                  await _auth.signInWithCredential(credential);
-              try {
-                if (authCredential.user != null) {
-                  setState(() {
-                    print("인증완료 및 로그인성공");
-                  });
-                  await _auth.currentUser!.delete();
-                  print("auth정보삭제");
-                  _auth.signOut();
-                  print("phone로그인된것 로그아웃");
+    return SizedBox(
+        width: double.infinity,
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(height: 10.0),
+              Text("휴대폰 번호"),
+              Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: <Widget>[
+                    Expanded(
+                      flex: 3,
+                      child: TextFormField(
+                        // style: TextStyle(fontSize: 15, height: 0.1),
+                        controller: phoneNumberController,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly, //숫자만!
+                          NumberFormatter(), // 자동하이픈
+                          LengthLimitingTextInputFormatter(13)
+                        ],
+                        decoration: inputDecoration.copyWith(
+                            hintText: "휴대폰 번호 입력(-제외)"),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return "잘못된 전화번호입니다. 다시 입력하세요";
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 10.0),
+                    Expanded(
+                        flex: 1,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: ColorAssset.color1,
+                              fixedSize: const Size(82, 55)),
+                          onPressed: () {
+                            setState(() {
+                              isTouched = true;
+                            });
+                            // verifyPhoneNumber("+821025446458");
+                          },
+                          child: isTouched ? Text('재전송') : Text('인증'),
+                        )),
+                  ]),
+              const SizedBox(height: 10.0),
+              Visibility(
+                  visible: isTouched,
+                  child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: <Widget>[
+                        Expanded(
+                          flex: 3,
+                          child: TextFormField(
+                            controller: validationNumberController,
+                            keyboardType: TextInputType.text,
+                            decoration: inputDecoration.copyWith(
+                              hintText: "인증번호를 입력하세요",
+                              // contentPadding:
+                              // const EdgeInsets.only(top: 1, bottom: 1, left: 6, right: 6),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "잘못된 인증번호입니다. 다시 입력하세요";
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 10.0),
+                        Expanded(
+                            flex: 1,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                  foregroundColor: Colors.white,
+                                  backgroundColor: ColorAssset.color1,
+                                  fixedSize: const Size(82, 55)),
+                              onPressed: () async {
+                                PhoneAuthCredential credential =
+                                    PhoneAuthProvider.credential(
+                                        verificationId: _verificationId,
+                                        smsCode:
+                                            validationNumberController.text);
+                                final authCredential = await _auth
+                                    .signInWithCredential(credential);
+                                try {
+                                  if (authCredential.user != null) {
+                                    setState(() {
+                                      print("인증완료 및 로그인성공");
+                                    });
+                                    await _auth.currentUser!.delete();
+                                    print("auth정보삭제");
+                                    _auth.signOut();
+                                    print("phone로그인된것 로그아웃");
 
-                  widget.successCallback(authCredential.user!.uid);
-                }
-              }
-              // signInWithPhoneAuthCredential(phoneAuthCredential);
-              catch (e) {
-                print('Error: $e');
-              }
-              ;
-            },
-            child: Text('인증확인'),
-          )
-        ]);
+                                    widget.successCallback(
+                                        authCredential.user!.uid);
+                                  }
+                                }
+                                // signInWithPhoneAuthCredential(phoneAuthCredential);
+                                catch (e) {
+                                  print('Error: $e');
+                                }
+                                ;
+                              },
+                              child: Text('인증확인'),
+                            ))
+                      ]))
+            ]));
   }
 
   // SMS 인증을 요청합니다.

@@ -22,25 +22,25 @@ class _ApiClient implements ApiClient {
   String? baseUrl;
 
   @override
-  Future<StoreListResponse> getStoreDetailInfo(owner_id) async {
+  Future<StoreResponse> getStoreDetailInfo(store_Id) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
     final _result = await _dio
-        .fetch<Map<String, dynamic>>(_setStreamType<StoreListResponse>(Options(
+        .fetch<Map<String, dynamic>>(_setStreamType<StoreResponse>(Options(
       method: 'GET',
       headers: _headers,
       extra: _extra,
     )
             .compose(
               _dio.options,
-              '/store/${owner_id}',
+              '/store/${store_Id}',
               queryParameters: queryParameters,
               data: _data,
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
-    final value = StoreListResponse.fromJson(_result.data!);
+    final value = StoreResponse.fromJson(_result.data!);
     return value;
   }
 

@@ -13,9 +13,9 @@ part 'ApiClient.g.dart';
 abstract class ApiClient {
   factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
 
-  @GET("/store/{owner_id}")
-  Future<StoreListResponse> getStoreDetailInfo(
-    @Path('owner_id') int owner_id,
+  @GET("/store/{store_Id}")
+  Future<StoreResponse> getStoreDetailInfo(
+    @Path('store_Id') int store_Id,
     // @Query("owner_id") int owner_id,
   );
 

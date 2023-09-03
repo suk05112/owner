@@ -26,22 +26,41 @@ class _FindUserIDPageState extends State<FindUserIDPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("아이디 찾ㅣ"),
+          title: Text("아이디 찾기"),
         ),
-        body: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text("아이디 찾기"),
-          TextFormField(
-            controller: inputIDController,
-            keyboardType: TextInputType.text,
-            decoration: inputDecoration.copyWith(hintText: "이름"),
-            validator: (value) {
-              return validatID(value);
-            },
-          ),
-          PhoneNumberVerificationWidget(
-            successCallback: showRegisterdId,
-          ), //전화번호
-        ]));
+        body: Container(
+            margin: EdgeInsets.fromLTRB(27, 0, 27, 21),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text("아이디 찾기"),
+              TextFormField(
+                controller: inputIDController,
+                keyboardType: TextInputType.text,
+                decoration: inputDecoration.copyWith(hintText: "이름"),
+                validator: (value) {
+                  return validatID(value);
+                },
+              ),
+              PhoneNumberVerificationWidget(
+                successCallback: showRegisterdId,
+              ),
+              Spacer(),
+              SizedBox(
+                width: double.infinity, // <-- match_parent
+                height: 50, // <-- match-parent
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 151, 125, 253),
+                    // minimumSize: const Size.fromHeight(50), // NEW
+                  ),
+                  onPressed: () async {},
+                  child: Text("확인"),
+                ),
+              ),
+              SizedBox(
+                height: 81,
+              ) //전화번호
+            ])));
   }
 
   String? validatID(String? value) {

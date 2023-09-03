@@ -38,14 +38,14 @@ class StoreProvider extends ChangeNotifier {
     return response.body.store;
   }
 
-  Future<List<Store>> getDetailStore() async {
+  Future<Store> getDetailStore() async {
     print("fetch 호출");
-    Api().client.getStoreList(2).then((response) => {
-          for (var res in response.body.store) {print(res.toString())}
-        });
-    var response = await Api().client.getStoreList(2);
-    notifyListeners();
+    Api().client.getStoreDetailInfo(2).then((response) =>
+        {print("provider store1"), print(response.store.toString())});
+    var response = await Api().client.getStoreDetailInfo(2);
+    print("provider store2 ${response.store}");
+    // notifyListeners();
 
-    return response.body.store;
+    return response.store;
   }
 }

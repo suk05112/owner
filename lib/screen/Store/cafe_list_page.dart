@@ -1,3 +1,4 @@
+
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,7 +15,7 @@ import 'package:owner/common/model/cafeInfo.dart';
 
 import '../../common/model/CafeBasicInfo.dart';
 import '../../common/provier/store_provider.dart';
-import '../Register/RegisterStore.dart';
+import '../Register/register_store_page.dart';
 import 'cafe_detail_page.dart';
 
 import 'package:provider/provider.dart';
@@ -168,11 +169,12 @@ class _CafeListState extends State<CafeList> {
   GestureDetector storeCard(Store? store) {
     return GestureDetector(
         onTap: () {
+          print("item 선택됨");
           Navigator.push(
               context,
               MaterialPageRoute(
                   builder: (context) => CafeDetailScreen(
-                        storeId: store?.store_name ?? "name is null",
+                        storeId: store?.store_id ?? -1,
                       )));
         },
         child: Container(

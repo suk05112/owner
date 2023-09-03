@@ -28,11 +28,24 @@ Map<String, dynamic> _$StoreListResponseToJson(StoreListResponse instance) =>
       'body': instance.body,
     };
 
+StoreResponse _$StoreResponseFromJson(Map<String, dynamic> json) =>
+    StoreResponse(
+      statusCode: json['statusCode'] as int,
+      store: Store.fromJson(json['store'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$StoreResponseToJson(StoreResponse instance) =>
+    <String, dynamic>{
+      'statusCode': instance.statusCode,
+      'store': instance.store,
+    };
+
 Store _$StoreFromJson(Map<String, dynamic> json) => Store(
       owner_id: json['owner_id'] as int,
       store_id: json['store_id'] as int,
       store_name: json['store_name'] as String,
       store_telephone: json['store_telephone'] as String,
+      store_address: json['store_address'] as String,
       store_description: json['store_description'] as String,
       store_photo: json['store_photo'] as String?,
       store_logo: json['store_logo'] as String,
@@ -48,6 +61,7 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'store_id': instance.store_id,
       'store_name': instance.store_name,
       'store_telephone': instance.store_telephone,
+      'store_address': instance.store_address,
       'store_description': instance.store_description,
       'store_photo': instance.store_photo,
       'store_logo': instance.store_logo,

@@ -30,87 +30,107 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-          LoginFormWidget(),
-          TextButton(
-            onPressed: () async {
-              Navigator.push(
-                  context, MaterialPageRoute(builder: (context) => Home()));
-              // try {
-              //   final newUser = await FirebaseAuth.instance
-              //       .signInWithEmailAndPassword(
-              //           email: "sujineasㅇmi1l@nav.com", password: "pw1234");
-              //   if (newUser.user != null) {
-              //     print("login success");
-              //     print("new user " + newUser.user!.uid);
-              //     // newUser.user.uid
-              //     Navigator.push(
-              //         context, MaterialPageRoute(builder: (context) => Home()));
-              //   }
-              // } on FirebaseAuthException catch (e) {
-              //   if (e.code == 'user-not-found') {
-              //     print('No user found for that email.');
-              //   } else if (e.code == 'wrong-password') {
-              //     print('Wrong password provided for that user.');
-              //   }
-              // }
-            },
-            child: Text("로그인"),
-          ),
-          Row(
-            children: [
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      // context, MaterialPageRoute(builder: (context) => MyApp()));
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => DocumentGuidePage()));
-                },
-                child: Text("회원가입"),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      // context, MaterialPageRoute(builder: (context) => MyApp()));
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => FindUserIDPage()));
-                },
-                child: Text("아이디 찾기"),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                      // context, MaterialPageRoute(builder: (context) => MyApp()));
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => FindPasswordPage()));
-                },
-                child: Text("비밀번호 찾기"),
-              ),
-            ],
-          ),
-          TextButton(
-            onPressed: () async {
-              print("main init state 호출");
-              StoreProvider().getStoreList();
-              // CafeInfo response = await Api().client.getStoreList(2);
-              // Api().client.getStoreList(2).then((it) => {logger.i(it));
+        body: Container(
+            margin: EdgeInsets.fromLTRB(27, 0, 27, 21),
+            child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    "로그인 하기",
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 18,
+                  ),
+                  LoginFormWidget(),
+                  SizedBox(
+                    height: 90,
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color.fromARGB(255, 151, 125, 253),
+                      minimumSize: const Size.fromHeight(50), // NEW
+                    ),
+                    onPressed: () async {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => Home()));
+                      // try {
+                      //   final newUser = await FirebaseAuth.instance
+                      //       .signInWithEmailAndPassword(
+                      //           email: "sujineasㅇmi1l@nav.com", password: "pw1234");
+                      //   if (newUser.user != null) {
+                      //     print("login success");
+                      //     print("new user " + newUser.user!.uid);
+                      //     // newUser.user.uid
+                      //     Navigator.push(
+                      //         context, MaterialPageRoute(builder: (context) => Home()));
+                      //   }
+                      // } on FirebaseAuthException catch (e) {
+                      //   if (e.code == 'user-not-found') {
+                      //     print('No user found for that email.');
+                      //   } else if (e.code == 'wrong-password') {
+                      //     print('Wrong password provided for that user.');
+                      //   }
+                      // }
+                    },
+                    child: Text("로그인"),
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              // context, MaterialPageRoute(builder: (context) => MyApp()));
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => DocumentGuidePage()));
+                        },
+                        child: Text("회원가입"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              // context, MaterialPageRoute(builder: (context) => MyApp()));
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => FindUserIDPage()));
+                        },
+                        child: Text("아이디 찾기"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                              // context, MaterialPageRoute(builder: (context) => MyApp()));
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => FindPasswordPage()));
+                        },
+                        child: Text("비밀번호 찾기"),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      print("main init state 호출");
+                      StoreProvider().getStoreList();
+                      // CafeInfo response = await Api().client.getStoreList(2);
+                      // Api().client.getStoreList(2).then((it) => {logger.i(it));
 
-              // await FirebaseAuth.instance.signOut();
-              // if (FirebaseAuth.instance.currentUser?.uid == null) {
-              //   print("로그 아웃 후 Null");
-              // } else {
-              //   print("로그아웃 안됨");
-              // }
-            },
-            child: Text("로그아웃"),
-          ),
-        ]));
+                      // await FirebaseAuth.instance.signOut();
+                      // if (FirebaseAuth.instance.currentUser?.uid == null) {
+                      //   print("로그 아웃 후 Null");
+                      // } else {
+                      //   print("로그아웃 안됨");
+                      // }
+                    },
+                    child: Text("로그아웃"),
+                  ),
+                ])));
   }
 }
 
@@ -130,39 +150,36 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   Widget build(BuildContext context) {
     return Form(
         key: _formKey,
-        child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const SizedBox(height: 8.0),
-                  TextFormField(
-                    controller: idController,
-                    keyboardType: TextInputType.text,
-                    decoration:
-                        inputDecoration.copyWith(hintText: "Enter your ID"),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter id';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 8.0),
-                  TextFormField(
-                    controller: pwController,
-                    keyboardType: TextInputType.text,
-                    decoration: inputDecoration.copyWith(
-                        hintText: "Enter your password"),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter Name';
-                      }
-                      return null;
-                    },
-                  ),
-                ])));
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 8.0),
+              TextFormField(
+                controller: idController,
+                keyboardType: TextInputType.text,
+                decoration: inputDecoration.copyWith(hintText: "Enter your ID"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter id';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 8.0),
+              TextFormField(
+                controller: pwController,
+                keyboardType: TextInputType.text,
+                decoration:
+                    inputDecoration.copyWith(hintText: "Enter your password"),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter Name';
+                  }
+                  return null;
+                },
+              ),
+            ]));
   }
 
   final inputDecoration = InputDecoration(

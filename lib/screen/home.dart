@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/model/cafeInfo.dart';
-import 'package:owner/screen/Store/cafelist_page.dart';
+import 'package:owner/screen/Store/cafe_list_page.dart';
 
 import 'QRScanPage.dart';
 import 'Store/cafe_detail_page.dart';
@@ -20,13 +20,13 @@ class _HomeState extends State<Home> {
   final List<Widget> screens = [
     CafeList(),
     CafeDetailScreen(
-      storeId: '0000001',
+      storeId: 1,
     )
   ];
 
   final PageStorageBucket bucket = PageStorageBucket();
   Widget currentScreen = CafeDetailScreen(
-    storeId: '0000001',
+    storeId: 1,
   );
 
   @override

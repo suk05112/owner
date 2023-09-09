@@ -41,7 +41,7 @@ dependencies:
   js: ^0.6.7
   ffi: ^2.0.1
   firebase_auth: ^4.2.9
-  image_picker: ^0.8.6+4
+  image_picker: ^0.8.7
   firebase_storage: ^11.1.0
   # flutter_reorderable_grid_view: ^2.0.0
   reorderable_grid_view: ^2.2.4
@@ -54,6 +54,10 @@ dependencies:
   retrofit: ^3.3.1
   provider: ^6.0.5
   camera: ^0.9.4+1
+  amplify_flutter: <1.0.0
+  amplify_core: <1.0.0
+  amplify_analytics_pinpoint: <1.0.0
+  amplify_auth_cognito: <1.0.0
 
   # remedi_kopo: ^0.0.2 
   # qr_code_scanner: ^0.6.1

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:owner/common/api/response/store/store.dart';
+// import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/register.dart';
 import 'package:owner/screen/Register/register_store_page.dart';

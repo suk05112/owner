@@ -42,5 +42,11 @@ class TextAssset {
       // fontStyle: FontStyle.normal,
       // fontWeight: FontWeight.w400,
       fontFamily: 'Inter');
+  static const placeholder2 = TextStyle(
+      fontSize: 13,
+      color: Color(0xff6A6A6A),
+      // fontStyle: FontStyle.normal,
+      // fontWeight: FontWeight.w400,
+      fontFamily: 'Inter');
   // ...
 }

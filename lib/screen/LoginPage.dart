@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/StatusManager.dart';
 
 import '../common/model/cafeInfo.dart';
@@ -41,6 +42,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontSize: 30,
                       fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  Container(
+                    width: 100,
+                    height: 100,
+                    child: Image.network(
+                      'https://cafe-platform-bucket.s3.amazonaws.com/dog.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAZXR665FZ6NASG4GZ%2F20230904%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Date=20230904T150858Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=664b89c45e23a0cdac3505dd102e17812731065d68193ce0f476e8bddc886de9',
                     ),
                   ),
                   SizedBox(
@@ -117,7 +125,32 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextButton(
                     onPressed: () async {
                       print("main init state 호출");
-                      StoreProvider().getStoreList();
+                      var picker = ImagePicker();
+                      var image =
+                          await picker.pickImage(source: ImageSource.gallery);
+                      try {
+                        http.Response response = await http.put(
+                          Uri.parse(
+                              "https://cafe-platform-bucket.s3.amazonaws.com/logo/store_logo_30.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAZXR665FZ6NASG4GZ%2F20230906%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Date=20230906T163856Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=e58aa6dd5f0df0cca763df1e398ea0871af40bda87cebdc065f0636e98df098f"),
+                          body: await image?.readAsBytes(),
+                          headers: {
+                            'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
+                          },
+                        );
+
+                        if (response.statusCode == 200) {
+                          // 이미지 업로드 성공
+                          print('Image uploaded successfully.');
+                        } else {
+                          // 이미지 업로드 실패
+                          print(
+                              'Image upload failed. Status code: ${response.statusCode}');
+                        }
+                      } catch (e) {
+                        print('Error: $e');
+                      }
+
+                      // StoreProvider().getStoreList();
                       // CafeInfo response = await Api().client.getStoreList(2);
                       // Api().client.getStoreList(2).then((it) => {logger.i(it));
 

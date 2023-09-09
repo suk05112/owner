@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:owner/common/api/API.dart';
-import 'package:owner/common/api/response/store/store.dart';
+
+import '../api/request/store/store.dart';
+// import 'package:owner/common/api/response/store/store.dart';
 
 class StoreProvider extends ChangeNotifier {
   late Store? _store;

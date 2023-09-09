@@ -1,11 +1,10 @@
-
 import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:owner/common/widget/CommonWidget.dart';
 import 'package:owner/common/api/API.dart';
-import 'package:owner/common/api/response/store/store.dart';
+// import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/register.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,6 +12,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'package:owner/common/model/cafeInfo.dart';
 
+import '../../common/api/request/store/store.dart';
 import '../../common/model/CafeBasicInfo.dart';
 import '../../common/provier/store_provider.dart';
 import '../Register/register_store_page.dart';
@@ -174,7 +174,9 @@ class _CafeListState extends State<CafeList> {
               context,
               MaterialPageRoute(
                   builder: (context) => CafeDetailScreen(
-                        storeId: store?.store_id ?? -1,
+                        storeId: 2,
+
+                        // storeId: store?.store_id ?? -1,
                       )));
         },
         child: Container(

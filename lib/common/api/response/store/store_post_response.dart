@@ -8,10 +8,13 @@ part 'store_post_response.g.dart';
 class StorePostResponse {
   int statusCode;
   int storeId;
+  String store_logo_url;
   PresignedUrl? presignedUrl;
 
-
-  StorePostResponse({required this.statusCode, required this.storeId});
+  StorePostResponse(
+      {required this.statusCode,
+      required this.storeId,
+      required this.store_logo_url});
 
   factory StorePostResponse.fromJson(Map<String, dynamic> json) =>
       _$StorePostResponseFromJson(json);

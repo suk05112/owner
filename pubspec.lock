@@ -17,6 +17,94 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
+  amplify_analytics_pinpoint:
+    dependency: "direct main"
+    description:
+      name: amplify_analytics_pinpoint
+      sha256: d719c6b1f30593c5448c251524d9d8c317c416dcab9b6222a0d9d1af49828f59
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_analytics_pinpoint_android:
+    dependency: transitive
+    description:
+      name: amplify_analytics_pinpoint_android
+      sha256: "1c16009a132a44485f608c31746a4262582a9cb9f895bd9952f01f21a1048bf4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_analytics_pinpoint_ios:
+    dependency: transitive
+    description:
+      name: amplify_analytics_pinpoint_ios
+      sha256: baeac9ec0de60247360739ac25ce03288bce9597a975d37b555c6ac2a01596a5
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_auth_cognito:
+    dependency: "direct main"
+    description:
+      name: amplify_auth_cognito
+      sha256: cfb12e234bb1d03ef74122877a9576b0cf03e116bdb8563cd243da84f8e4f9a2
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_auth_cognito_android:
+    dependency: transitive
+    description:
+      name: amplify_auth_cognito_android
+      sha256: ad96393262135523077a4f191bd7ddd4481b8f2dc83995316603d20ae6412688
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_auth_cognito_ios:
+    dependency: transitive
+    description:
+      name: amplify_auth_cognito_ios
+      sha256: "111af443c02eae54da75d4a3ac96813a470677d834d6c9c132bf101daf7a6afa"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_core:
+    dependency: "direct main"
+    description:
+      name: amplify_core
+      sha256: "9fbd1d925423a5c57d849cef20a6d45aff5528f74c0377ba2ea11a3e68df9d8f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_datastore_plugin_interface:
+    dependency: transitive
+    description:
+      name: amplify_datastore_plugin_interface
+      sha256: c0e2c8468c500594074f8e06468246421feaa01abd9bda0c59d2add1f6bf99bc
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_flutter:
+    dependency: "direct main"
+    description:
+      name: amplify_flutter
+      sha256: "6b757b8eed353525b737ffc0d5b63d22708184adabf23b887d84cf1c14a7986f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_flutter_android:
+    dependency: transitive
+    description:
+      name: amplify_flutter_android
+      sha256: a7e4d496aa515f43e0652668ff0995fd0033b257c9e029a232891f5e65ef3289
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
+  amplify_flutter_ios:
+    dependency: transitive
+    description:
+      name: amplify_flutter_ios
+      sha256: f1736e49dd958043932dd2991a1c9f09c3ac9a5e87e09a5c6c43d349518d0d26
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.14"
   analyzer:
     dependency: transitive
     description:
@@ -41,6 +129,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.10.0"
+  aws_common:
+    dependency: transitive
+    description:
+      name: aws_common
+      sha256: b5f48304feacc833241d0d812ab68e5fec80d5440c991d5ca27eaaf23d5c8da5
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -289,6 +385,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.4"
+  file_selector_linux:
+    dependency: transitive
+    description:
+      name: file_selector_linux
+      sha256: "045d372bf19b02aeb69cacf8b4009555fb5f6f0b7ad8016e5f46dd1387ddd492"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.2+1"
+  file_selector_macos:
+    dependency: transitive
+    description:
+      name: file_selector_macos
+      sha256: "182c3f8350cee659f7b115e956047ee3dc672a96665883a545e81581b9a82c72"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.3+2"
+  file_selector_platform_interface:
+    dependency: transitive
+    description:
+      name: file_selector_platform_interface
+      sha256: "0aa47a725c346825a2bd396343ce63ac00bda6eff2fbc43eabe99737dede8262"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.6.1"
+  file_selector_windows:
+    dependency: transitive
+    description:
+      name: file_selector_windows
+      sha256: d3547240c20cabf205c7c7f01a50ecdbc413755814d6677f3cb366f04abcead0
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.9.3+1"
   firebase_auth:
     dependency: "direct main"
     description:
@@ -500,10 +628,10 @@ packages:
     dependency: "direct main"
     description:
       name: image_picker
-      sha256: "715d68a53d6bcc2eae26005097dc74c375a04c0d7c0e657da84deebbbbbf51ed"
+      sha256: b6951e25b795d053a6ba03af5f710069c99349de9341af95155d52665cb4607c
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.6+4"
+    version: "0.8.9"
   image_picker_android:
     dependency: transitive
     description:
@@ -528,14 +656,38 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.8.7"
+  image_picker_linux:
+    dependency: transitive
+    description:
+      name: image_picker_linux
+      sha256: "4ed1d9bb36f7cd60aa6e6cd479779cc56a4cb4e4de8f49d487b1aaad831300fa"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1+1"
+  image_picker_macos:
+    dependency: transitive
+    description:
+      name: image_picker_macos
+      sha256: "3f5ad1e8112a9a6111c46d0b57a7be2286a9a07fc6e1976fdf5be2bd31d4ff62"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1+1"
   image_picker_platform_interface:
     dependency: transitive
     description:
       name: image_picker_platform_interface
-      sha256: "1991219d9dbc42a99aff77e663af8ca51ced592cd6685c9485e3458302d3d4f8"
+      sha256: ed9b00e63977c93b0d2d2b343685bed9c324534ba5abafbb3dfbd6a780b1b514
       url: "https://pub.dev"
     source: hosted
-    version: "2.6.3"
+    version: "2.9.1"
+  image_picker_windows:
+    dependency: transitive
+    description:
+      name: image_picker_windows
+      sha256: "6ad07afc4eb1bc25f3a01084d28520496c4a3bb0cb13685435838167c9dcedeb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1+1"
   intl:
     dependency: transitive
     description:
@@ -989,6 +1141,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.1"
+  uuid:
+    dependency: transitive
+    description:
+      name: uuid
+      sha256: "2469694ad079893e3b434a627970c33f2fa5adc46dfe03c9617546969a9a8afc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.6"
   vector_math:
     dependency: transitive
     description:
@@ -1039,4 +1199,4 @@ packages:
     version: "3.1.1"
 sdks:
   dart: ">=3.0.0-134.0.dev <4.0.0"
-  flutter: ">=3.3.0"
+  flutter: ">=3.7.0"

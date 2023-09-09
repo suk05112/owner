@@ -1,8 +1,52 @@
-import 'dart:convert';
+import 'dart:ffi';
 
 import 'package:json_annotation/json_annotation.dart';
 
 part 'store.g.dart';
+
+@JsonSerializable()
+class Store {
+  int owner_id;
+  String store_name;
+  String store_logo;
+  String store_telephone;
+  String store_description;
+  String store_photo;
+  int store_photo_cnt;
+  String store_address;
+  double store_lat, store_lng;
+  String business_registration;
+
+  Store({
+    this.owner_id = 0,
+    this.store_name = "",
+    this.store_logo = "",
+    this.store_telephone = "",
+    this.store_description = "",
+    this.store_photo = "",
+    this.store_photo_cnt = 0,
+    this.store_address = "",
+    this.store_lat = 0,
+    this.store_lng = 0,
+    this.business_registration = "",
+  });
+  // Store({
+  //   required this.owner_id,
+  //   required this.store_name,
+  //   required this.store_logo,
+  //   required this.store_telephone,
+  //   required this.store_description,
+  //   required this.store_photo,
+  //   required this.store_photo_cnt,
+  //   required this.store_address,
+  //   required this.store_lat,
+  //   required this.store_lng,
+  //   required this.business_registration,
+  // });
+
+  factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
+  Map<String, dynamic> toJson() => _$StoreToJson(this);
+}
 
 @JsonSerializable()
 class Body2 {
@@ -38,6 +82,7 @@ class StoreResponse {
   Map<String, dynamic> toJson() => _$StoreResponseToJson(this);
 }
 
+/*
 @JsonSerializable()
 class Store {
   int owner_id;
@@ -120,6 +165,7 @@ class Store {
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
   Map<String, dynamic> toJson() => _$StoreToJson(this);
 }
+*/
 
 @JsonSerializable()
 class StoreCard {

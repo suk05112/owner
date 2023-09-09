@@ -6,13 +6,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:owner/common/api/API.dart';
-import 'package:owner/common/api/response/store/store.dart';
+// import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/provier/store_provider.dart';
 import 'package:owner/main.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
 
 // import '../../common/DatabaseService.dart';
 import '../../common/Style/TextAsset.dart';
+import '../../common/api/request/store/store.dart';
 import '../../common/model/cafeInfo.dart';
 import '../../common/model/OperatingHours.dart';
 import '../Register/operating_hours_setting_Page.dart';

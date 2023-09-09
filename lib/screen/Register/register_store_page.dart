@@ -7,10 +7,11 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/APIDioClient.dart';
-import 'package:owner/common/api/request/store/register_store_post.dart';
-import 'package:owner/common/api/response/store/store.dart';
+import 'package:owner/common/api/request/store/store.dart';
+// import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/register.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -46,34 +47,51 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   // DatabaseService service = DatabaseService();
 
   TextEditingController nameController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
+  TextEditingController addrController = TextEditingController();
+  TextEditingController detailAddrController = TextEditingController();
   TextEditingController telePhoneController = TextEditingController();
   TextEditingController introController = TextEditingController();
 
   late bool _isRegister;
   late Store? _store;
   final _formKey = GlobalKey<FormState>();
-  var storePhoto = [];
-
+  // var storePhoto = [];
+  File? _logoImage;
+  List<File> _storeImage = [];
   File? _imageFile;
 
   @override
   void initState() {
     _isRegister = widget.isRegister;
-    _store = widget.store;
+    if (widget.store != null) {
+      _store = widget.store;
+    } else {
+      _store = Store(owner_id: 1);
+    }
 
     //매장 정보 수정 화면일 경우
     if (_isRegister == false) {
       telePhoneController.text =
           _store?.store_telephone == null ? "" : "${_store?.store_telephone}";
-      addressController.text =
+      addrController.text =
           _store?.store_address == null ? "" : "${_store?.store_address}";
       introController.text = _store?.store_description == null
           ? ""
           : "${_store?.store_description}";
     }
     if (_isRegister == false) {
-      getImge();
+      // getImge();
+    }
+  }
+
+  Future<void> _getLogoImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      setState(() {
+        _logoImage = File(pickedImage.path);
+      });
     }
   }
 
@@ -94,6 +112,26 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                //매장 이름
+                Text(
+                  "매장 이름",
+                  style: TextAssset.header2,
+                ),
+                SizedBox(height: 5),
+
+                TextFormField(
+                  controller: nameController,
+                  keyboardType: TextInputType.text,
+                  decoration: inputDecoration.copyWith(hintText: "매장 이름 입력"),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter Name';
+                    }
+                    return null;
+                  },
+                ),
+                SizedBox(height: 5),
+
                 //가게 전호번호
                 Text(
                   "매장 전화번호",
@@ -107,7 +145,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                   decoration: inputDecoration.copyWith(hintText: "매장 전화번호 입력"),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter Name';
+                      return 'Please enter telephone';
                     }
                     return null;
                   },
@@ -148,10 +186,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Flexible(
-                                      flex: 2,
+                                      flex: 3,
                                       child: TextFormField(
-                                        style: TextAssset.placeholder,
-                                        controller: addressController,
+                                        style: TextAssset.placeholder2,
+                                        enabled: false,
+                                        controller: addrController,
                                         keyboardType: TextInputType.text,
                                         decoration: inputDecoration.copyWith(
                                             hintText:
@@ -177,24 +216,16 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                                         ),
                                         onPressed: () async {
                                           _addressAPI();
-                                          // Kpostal model = await Navigator.push(
-                                          //   context,
-                                          //   CupertinoPageRoute(
-                                          //     builder: (context) => KpostalView(
-                                          //       kakaoKey:
-                                          //           '8ba72a270b2ab65050c15f1aa2cce9a9',
-                                          //       useLocalServer: false,
-                                          //     ),
-                                          //   ),
-                                          // );
-                                          // addressController.text = model.address;
                                         },
                                         child: Text('주소 검색'),
                                       ))
                                 ]),
+                            SizedBox(
+                              height: 5,
+                            ),
                             //상세주소
                             TextFormField(
-                              controller: telePhoneController,
+                              controller: detailAddrController,
                               keyboardType: TextInputType.text,
                               decoration:
                                   inputDecoration.copyWith(hintText: "상세주소 입력"),
@@ -220,22 +251,47 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                               "로고 사진",
                               style: TextAssset.header2,
                             ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor:
-                                    Color.fromARGB(255, 151, 125, 253),
-                                minimumSize: const Size.fromHeight(50), // NEW
-                              ),
-                              onPressed: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            MyHomePage(title: 'test')));
-                                // _navigateUploadPhoto(context);
-                              },
-                              child: Text('업로드'),
-                            ),
+                            Row(
+                              children: [
+                                GestureDetector(
+                                    onTap: () async {
+                                      // _getLogoImage();
+                                      final picker = ImagePicker();
+                                      final pickedImage =
+                                          await picker.pickImage(
+                                              source: ImageSource.gallery);
+
+                                      if (pickedImage != null) {
+                                        setState(() {
+                                          _logoImage = File(pickedImage.path);
+                                        });
+                                      }
+                                    },
+                                    child: ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(5.0),
+                                        child: Image(
+                                          image:
+                                              AssetImage('assets/camera.jpeg'),
+                                          width: 100,
+                                          height: 100,
+                                        ))),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                _logoImage != null
+                                    ? ClipRRect(
+                                        borderRadius:
+                                            BorderRadius.circular(5.0),
+                                        child: Image.file(
+                                          File(_logoImage!.path),
+                                          fit: BoxFit.cover,
+                                          width: 100,
+                                          height: 100,
+                                        ))
+                                    : Text(''),
+                              ],
+                            )
                           ])
                     : SizedBox(height: 0),
 
@@ -244,7 +300,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                   "가게 대표 사진",
                   style: TextAssset.header2,
                 ),
-                ItemGridview(),
+                StoreImagesGridview(),
 
                 SizedBox(height: 15),
 
@@ -317,22 +373,55 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   void registerStore() async {
     print("register store 호출");
 
-    RegisterStorePost store = RegisterStorePost(
-        owner_id: 1,
-        store_logo: "new logo",
-        store_name: nameController.text,
-        store_telephone: telePhoneController.text,
-        store_photo_cnt: 5,
-        store_address: "Adr",
-        store_lat: 1,
-        store_lng: 1,
-        business_registration: "busi",
-        store_description: introController.text);
+    // Store store = Store(
+    //     owner_id: 1,
+    //     store_logo: "new logo",
+    //     store_name: nameController.text,
+    //     store_telephone: telePhoneController.text,
+    //     store_photo_cnt: 5,
+    //     store_photo: "photo",
+    //     store_address: "Adr",
+    //     store_lat: 1,
+    //     store_lng: 1,
+    //     business_registration: "busi",
+    //     store_description: introController.text);
 
-    await Api().client.registerStore(store).then((response) {
+    _store!.store_name = nameController.text;
+    _store!.store_telephone = telePhoneController.text;
+    _store!.store_photo_cnt = 5;
+    _store!.store_address = addrController.text + detailAddrController.text;
+    // _store!.store_photo = "photo";
+    _store!.business_registration = "busi";
+    _store!.store_description = introController.text;
+
+    await Api().client.registerStore(_store!).then((response) async {
       var storeId = response.storeId;
+      var s3_url = response.store_logo_url;
+
+      print(storeId);
+      print(s3_url);
+      try {
+        http.Response response = await http.put(
+          Uri.parse(s3_url),
+          body: await _logoImage?.readAsBytes(),
+          headers: {
+            // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
+          },
+        );
+
+        if (response.statusCode == 200) {
+          // 이미지 업로드 성공
+          print('Image uploaded successfully.');
+        } else {
+          // 이미지 업로드 실패
+          print('Image upload failed. Status code: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error: $e');
+      }
       print("등록성공" + storeId.toString());
-      ApiServiceImpl().uploadImage();
+
+      // ApiServiceImpl().uploadImage();
     }).onError((error, stackTrace) {
       DioError dioError = error as DioError;
       print("등록 실패" + dioError.message);
@@ -360,11 +449,12 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     for (var list in listResult.items) {
       list.getDownloadURL().then((String result) async {
         print(result);
-        await _saveImage(result, list.name);
+        // await _saveImage(result, list.name);
       });
     }
   }
 
+/*
   Future<void> _saveImage(url, name) async {
     String? message;
     final scaffoldMessenger = ScaffoldMessenger.of(context);
@@ -403,6 +493,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     }
   }
 
+  */
+
   _addressAPI() async {
     Kpostal model = await Navigator.push(
         context,
@@ -414,6 +506,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 setState(() {
                   print("주소callback");
                   print(result.postCode);
+                  addrController.text =
+                      result.address ?? "주소 없음" + result.buildingName ?? "";
+                  _store!.store_lat = result.latitude as double;
+                  _store!.store_lng = result.longitude as double;
+
                   // this.address = result.address;
                   // this.latitude = result.latitude.toString();
                   // this.longitude = result.longitude.toString();
@@ -437,6 +534,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     print('${model.addressEng!} ${model.address!} ${model.buildingName!}');
   }
 
+/*
   Future<void> uploadImg(index, value) async {
     print("이미지 저장");
     final storageRef = FirebaseStorage.instance.ref();
@@ -459,19 +557,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     String downloadURL = await storageRef.getDownloadURL();
   }
 
-  // SelectionScreen을 띄우고 navigator.pop으로부터 결과를 기다리는 메서드
-  _navigateUploadPhoto(BuildContext context) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => PhotoUploadePage(savedImage: storePhoto)),
-    );
-
-    setState(() {
-      storePhoto = result;
-    });
-    storePhoto = result;
-  }
+*/
 
   final inputDecoration = InputDecoration(
     hintStyle: TextAssset.placeholder,
@@ -501,8 +587,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
               borderRadius: BorderRadius.zero,
               side: BorderSide(color: Color.fromARGB(255, 255, 255, 255)))));
 
-  Widget ItemGridview() {
-    List<Widget> itemWidgets = storePhoto.map((item) {
+  Widget StoreImagesGridview() {
+    List<Widget> itemWidgets = _storeImage.map((item) {
       return Container(
         width: 100,
         height: 100,
@@ -525,14 +611,18 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
             width: 100,
             margin: EdgeInsets.fromLTRB(0, 0, 2, 0),
             child: GestureDetector(
-              onTap: () {
+              onTap: () async {
                 print("Image clicked");
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => PhotoUploadePage(
-                              savedImage: storePhoto,
-                            )));
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          PhotoUploadePage(savedImage: _storeImage)),
+                );
+
+                setState(() {
+                  _storeImage = result;
+                });
               },
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(5.0),

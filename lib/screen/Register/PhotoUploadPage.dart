@@ -9,6 +9,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:owner/main.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
+
 // import 'package:flutter_reorderable_grid_view/entities/order_update_entity.dart';
 // import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
 // import 'package:flutter_reorderable_grid_view/widgets/reorderable_scrolling_listener.dart';
@@ -28,6 +29,8 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
   final _formKey = GlobalKey<FormState>();
   // var userImage = <File>[];
   final picker = ImagePicker();
+
+  List<File> selectedImages = []; // List of selected image
   late var userImage = [];
   final data = [1, 2, 3, 4, 5];
 
@@ -38,28 +41,37 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
   }
 
   Future<void> _initRetrieval() async {
-    userImage = widget.savedImage;
-    File f = await getImageFileFromAssets('camera.jpeg');
-    userImage.add(f);
-    f = await getImageFileFromAssets('logo.jpeg');
-    userImage.add(f);
-
+    selectedImages = widget.savedImage;
     print("init state 실행");
-    print(userImage);
+    print(selectedImages);
   }
 
   Future getImage() async {
-    // final pickedFile = await picker.getImage(source: ImageSource.gallery);
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    final pickedFile = await picker.pickMultiImage(
+        //   imageQuality: 100, // To set quality of images
+        // maxHeight: 1000, // To set maxheight of images that you want in your app
+        // maxWidth: 1000
+        ); // To set maxheight of images that you want in your app
+    List<XFile> xfilePick = pickedFile;
 
-    print("get img 실행");
-    setState(() {
-      if (pickedFile != null) {
-        userImage.add(pickedFile);
+    print("image 선택됨");
+    print(xfilePick.length);
+    // if atleast 1 images is selected it will add
+    // all images in selectedImages
+    // variable so that we can easily show them in UI
+    if (xfilePick.isNotEmpty) {
+      for (var i = 0; i < xfilePick.length; i++) {
+        selectedImages.add(File(xfilePick[i].path));
       }
-      print("img list");
-      print(userImage);
-    });
+      setState(
+        () {},
+      );
+    } else {
+      // If no image is selected it will show a
+      // snackbar saying nothing is selected
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Nothing is selected')));
+    }
   }
 
   Future<File> getImageFileFromAssets(String path) async {
@@ -105,23 +117,9 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
             ),
             onPressed: () async {
               print("pop될 이미지");
-              print(userImage);
+              print(selectedImages);
               final storageRef = FirebaseStorage.instance.ref();
-              // for (var pickedImg in userImage) {
-              //   print("이미지 저장");
-              //   print(pickedImg.path);
-              // try {
-              //   // Upload raw data.
-              //   final mountainsRef =
-              //       storageRef.child("business_certification/test1.jpeg");
-
-              //   await mountainsRef.putFile(File(pickedImg.path));
-              // } on FirebaseException catch (e) {
-              //   print("사진 업로드 실패" + e.code);
-              //   // ...
-              // }
-              // }
-              Navigator.pop(context, userImage);
+              Navigator.pop(context, selectedImages);
             },
             child: Text('확인'),
           ),
@@ -145,14 +143,14 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                 )
               ],
 
-              children: userImage.map((e) => selectedImg(e)).toList(),
+              children: selectedImages.map((e) => selectedImg(e)).toList(),
               // children: this.data.map((e) => buildItem("$e")).toList(),
               onReorder: (oldIndex, newIndex) {
                 setState(() {
                   // final element = data.removeAt(oldIndex);
                   // data.insert(newIndex, element);
-                  final element = userImage.removeAt(oldIndex);
-                  userImage.insert(newIndex, element);
+                  final element = selectedImages.removeAt(oldIndex);
+                  selectedImages.insert(newIndex, element);
                 });
               },
             ),
@@ -167,8 +165,8 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
       if (newIndex > oldIndex) {
         newIndex -= 1;
       }
-      final item = userImage.removeAt(oldIndex);
-      userImage.insert(newIndex, item);
+      final item = selectedImages.removeAt(oldIndex);
+      selectedImages.insert(newIndex, item);
     });
   }
 

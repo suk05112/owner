@@ -7,14 +7,16 @@ part 'store_post_response.g.dart';
 @JsonSerializable()
 class StorePostResponse {
   int statusCode;
-  int storeId;
+  int store_id;
   String store_logo_url;
+  List<String> store_photo_urls;
   PresignedUrl? presignedUrl;
 
   StorePostResponse(
       {required this.statusCode,
-      required this.storeId,
-      required this.store_logo_url});
+      required this.store_id,
+      required this.store_logo_url,
+      required this.store_photo_urls});
 
   factory StorePostResponse.fromJson(Map<String, dynamic> json) =>
       _$StorePostResponseFromJson(json);

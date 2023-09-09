@@ -188,17 +188,16 @@ class _CafeListState extends State<CafeList> {
           ),
           child: Row(children: [
             Expanded(
-                child: Image.network(
-                    store?.store_logo ??
-                        'https://cafe-platform-bucket.s3.ap-northeast-2.amazonaws.com/logo/store_logo_3.png',
-                    width: 1500,
-                    height: 100)
-                // Image(
-                //   image: AssetImage('assets/logo.jpeg'),
-                //   width: 1500,
-                //   height: 100,
-                // ),
-                ),
+                child: Image.network(store!.store_logo,
+                    width: 90, height: 90, fit: BoxFit.fill,
+                    errorBuilder: (context, error, stackTrace) {
+              return Image(
+                  image: AssetImage('assets/logo.jpeg'),
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.fill);
+            })),
+            Spacer(),
             Text("${store?.store_name}"),
           ]),
           width: 400,

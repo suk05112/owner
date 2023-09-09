@@ -22,7 +22,7 @@ class StoreProvider extends ChangeNotifier {
   Future<void> fetchStoreList() async {
     try {
       print("fetch 호출");
-      var response = await Api().client.getStoreList(2);
+      var response = await Api().client.getStoreList(1);
       setStoreCard(response.body.store);
     } catch (error) {
       print("fetch 오류: $error");
@@ -42,10 +42,10 @@ class StoreProvider extends ChangeNotifier {
 
   Future<Store> getDetailStore() async {
     print("fetch 호출");
-    Api().client.getStoreDetailInfo(2).then((response) =>
-        {print("provider store1"), print(response.store.toString())});
-    var response = await Api().client.getStoreDetailInfo(2);
-    print("provider store2 ${response.store}");
+    // Api().client.getStoreDetailInfo(1).then((response) =>
+    //     {print("provider store1"), print(response.store.toString())});
+    var response = await Api().client.getStoreDetailInfo(54);
+    print("provider store2 ${response.store.store_photo_urls}");
     // notifyListeners();
 
     return response.store;

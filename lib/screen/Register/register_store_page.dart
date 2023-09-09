@@ -15,12 +15,12 @@ import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/register.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:owner/screen/Register/photo_upload_page.dart';
 import 'package:path_provider/path_provider.dart';
 
 // import '../../common/DatabaseService.dart';
 import '../../common/Style/TextAsset.dart';
 import 'operating_hours_setting_Page.dart';
-import 'PhotoUploadPage.dart';
 import 'SettingOpeningDatePage.dart';
 import '../Store/cafe_detail_page.dart';
 
@@ -255,17 +255,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                               children: [
                                 GestureDetector(
                                     onTap: () async {
-                                      // _getLogoImage();
-                                      final picker = ImagePicker();
-                                      final pickedImage =
-                                          await picker.pickImage(
-                                              source: ImageSource.gallery);
-
-                                      if (pickedImage != null) {
-                                        setState(() {
-                                          _logoImage = File(pickedImage.path);
-                                        });
-                                      }
+                                      _getLogoImage();
                                     },
                                     child: ClipRRect(
                                         borderRadius:
@@ -302,25 +292,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 ),
                 StoreImagesGridview(),
 
-                SizedBox(height: 15),
-
-                Text(
-                  "운영시간",
-                  style: TextAssset.header2,
-                ),
-                TextButton(
-                  child: Text(
-                    "Visit GeeksforGeeks",
-                    style: TextStyle(fontSize: 25),
-                  ),
-                  onPressed: () async {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const OperatingHoursSettingPage()));
-                  },
-                ),
                 SizedBox(height: 15),
 
                 _isRegister
@@ -388,37 +359,24 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
     _store!.store_name = nameController.text;
     _store!.store_telephone = telePhoneController.text;
-    _store!.store_photo_cnt = 5;
+    _store!.store_photo_cnt = _storeImage.length;
     _store!.store_address = addrController.text + detailAddrController.text;
     // _store!.store_photo = "photo";
     _store!.business_registration = "busi";
     _store!.store_description = introController.text;
 
     await Api().client.registerStore(_store!).then((response) async {
-      var storeId = response.storeId;
-      var s3_url = response.store_logo_url;
+      var storeId = response.store_id;
+      var store_logo_url = response.store_logo_url;
+      final store_photo_urls = response.store_photo_urls;
 
       print(storeId);
-      print(s3_url);
-      try {
-        http.Response response = await http.put(
-          Uri.parse(s3_url),
-          body: await _logoImage?.readAsBytes(),
-          headers: {
-            // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
-          },
-        );
+      print(store_logo_url);
+      print(response.store_photo_urls[0]);
 
-        if (response.statusCode == 200) {
-          // 이미지 업로드 성공
-          print('Image uploaded successfully.');
-        } else {
-          // 이미지 업로드 실패
-          print('Image upload failed. Status code: ${response.statusCode}');
-        }
-      } catch (e) {
-        print('Error: $e');
-      }
+      uploadLogoImage(store_logo_url);
+      uploadStoreImages(store_photo_urls);
+
       print("등록성공" + storeId.toString());
 
       // ApiServiceImpl().uploadImage();
@@ -434,6 +392,54 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     });
   }
 
+  //매장 로고 업로드
+  Future<void> uploadLogoImage(store_logo_url) async {
+    try {
+      http.Response response = await http.put(
+        Uri.parse(store_logo_url),
+        body: await _logoImage?.readAsBytes(),
+        headers: {
+          // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 이미지 업로드 성공
+        print('Image uploaded successfully.');
+      } else {
+        // 이미지 업로드 실패
+        print('Image upload failed. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  //매장 사진 업로드
+  Future<void> uploadStoreImages(store_photo_urls) async {
+    store_photo_urls.asMap().forEach((idx, store_photo_url) async {
+      try {
+        final response = await http.put(
+          Uri.parse(store_photo_url),
+          body: await _storeImage[idx].readAsBytes(),
+        );
+
+        if (response.statusCode == 200) {
+          // 이미지 업로드 성공
+          print('store_photo uploaded successfully.');
+        } else {
+          // 이미지 업로드 실패
+          print(
+              'store_photo upload failed. Status code: ${response.statusCode}');
+        }
+      } catch (e) {
+        // 오류 처리
+        print('Error uploading store_photo: $e');
+      }
+    });
+  }
+
+/*
   void getImge() async {
     final listResult = await FirebaseStorage.instance
         .ref()
@@ -454,6 +460,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     }
   }
 
+*/
 /*
   Future<void> _saveImage(url, name) async {
     String? message;
@@ -532,6 +539,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     //     print(result.address);
     print("검색된 주소");
     print('${model.addressEng!} ${model.address!} ${model.buildingName!}');
+    print("latitude: ${model.latitude} / longitude: ${model.longitude}");
+    print("through KAKAO Geocoder");
+    print(
+        "latitude: ${model.kakaoLatitude} / longitude: ${model.kakaoLongitude}");
   }
 
 /*

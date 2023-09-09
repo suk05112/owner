@@ -7,17 +7,17 @@ part of 'store.dart';
 // **************************************************************************
 
 Store _$StoreFromJson(Map<String, dynamic> json) => Store(
-      owner_id: json['owner_id'] as int,
-      store_name: json['store_name'] as String,
-      store_logo: json['store_logo'] as String,
-      store_telephone: json['store_telephone'] as String,
-      store_description: json['store_description'] as String,
-      store_photo: json['store_photo'] as String,
-      store_photo_cnt: json['store_photo_cnt'] as int,
-      store_address: json['store_address'] as String,
-      store_lat: (json['store_lat'] as num).toDouble(),
-      store_lng: (json['store_lng'] as num).toDouble(),
-      business_registration: json['business_registration'] as String,
+      owner_id: json['owner_id'] as int? ?? 0,
+      store_name: json['store_name'] as String? ?? "",
+      store_logo: json['store_logo'] as String? ?? "",
+      store_telephone: json['store_telephone'] as String? ?? "",
+      store_description: json['store_description'] as String? ?? "",
+      store_photo_urls: List<String>.from(json['store_photo_urls']),
+      store_photo_cnt: json['store_photo_cnt'] as int? ?? 0,
+      store_address: json['store_address'] as String? ?? "",
+      store_lat: (json['store_lat'] as num?)?.toDouble() ?? 0,
+      store_lng: (json['store_lng'] as num?)?.toDouble() ?? 0,
+      business_registration: json['business_registration'] as String? ?? "",
     );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
@@ -26,7 +26,7 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'store_logo': instance.store_logo,
       'store_telephone': instance.store_telephone,
       'store_description': instance.store_description,
-      'store_photo': instance.store_photo,
+      'store_photo_urls': instance.store_photo_urls,
       'store_photo_cnt': instance.store_photo_cnt,
       'store_address': instance.store_address,
       'store_lat': instance.store_lat,

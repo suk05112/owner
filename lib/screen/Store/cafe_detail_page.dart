@@ -53,11 +53,11 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
   Future<Store> _initRetrieval() async {
     var response = await StoreProvider().getDetailStore();
     store = response;
-    print(" _initRetrieval 호출1 ${store}");
+    print(" _initRetrieval 호출1 ${store?.store_photo_urls ?? "photo url null"}");
 
-    StoreProvider()
-        .getDetailStore()
-        .then((value) => print(" _initRetrieval 호출2 ${value}"));
+    // StoreProvider()
+    //     .getDetailStore()
+    //     .then((value) => print(" _initRetrieval 호출2 ${value}"));
 
     // print(" _initRetrieval 호출2 ${store}");
     return response;
@@ -162,8 +162,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                               children: [
                                 Text("매장 사진", style: TextAssset.header2),
                                 // Spacer(),
-                                Text(store?.store_description ?? "매장 설명 없음",
-                                    style: TextAssset.body)
+                                StoreImagesGridview(),
                               ],
                             ),
                           ])),
@@ -176,6 +175,32 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                   )
                 ])),
     ));
+  }
+
+  Widget StoreImagesGridview() {
+    List<Widget> itemWidgets = store!.store_photo_urls.map((item) {
+      return Container(
+        width: 100,
+        height: 100,
+        margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(5.0),
+          child: Image(
+            width: 100,
+            height: 100,
+            fit: BoxFit.fill,
+            image: NetworkImage(
+              item,
+            ),
+          ),
+        ),
+      );
+    }).toList();
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(children: itemWidgets),
+    );
   }
 
   List dataSource() {

@@ -44,8 +44,6 @@ class RegisterStorePage extends StatefulWidget {
 }
 
 class _RegisterStorePageState extends State<RegisterStorePage> {
-  // DatabaseService service = DatabaseService();
-
   TextEditingController nameController = TextEditingController();
   TextEditingController addrController = TextEditingController();
   TextEditingController detailAddrController = TextEditingController();
@@ -57,7 +55,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   final _formKey = GlobalKey<FormState>();
   // var storePhoto = [];
   File? _logoImage;
+  //갤러리에서 가져온 매장 사진
   List<File> _storeImage = [];
+  //기존 저장된 매장 사진
+  List<String>? savedStoreImage;
   File? _imageFile;
 
   @override
@@ -71,6 +72,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
     //매장 정보 수정 화면일 경우
     if (_isRegister == false) {
+      nameController.text =
+          _store?.store_name == null ? "" : "${_store?.store_name}";
       telePhoneController.text =
           _store?.store_telephone == null ? "" : "${_store?.store_telephone}";
       addrController.text =
@@ -78,9 +81,9 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       introController.text = _store?.store_description == null
           ? ""
           : "${_store?.store_description}";
-    }
-    if (_isRegister == false) {
-      // getImge();
+      savedStoreImage = _store?.store_photo_urls;
+    } else {
+      savedStoreImage = null;
     }
   }
 
@@ -439,69 +442,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     });
   }
 
-/*
-  void getImge() async {
-    final listResult = await FirebaseStorage.instance
-        .ref()
-        .child("business_certification/")
-        .listAll();
-
-    final islandRef = FirebaseStorage.instance.ref().child("1678203722204.png");
-
-    final appDocDir = await getApplicationDocumentsDirectory();
-    final filePath = "${appDocDir.absolute}/business_certification/test.jpeg";
-    final file = File(filePath);
-
-    for (var list in listResult.items) {
-      list.getDownloadURL().then((String result) async {
-        print(result);
-        // await _saveImage(result, list.name);
-      });
-    }
-  }
-
-*/
-/*
-  Future<void> _saveImage(url, name) async {
-    String? message;
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-
-    final listResult = await FirebaseStorage.instance
-        .ref()
-        .child("business_certification/")
-        .child("test1.jpeg")
-        .listAll();
-
-    try {
-      // Download image
-      final http.Response response = await http.get(Uri.parse(url));
-      final dir = await getTemporaryDirectory();
-
-      var filename = '${dir.path}/${name}';
-      final file = File(filename);
-      await file.writeAsBytes(response.bodyBytes);
-
-      // final params = SaveFileDialogParams(sourceFilePath: file.path);
-      // final finalPath = await FlutterFileDialog.saveFile(params: params);
-      setState(() {
-        storePhoto.add(file);
-      });
-
-      // if (finalPath != null) {
-      //   message = 'Image saved to disk';
-      // }
-    } catch (e) {
-      message = 'An error occurred while saving the image';
-      print(e.toString());
-    }
-
-    if (message != null) {
-      scaffoldMessenger.showSnackBar(SnackBar(content: Text(message)));
-    }
-  }
-
-  */
-
   _addressAPI() async {
     Kpostal model = await Navigator.push(
         context,
@@ -525,15 +465,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                   // this.kakaoLongitude = result.kakaoLongitude.toString();
                 });
               }),
-        )
-        // CupertinoPageRoute(
-        //   builder: (context) => KpostalView(
-        //     kakaoKey: '8ba72a270b2ab65050c15f1aa2cce9a9',
-        //     useLocalServer: false,
-        //   ),
-
-        // ),
-        );
+        ));
 
     // Kpostal result = await Navigator.push(context, MaterialPageRoute(builder: (_) => KpostalView()));
     //     print(result.address);
@@ -544,31 +476,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     print(
         "latitude: ${model.kakaoLatitude} / longitude: ${model.kakaoLongitude}");
   }
-
-/*
-  Future<void> uploadImg(index, value) async {
-    print("이미지 저장");
-    final storageRef = FirebaseStorage.instance.ref();
-
-    try {
-      final imgName = value.path.toString().split('/').last;
-      final mountainsRef = storageRef
-          .child("business_certification/unapproved/${imgName}_${index}.jpeg");
-      await mountainsRef.putFile(File(value.path));
-
-      // StorageUploadTask storageUploadTask =
-      // storageReference.putFile(_image);
-
-      // // 파일 업로드 완료까지 대기
-      // await storageUploadTask.onComplete;
-    } on FirebaseException catch (e) {
-      print("사진 업로드 실패" + e.code);
-    }
-    // 업로드한 사진의 URL 획득
-    String downloadURL = await storageRef.getDownloadURL();
-  }
-
-*/
 
   final inputDecoration = InputDecoration(
     hintStyle: TextAssset.placeholder,
@@ -583,7 +490,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     contentPadding: EdgeInsets.fromLTRB(21, 14, 21, 18),
     // contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
     // contentPadding: EdgeInsets.symmetric(vertical: 5), // <-- SEE HERE
-
     // contentPadding:
     //     const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0)
   );
@@ -599,21 +505,80 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
               side: BorderSide(color: Color.fromARGB(255, 255, 255, 255)))));
 
   Widget StoreImagesGridview() {
-    List<Widget> itemWidgets = _storeImage.map((item) {
-      return Container(
-        width: 100,
-        height: 100,
-        margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(5.0),
-          child: Image.file(
-            File(item.path),
-            fit: BoxFit.cover,
-          ),
-        ),
-      );
-    }).toList();
+    print("StoreImagesGridview:: 함수 진입");
+    print(savedStoreImage);
+    print("savedStoreImage.is null: ${savedStoreImage == null}");
+    print("savedStoreImage.isEmpty: ${savedStoreImage?.isEmpty}");
 
+    List<Widget> itemWidgets = [];
+
+    if (_storeImage == null) {
+      _storeImage = [];
+    }
+
+    // if (savedStoreImage == null || savedStoreImage!.isEmpty) {
+    //photo uplopad page에서 저장버튼을 누르지 않고 back한경우 or 처음 화면 진입했을 때
+    if (_storeImage.isEmpty) {
+      print("if 탐");
+      //기존 저장된 매장 사진 없을 경우(매장 처음 등록)
+      if (savedStoreImage == null || savedStoreImage!.isEmpty) {
+        itemWidgets = [];
+        // itemWidgets = _storeImage.map((item) {
+        //   return Container(
+        //     width: 100,
+        //     height: 100,
+        //     margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+        //     child: ClipRRect(
+        //       borderRadius: BorderRadius.circular(5.0),
+        //       child: Image.file(
+        //         File(item.path),
+        //         fit: BoxFit.cover,
+        //       ),
+        //     ),
+        //   );
+        // }).toList();
+      } else {
+        //기존 저장된 매장 사진 있을 경우(매장 수정)
+        itemWidgets = savedStoreImage!.map((item) {
+          return Container(
+              width: 100,
+              height: 100,
+              margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+              child: ClipRRect(
+                  borderRadius: BorderRadius.circular(5.0),
+                  child: Image.network(item,
+                      width: 90, height: 90, fit: BoxFit.fill,
+                      errorBuilder: (context, error, stackTrace) {
+                    return Image(
+                        image: AssetImage('assets/logo.jpeg'),
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.fill);
+                  })));
+        }).toList();
+      }
+    } else {
+      //photo uplopad page에서 저장버튼을 누르고 back
+      print("else 탐");
+
+      itemWidgets = _storeImage.map((item) {
+        return Container(
+          width: 100,
+          height: 100,
+          margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+          child: ClipRRect(
+              borderRadius: BorderRadius.circular(5.0),
+              child: Image.file(
+                File(item.path),
+                width: 90,
+                height: 90,
+                fit: BoxFit.fill,
+              )),
+        );
+      }).toList();
+    }
+
+    print("StoreImagesGridview:: itemWidgets 전");
     //이미지 편집화면으로 이동하는 버튼 추가
     itemWidgets.insert(
         0,
@@ -627,8 +592,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 final result = await Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) =>
-                          PhotoUploadePage(savedImage: _storeImage)),
+                      builder: (context) => PhotoUploadePage(
+                          savedImageUrl: savedStoreImage ?? [])),
                 );
 
                 setState(() {
@@ -643,96 +608,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                     height: 100,
                   )),
             )));
+    print("StoreImagesGridview:: return ");
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(children: itemWidgets),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, required this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  String postCode = '-';
-  String address = '-';
-  String latitude = '-';
-  String longitude = '-';
-  String kakaoLatitude = '-';
-  String kakaoLongitude = '-';
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Container(
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextButton(
-              onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => KpostalView(
-                      useLocalServer: false,
-                      kakaoKey: '8ba72a270b2ab65050c15f1aa2cce9a9',
-                      callback: (Kpostal result) {
-                        setState(() {
-                          this.postCode = result.postCode;
-                          this.address = result.address;
-                          this.latitude = result.latitude.toString();
-                          this.longitude = result.longitude.toString();
-                          this.kakaoLatitude = result.kakaoLatitude.toString();
-                          this.kakaoLongitude =
-                              result.kakaoLongitude.toString();
-                        });
-                      },
-                    ),
-                  ),
-                );
-              },
-              style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateProperty.all<Color>(Colors.blue)),
-              child: Text(
-                'Search Address',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(40.0),
-              child: Column(
-                children: [
-                  Text('postCode',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('result: ${this.postCode}'),
-                  Text('address',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text('result: ${this.address}'),
-                  Text('LatLng', style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text(
-                      'latitude: ${this.latitude} / longitude: ${this.longitude}'),
-                  Text('through KAKAO Geocoder',
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  Text(
-                      'latitude: ${this.kakaoLatitude} / longitude: ${this.kakaoLongitude}'),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

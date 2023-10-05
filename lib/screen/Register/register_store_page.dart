@@ -44,9 +44,9 @@ class RegisterStorePage extends StatefulWidget {
 }
 
 class _RegisterStorePageState extends State<RegisterStorePage> {
-  TextEditingController nameController = TextEditingController();
-  TextEditingController addrController = TextEditingController();
-  TextEditingController detailAddrController = TextEditingController();
+  // TextEditingController nameController = TextEditingController();
+  // TextEditingController addrController = TextEditingController();
+  // TextEditingController detailAddrController = TextEditingController();
   TextEditingController telePhoneController = TextEditingController();
   TextEditingController introController = TextEditingController();
 
@@ -55,14 +55,13 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   final _formKey = GlobalKey<FormState>();
   // var storePhoto = [];
   File? _logoImage;
-  //갤러리에서 가져온 매장 사진
-  List<File> _storeImage = [];
-  //기존 저장된 매장 사진
-  List<String>? savedStoreImage;
+  List<File> _storeImage = []; //갤러리에서 가져온 매장 사진
+  List<String>? savedStoreImage; //기존 저장된 매장 사진
   File? _imageFile;
 
   @override
   void initState() {
+    print("넘어온 이미지 ${widget.store?.business_registration ?? "이미지 없"}}");
     _isRegister = widget.isRegister;
     if (widget.store != null) {
       _store = widget.store;
@@ -72,12 +71,12 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
     //매장 정보 수정 화면일 경우
     if (_isRegister == false) {
-      nameController.text =
-          _store?.store_name == null ? "" : "${_store?.store_name}";
+      // nameController.text =
+      // _store?.store_name == null ? "" : "${_store?.store_name}";
       telePhoneController.text =
           _store?.store_telephone == null ? "" : "${_store?.store_telephone}";
-      addrController.text =
-          _store?.store_address == null ? "" : "${_store?.store_address}";
+      // addrController.text =
+      // _store?.store_address == null ? "" : "${_store?.store_address}";
       introController.text = _store?.store_description == null
           ? ""
           : "${_store?.store_description}";
@@ -116,24 +115,24 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 //매장 이름
-                Text(
-                  "매장 이름",
-                  style: TextAssset.header2,
-                ),
-                SizedBox(height: 5),
+                // Text(
+                //   "매장 이름",
+                //   style: TextAssset.header2,
+                // ),
+                // SizedBox(height: 5),
 
-                TextFormField(
-                  controller: nameController,
-                  keyboardType: TextInputType.text,
-                  decoration: inputDecoration.copyWith(hintText: "매장 이름 입력"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter Name';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 5),
+                // TextFormField(
+                //   controller: nameController,
+                //   keyboardType: TextInputType.text,
+                //   decoration: inputDecoration.copyWith(hintText: "매장 이름 입력"),
+                //   validator: (value) {
+                //     if (value == null || value.isEmpty) {
+                //       return 'Please enter Name';
+                //     }
+                //     return null;
+                //   },
+                // ),
+                // SizedBox(height: 5),
 
                 //가게 전호번호
                 Text(
@@ -176,6 +175,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 ),
                 SizedBox(height: 15),
 
+/*
                 //주소
                 _isRegister
                     ? Column(
@@ -242,7 +242,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                             SizedBox(height: 15),
                           ])
                     : SizedBox(height: 0),
-
+*/
                 SizedBox(height: 15),
 
                 //매장 로고 업로드
@@ -357,15 +357,13 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     //     store_address: "Adr",
     //     store_lat: 1,
     //     store_lng: 1,
-    //     business_registration: "busi",
     //     store_description: introController.text);
 
-    _store!.store_name = nameController.text;
+    // _store!.store_name = nameController.text;
     _store!.store_telephone = telePhoneController.text;
     _store!.store_photo_cnt = _storeImage.length;
-    _store!.store_address = addrController.text + detailAddrController.text;
+    // _store!.store_address = addrController.text + detailAddrController.text;
     // _store!.store_photo = "photo";
-    _store!.business_registration = "busi";
     _store!.store_description = introController.text;
 
     await Api().client.registerStore(_store!).then((response) async {
@@ -453,8 +451,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 setState(() {
                   print("주소callback");
                   print(result.postCode);
-                  addrController.text =
-                      result.address ?? "주소 없음" + result.buildingName ?? "";
+                  // addrController.text =
+                  // result.address ?? "주소 없음" + result.buildingName ?? "";
                   _store!.store_lat = result.latitude as double;
                   _store!.store_lng = result.longitude as double;
 

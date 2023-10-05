@@ -1,4 +1,5 @@
 import 'package:owner/common/api/request/store/store.dart';
+import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/api/response/store/store_post_response.dart';
@@ -32,5 +33,10 @@ abstract class ApiClient {
   @POST("owner/find_username")
   Future<FindOwnernameResponse> findOwnername(
     @Body() String uid,
+  );
+
+  @GET("/menu/list/{store_Id}")
+  Future<MenuGetResponse> getMenuList(
+    @Path('store_Id') int store_Id,
   );
 }

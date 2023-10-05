@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart';
 import 'package:owner/common/widget/CommonWidget.dart';
 import 'package:owner/common/api/API.dart';
 // import 'package:owner/common/api/response/store/store.dart';
@@ -15,6 +16,7 @@ import 'package:owner/common/model/cafeInfo.dart';
 import '../../common/api/request/store/store.dart';
 import '../../common/model/CafeBasicInfo.dart';
 import '../../common/provier/store_provider.dart';
+import '../Register/DocumentInputPage.dart';
 import '../Register/register_store_page.dart';
 import 'cafe_detail_page.dart';
 
@@ -43,6 +45,7 @@ class _CafeListState extends State<CafeList> {
     // getData();
     super.initState();
     Provider.of<StoreProvider>(context, listen: false).fetchStoreList();
+    print("init state:: StoreProvider.fetchStoreList 호출 후 ");
 
     // _initRetrieval();
   }
@@ -60,6 +63,7 @@ class _CafeListState extends State<CafeList> {
       body: Consumer<StoreProvider>(
         builder: (context, storeProvider, child) {
           List<Store> storeList = storeProvider.storeCards ?? [];
+          print("cafe_list_builder:: ${storeList}");
           return Column(
             children: <Widget>[
               Expanded(
@@ -69,18 +73,22 @@ class _CafeListState extends State<CafeList> {
                     if (index == storeList.length) {
                       return Column(
                         children: <Widget>[
-                          storeCard(null),
+                          // storeCard(null),
                           TextButton(
                             onPressed: () {
                               print("container 눌림");
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const RegisterStorePage(
-                                    isRegister: true,
-                                    store: null,
-                                  ),
+                                  builder: (context) =>
+                                      const DocumentInputPage(),
                                 ),
+                                // MaterialPageRoute(
+                                //   builder: (context) => const RegisterStorePage(
+                                //     isRegister: true,
+                                //     store: null,
+                                //   ),
+                                // ),
                               );
                             },
                             child: const Text("매장 추가"),
@@ -113,7 +121,8 @@ class _CafeListState extends State<CafeList> {
               body: Column(children: [
             Text("dmdkdkkd"),
             Expanded(
-                child: ListView.separated(
+                // child: ListView.separated(
+                child: ListView.builder(
               itemCount: storeProvider.storeCards?.length ?? 5,
               itemBuilder: (context, index) {
                 // return Text("card list");
@@ -126,10 +135,15 @@ class _CafeListState extends State<CafeList> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const RegisterStorePage(
-                                      isRegister: true,
-                                      store: null,
-                                    )));
+                                builder: (context) =>
+                                    const DocumentInputPage()));
+                        // Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //         builder: (context) => const RegisterStorePage(
+                        //               isRegister: true,
+                        //               store: null,
+                        //             )));
                       },
                       child: const Text("매장 추가"),
                     ),
@@ -138,10 +152,10 @@ class _CafeListState extends State<CafeList> {
                   return storeCard(storeProvider.storeCards?[index]);
                 }
               },
-              separatorBuilder: (BuildContext context, int index) {
-                if (index == 0) return SizedBox.shrink();
-                return const Divider();
-              },
+              // separatorBuilder: (BuildContext context, int index) {
+              //   if (index == 0) return SizedBox.shrink();
+              //   return const Divider();
+              // },
             ))
           ]));
         }));
@@ -174,33 +188,40 @@ class _CafeListState extends State<CafeList> {
               context,
               MaterialPageRoute(
                   builder: (context) => CafeDetailScreen(
-                        storeId: 2,
-
-                        // storeId: store?.store_id ?? -1,
+                        storeId: store?.store_id ?? -1,
                       )));
         },
-        child: Container(
-          margin: EdgeInsets.all(10),
-          padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            border: Border.all(color: Color.fromARGB(255, 0, 0, 0)),
-            borderRadius: BorderRadius.all(Radius.circular(5.0)),
+        child: SizedBox(
+          height: 130,
+          child: Container(
+            margin: EdgeInsets.all(10),
+            padding: EdgeInsets.all(5),
+            decoration: BoxDecoration(
+              border: Border.all(color: Color.fromARGB(255, 0, 0, 0)),
+              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+            ),
+            child: Row(children: [
+              Expanded(
+                  child:
+                      // Image(
+                      //     image: AssetImage('assets/logo.jpeg'),
+                      //     width: 90,
+                      //     height: 90,
+                      //     fit: BoxFit.fill)
+                      Image.network(store!.store_logo,
+                          width: 90, height: 90, fit: BoxFit.fill,
+                          errorBuilder: (context, error, stackTrace) {
+                return Image(
+                    image: AssetImage('assets/logo.jpeg'),
+                    width: 90,
+                    height: 90,
+                    fit: BoxFit.fill);
+              })),
+              Spacer(),
+              Text("${store?.store_name}"),
+            ]),
+            width: 400,
           ),
-          child: Row(children: [
-            Expanded(
-                child: Image.network(store!.store_logo,
-                    width: 90, height: 90, fit: BoxFit.fill,
-                    errorBuilder: (context, error, stackTrace) {
-              return Image(
-                  image: AssetImage('assets/logo.jpeg'),
-                  width: 90,
-                  height: 90,
-                  fit: BoxFit.fill);
-            })),
-            Spacer(),
-            Text("${store?.store_name}"),
-          ]),
-          width: 400,
         ));
   }
 }

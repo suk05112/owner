@@ -58,6 +58,9 @@ dependencies:
   amplify_core: <1.0.0
   amplify_analytics_pinpoint: <1.0.0
   amplify_auth_cognito: <1.0.0
+  intl: ^0.17.0
+  fluttertoast: ^8.2.2
+
 
   # remedi_kopo: ^0.0.2 
   # qr_code_scanner: ^0.6.1

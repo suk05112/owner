@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/main.dart';
 import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import '../../common/Style/TextAsset.dart';
 import '../../common/model/OperatingHours.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/cupertino.dart';
 
 class OperatingHoursSettingPage extends StatefulWidget {
   const OperatingHoursSettingPage({Key? key}) : super(key: key);
+  final bool isStart = true;
 
   @override
   State<OperatingHoursSettingPage> createState() =>
@@ -41,10 +43,26 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
     Tab(icon: Icon(Icons.settings)),
   ];
 
+  late bool _isStart;
+  DateTime _dateTime = DateTime.now();
+  DateTime _starTime = DateTime.now();
+  DateTime _endTime = DateTime.now();
+
+  late String startFormatDate;
+  late String endFormatDate;
+
   @override
   void initState() {
     _tabController = TabController(length: 3, vsync: this);
     super.initState();
+    initializeDateFormatting("ko_KR", null);
+    _isStart = widget.isStart;
+    print("isstart ${_isStart}");
+    _starTime = DateTime.now();
+    _endTime = DateTime.now();
+
+    startFormatDate = DateFormat('aa hh:mm', 'ko').format(_starTime);
+    endFormatDate = DateFormat('aa hh:mm', 'ko').format(_endTime);
   }
 
   @override
@@ -55,6 +73,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
 
   @override
   Widget build(BuildContext context) {
+    print("build 실행 ${_isStart}");
     return Scaffold(
         appBar: AppBar(
           title: Text("운영시간 관리하기"),
@@ -166,8 +185,15 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                         top: Radius.circular(20.0),
                       ),
                     ),
-                    builder: (context) {
-                      return getSettingTimeWidget();
+                    builder: (BuildContext context) {
+                      return StatefulBuilder(builder:
+                          (BuildContext context, StateSetter bottomState) {
+                        // StateSetter bottomState 이름은 바꾸셔서 사용하실 수 있습니다.
+                        // 예를 들어, myState, subState 같이요!
+
+                        // 모달 내부 영역
+                        return getSettingTimeWidget(bottomState);
+                      });
                     });
               },
               child: Container(
@@ -179,7 +205,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                     border: Border.all(color: Color(0xffE4E7EE), width: 1)),
                 child: Center(
                     child: Text(
-                  "09:00    ~    20:00",
+                  "${startFormatDate}   ~    ${endFormatDate}",
                   textAlign: TextAlign.center,
                 )),
               ))
@@ -188,9 +214,10 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
     ]);
   }
 
-  Widget getSettingTimeWidget() {
+  Widget getSettingTimeWidget(StateSetter bottomState) {
     _myFunction() => print("Being pressed!");
 
+    print("getSettingTimeWidget:: ${_isStart}");
     return SizedBox(
         height: 335,
         child: Column(children: [
@@ -206,6 +233,56 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                 },
                 child: Text("확인"))
           ]),
+          InkWell(
+            onTap: () {
+              bottomState(() {
+                setState(() {
+                  _isStart = !_isStart;
+                });
+              });
+
+              print("시작 터치");
+              print(_isStart);
+            },
+            child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("시작",
+                          style: TextStyle(
+                              color: _isStart ? Colors.blue : Colors.black)),
+                      Text("${startFormatDate}",
+                          style: TextStyle(
+                              color: _isStart ? Colors.blue : Colors.black)),
+                    ],
+                  ),
+                ]),
+          ),
+          InkWell(
+            onTap: () {
+              bottomState(() {
+                setState(() {
+                  _isStart = false;
+                });
+              });
+
+              print("종료 터치");
+              print(_isStart);
+            },
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("종료",
+                    style: TextStyle(
+                        color: _isStart ? Colors.black : Colors.blue)),
+                Text("${endFormatDate}",
+                    style: TextStyle(
+                        color: _isStart ? Colors.black : Colors.blue)),
+              ],
+            ),
+          ),
           Container(
               height: MediaQuery.of(context).size.height / 4,
               child: CupertinoDatePicker(
@@ -216,14 +293,28 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                     1,
                     TimeOfDay(hour: 15, minute: 0).hour,
                     TimeOfDay(hour: 15, minute: 0).minute),
-                onDateTimeChanged: (DateTime newDateTime) {
-                  var newTod = TimeOfDay.fromDateTime(newDateTime);
-                  _myFunction;
-                },
+                onDateTimeChanged: onDateTimeChanged,
+                // onDateTimeChanged: (DateTime newDateTime) {
+                //   var newTod = TimeOfDay.fromDateTime(newDateTime);
+                //   _myFunction;
+                // },
                 use24hFormat: false,
                 minuteInterval: 1,
               ))
         ]));
+  }
+
+  void onDateTimeChanged(dateTime) {
+    setState(
+      () {
+        _dateTime = dateTime;
+        setState(() {
+          _isStart = !_isStart;
+        });
+      },
+    );
+    print("설정된 시간");
+    print(_dateTime);
   }
 
   //평일 주말 달라요

@@ -1,4 +1,5 @@
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
 
@@ -7,6 +8,7 @@ part 'store.g.dart';
 @JsonSerializable()
 class Store {
   int owner_id;
+  int store_id;
   String store_name;
   String store_logo;
   String store_telephone;
@@ -15,10 +17,11 @@ class Store {
   int store_photo_cnt;
   String store_address;
   double store_lat, store_lng;
-  String business_registration;
+  File? business_registration;
 
   Store({
     this.owner_id = 0,
+    this.store_id = 0,
     this.store_name = "",
     this.store_logo = "",
     this.store_telephone = "",
@@ -28,7 +31,7 @@ class Store {
     this.store_address = "",
     this.store_lat = 0,
     this.store_lng = 0,
-    this.business_registration = "",
+    // this.business_registration = File(),
   });
   // Store({
   //   required this.owner_id,

@@ -1,15 +1,19 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:owner/common/api/API.dart';
 // import 'package:owner/common/DatabaseService.dart';
-import 'package:owner/common/model/Menu.dart';
+// import 'package:owner/common/model/Menu.dart';
+
 import 'package:owner/screen/Store/AddMenuPage.dart';
 import 'package:owner/screen/Store/EditMenuPage.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 
+import '../../common/api/response/menu.dart';
+
 class MenuManagementPage extends StatefulWidget {
   const MenuManagementPage({Key? key, required this.storeId});
-  final String storeId;
+  final int storeId;
 
   @override
   State<MenuManagementPage> createState() => _MenuManagementPagetate();
@@ -17,7 +21,7 @@ class MenuManagementPage extends StatefulWidget {
 
 class _MenuManagementPagetate extends State<MenuManagementPage> {
   // DatabaseService service = DatabaseService();
-  Future<List<Menu>>? menuList;
+  // Future<List<Menu>>? menuList;
   List<Menu>? menu;
   var menuLength;
 
@@ -27,32 +31,16 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   void initState() {
     super.initState();
     _initRetrieval();
-
-    // WidgetsBinding.instance.addPostFrameCallback((_) async {
-    //   print("widgetbinding 실행");
-    //   menuList!.then(
-    //     (value) {
-    //       setState(() {
-    //         menu = value;
-    //       });
-    //     },
-    //   );
-    // });
   }
 
   Future<void> _initRetrieval() async {
     print("이건 실행됨?");
-    // menuList = service.retrieveMenu(widget.storeId);
-    menuList!.then(
-      (value) {
-        setState(() {
-          menu = value;
-          menuLength = value.length;
-          print("메뉴 수" + menuLength.toString());
-        });
-      },
-    );
-    // menu = await menuList;
+    var menuList =
+        await Api().client.getMenuList(51).then((value) => setState(() {
+              menu = value.menuList;
+              menuLength = value;
+              print("메뉴 수" + menuLength.toString());
+            }));
 
     print("읽어온 메뉴" + menuLength.toString());
     print(menu![0].description);
@@ -68,55 +56,25 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        elevation: 0,
+        title: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
+          Spacer(),
+          Text("메뉴 관리"),
+          Spacer(),
+          PopupMenu(),
+        ]),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+      ),
       body: Center(
           child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-            Container(
-              height: 50,
-            ),
-            PopupMenuButton(
-                // color: Colors.black,
-                // add icon, by default "3 dot" icon
-                icon: Icon(Icons.settings),
-                // child: Text("text"),
-                itemBuilder: (context) {
-                  return [
-                    PopupMenuItem<int>(
-                      value: 0,
-                      child: Text("메뉴 순서 변경"),
-                    ),
-                    PopupMenuItem<int>(
-                      value: 1,
-                      child: Text("메뉴 추가"),
-                    ),
-                    PopupMenuItem<int>(
-                      value: 2,
-                      child: Text("Logout"),
-                    ),
-                  ];
-                },
-                onSelected: (value) async {
-                  if (value == 0) {
-                    print("My account menu is selected.");
-                  } else if (value == 1) {
-                    print("menu id in manage" + await menuLength.toString());
-                    final modified_menu = await Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => EditMenuPage(
-                                  storeId: widget.storeId,
-                                  menuId: menuLength.toString(),
-                                )));
-
-                    // service.addMenu(modified_menu);
-
-                    print("메뉴 추가 선택됨");
-                  } else if (value == 2) {
-                    print("Logout menu is selected.");
-                  }
-                }),
+            // Container(
+            //   height: 50,
+            // ),
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.all(8),
@@ -125,9 +83,9 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                   menuLength = index;
                   // if (index == 0) return HeaderTile();
                   if (menu == null) {
-                    print("in listview");
                     print(menu);
-                    return CircularProgressIndicator();
+                    return Text("등록된 메뉴가 없습니다. 메뉴를 추가해주세요.");
+                    // return CircularProgressIndicator();
                   }
                   if (index == (menu?.length ?? 1)) {
                     return TextButton(
@@ -142,13 +100,17 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                             context,
                             MaterialPageRoute(
                                 builder: (context) => EditMenuPage(
-                                      menu: menu![index],
-                                      storeId: menu![index].storeId ?? "001",
+                                      menu: menu?[index],
+                                      storeId: 51,
                                     )));
-                        // service.addMenu(modified_menu);
                       },
-                      child: ListTile(
-                        title: Text("${menu?[index].description}"),
+                      child: Column(
+                        children: [
+                          MenuItem(menu![index]),
+                          Container(
+                            height: 5,
+                          )
+                        ],
                       ));
                 },
               ),
@@ -168,6 +130,71 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
               ),
             ),
           ])),
+    );
+  }
+
+  Widget PopupMenu() {
+    return Container(
+      // width: double.infinity,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          PopupMenuButton(
+              // color: Colors.black,
+              // add icon, by default "3 dot" icon
+              icon: Icon(Icons.settings),
+              // child: Text("text"),
+              itemBuilder: (context) {
+                return [
+                  PopupMenuItem<int>(
+                    value: 0,
+                    child: Text("메뉴 순서 변경"),
+                  ),
+                  PopupMenuItem<int>(
+                    value: 1,
+                    child: Text("메뉴 추가"),
+                  ),
+                  PopupMenuItem<int>(
+                    value: 2,
+                    child: Text("Logout"),
+                  ),
+                ];
+              },
+              onSelected: (value) async {
+                if (value == 0) {
+                  print("My account menu is selected.");
+                } else if (value == 1) {
+                  print("menu id in manage" + await menuLength.toString());
+                  final modified_menu = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => EditMenuPage(
+                                storeId: widget.storeId,
+                                menuId: menuLength,
+                              )));
+                  print("메뉴 추가 선택됨");
+                } else if (value == 2) {
+                  print("Logout menu is selected.");
+                }
+              })
+        ],
+      ),
+    );
+  }
+
+  Widget MenuItem(Menu menu) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Image(image: AssetImage('assets/americano.jpeg'), height: 100),
+        Container(
+          width: 15,
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [Text(menu.name), Text("${menu.price}")],
+        )
+      ],
     );
   }
 }

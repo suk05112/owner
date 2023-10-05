@@ -51,7 +51,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
   }
 
   Future<Store> _initRetrieval() async {
-    var response = await StoreProvider().getDetailStore();
+    var response = await StoreProvider().getDetailStore(_storeId);
     store = response;
     print(" _initRetrieval 호출1 ${store?.store_photo_urls ?? "photo url null"}");
 
@@ -218,7 +218,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
       ),
       OperatingHoursSettingPage(),
       MenuManagementPage(
-        storeId: widget.storeId.toString(),
+        storeId: widget.storeId,
       ),
       RegisterStorePage(
         isRegister: false,

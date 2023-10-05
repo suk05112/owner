@@ -21,7 +21,7 @@ StorePostResponse _$StorePostResponseFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$StorePostResponseToJson(StorePostResponse instance) =>
     <String, dynamic>{
       'statusCode': instance.statusCode,
-      'storeId': instance.store_id,
+      'store_id': instance.store_id,
       'store_logo_url': instance.store_logo_url,
       'store_photo_urls': instance.store_photo_urls,
       'presignedUrl': instance.presignedUrl,

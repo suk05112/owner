@@ -8,20 +8,24 @@ part of 'store.dart';
 
 Store _$StoreFromJson(Map<String, dynamic> json) => Store(
       owner_id: json['owner_id'] as int? ?? 0,
+      store_id: json['store_id'] as int? ?? 0,
       store_name: json['store_name'] as String? ?? "",
       store_logo: json['store_logo'] as String? ?? "",
       store_telephone: json['store_telephone'] as String? ?? "",
       store_description: json['store_description'] as String? ?? "",
-      store_photo_urls: List<String>.from(json['store_photo_urls']),
+      store_photo_urls: (json['store_photo_urls'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       store_photo_cnt: json['store_photo_cnt'] as int? ?? 0,
       store_address: json['store_address'] as String? ?? "",
       store_lat: (json['store_lat'] as num?)?.toDouble() ?? 0,
       store_lng: (json['store_lng'] as num?)?.toDouble() ?? 0,
-      business_registration: json['business_registration'] as String? ?? "",
     );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'owner_id': instance.owner_id,
+      'store_id': instance.store_id,
       'store_name': instance.store_name,
       'store_logo': instance.store_logo,
       'store_telephone': instance.store_telephone,
@@ -31,7 +35,6 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'store_address': instance.store_address,
       'store_lat': instance.store_lat,
       'store_lng': instance.store_lng,
-      'business_registration': instance.business_registration,
     };
 
 Body2 _$Body2FromJson(Map<String, dynamic> json) => Body2(

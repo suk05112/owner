@@ -36,7 +36,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   Future<void> _initRetrieval() async {
     print("이건 실행됨?");
     var menuList =
-        await Api().client.getMenuList(51).then((value) => setState(() {
+        await Api().client.getMenuList(1).then((value) => setState(() {
               menu = value.menuList;
               menuLength = value;
               print("메뉴 수" + menuLength.toString());
@@ -186,7 +186,17 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Image(image: AssetImage('assets/americano.jpeg'), height: 100),
+        Image.network(menu.menu_image_url,
+            width: 90,
+            height: 90,
+            fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
+          return Image(
+              image: AssetImage('assets/americano.jpeg'),
+              width: 90,
+              height: 90,
+              fit: BoxFit.fill);
+        }),
+        // Image(image: AssetImage('assets/americano.jpeg'), height: 100),
         Container(
           width: 15,
         ),

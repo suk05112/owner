@@ -39,4 +39,9 @@ abstract class ApiClient {
   Future<MenuGetResponse> getMenuList(
     @Path('store_Id') int store_Id,
   );
+
+  @POST("/menu/")
+  Future<MenuPostResponse> addMenu(
+    @Body() Menu menu,
+  );
 }

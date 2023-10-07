@@ -1,8 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/Style/TextAsset.dart';
+import 'package:owner/common/api/API.dart';
 // import 'package:owner/common/DatabaseService.dart';
 // import 'package:owner/common/model/Menu.dart';
 import '../../common/api/response/menu.dart';
+
+import 'package:http/http.dart' as http;
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 class EditMenuPage extends StatefulWidget {
   const EditMenuPage({Key? key, required this.storeId, this.menu, this.menuId})
@@ -20,6 +28,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
   TextEditingController menuNameInputController = TextEditingController();
   TextEditingController menuDescInputController = TextEditingController();
   TextEditingController menuPriceInputController = TextEditingController();
+  File? _image;
 
   void initState() {
     super.initState();
@@ -27,6 +36,11 @@ class _EditMenuPageState extends State<EditMenuPage> {
     if (widget.menu != null) {
       menuNameInputController.text = widget.menu!.name;
       menuPriceInputController.text = widget.menu!.price.toString();
+      _fileFromImageUrl().then((value) => {
+            setState(() {
+              _image = value;
+            })
+          });
     }
   }
 
@@ -59,17 +73,17 @@ class _EditMenuPageState extends State<EditMenuPage> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               // Text("메뉴수정"),
-              Container(
-                width: double.infinity,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Image(
-                          image: AssetImage('assets/americano.jpeg'),
-                          height: 200),
-                    ]),
-              ),
-
+              // Container(
+              //   width: double.infinity,
+              //   child: Column(
+              //       crossAxisAlignment: CrossAxisAlignment.center,
+              //       children: [
+              //         Image(
+              //             image: AssetImage('assets/americano.jpeg'),
+              //             height: 200),
+              //       ]),
+              // ),
+              menuImage(),
               Container(
                 height: 15,
               ),
@@ -138,13 +152,13 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
               Text("상태"),
               Spacer(),
-              Btns()
+              Btns(context)
             ]),
       )),
     );
   }
 
-  Widget Btns() {
+  Widget Btns(context) {
     return Container(
         width: double.infinity,
         child: Row(
@@ -162,21 +176,35 @@ class _EditMenuPageState extends State<EditMenuPage> {
                       // minimumSize: const Size.fromHeight(50), // NEW
                     ),
                     onPressed: () {
+                      print("edit menu:: onpressed");
                       if (widget.menu == null) {
+                        print("edit menu:: onpressed:: if");
+
+                        //메뉴 새로 등록
                         var new_menu = Menu(
+                            store_Id: 1,
                             name: menuNameInputController.text,
-                            menu_Id: widget.menuId ?? -1,
+                            menu_id: -1,
                             description: menuDescInputController.text,
                             price: int.parse(menuPriceInputController.text),
+                            menu_image_url: "",
                             status: 1);
+
+                        Api().client.addMenu(new_menu).then(
+                            (response) => {uploadMenuImage(response.menu_url)});
 
                         Navigator.pop(context, new_menu);
                       } else {
+                        print("edit menu:: onpressed:: else");
+
+                        //메뉴 업데이트
                         var new_menu = Menu(
+                            store_Id: 1,
                             name: menuNameInputController.text,
-                            menu_Id: widget.menuId ?? -1,
+                            menu_id: widget.menuId ?? -1,
                             description: menuDescInputController.text,
                             price: int.parse(menuPriceInputController.text),
+                            menu_image_url: "",
                             status: 2);
 
                         Navigator.pop(context, new_menu);
@@ -206,5 +234,76 @@ class _EditMenuPageState extends State<EditMenuPage> {
                 ))
           ],
         ));
+  }
+
+  Widget menuImage() {
+    return GestureDetector(
+        onTap: () async {
+          pickMenuImage();
+        },
+        child: Container(
+          width: double.infinity,
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            _image == null
+                ? Image.asset('assets/americano.jpeg')
+                : Image.file(File(_image!.path))
+          ]),
+        ));
+  }
+
+  void pickMenuImage() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedImage != null) {
+      setState(() {
+        _image = File(pickedImage.path);
+        print("이미지 변경됨");
+        print(_image);
+      });
+    } else {
+      print("pick image is null");
+    }
+  }
+
+  Future<void> uploadMenuImage(menu_upload_url) async {
+    print("eidtMenu::uploadMenuImage");
+    print(_image);
+
+    if (_image == null) {
+      print("menu image is null");
+      return;
+    }
+    try {
+      http.Response response = await http.put(
+        Uri.parse(menu_upload_url),
+        body: await _image?.readAsBytes(),
+        headers: {
+          // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 이미지 업로드 성공
+        print('Image uploaded successfully.');
+      } else {
+        // 이미지 업로드 실패
+        print('Image upload failed. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  Future<File> _fileFromImageUrl() async {
+    final response =
+        await http.get(Uri.parse('${widget.menu?.menu_image_url}'));
+
+    final documentDirectory = await getApplicationDocumentsDirectory();
+    final file = File(join(documentDirectory.path, 'menu.png'));
+    file.writeAsBytesSync(response.bodyBytes);
+
+    return file;
   }
 }

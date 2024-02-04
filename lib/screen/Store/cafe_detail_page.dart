@@ -13,6 +13,8 @@ import 'package:owner/screen/Store/cafe_list_page.dart';
 
 // import '../../common/DatabaseService.dart';
 import '../../common/Style/TextAsset.dart';
+import '../../common/Style/CommonSection.dart';
+
 import '../../common/api/request/store/store.dart';
 import '../../common/model/cafeInfo.dart';
 import '../../common/model/OperatingHours.dart';
@@ -83,14 +85,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             //Header
-                            Row(children: [
-                              Spacer(),
-                              Text(
-                                "내 매장관리",
-                                style: TextAssset.header1,
-                              ),
-                              Spacer(),
-                            ]),
+                            CommonSection.getHeader("내 매장관리"),
                             SizedBox(height: 13),
 
                             //매장 로고, 매장이름

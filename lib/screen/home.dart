@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/model/cafeInfo.dart';
+import 'package:owner/screen/Setting/setting_page.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
 
 import 'QRScanPage.dart';
@@ -18,10 +19,12 @@ class _HomeState extends State<Home> {
   int currentTab = 0;
 
   final List<Widget> screens = [
+    Main(),
     CafeList(),
     CafeDetailScreen(
       storeId: 1,
-    )
+    ),
+    SettingPage()
   ];
 
   final PageStorageBucket bucket = PageStorageBucket();
@@ -65,7 +68,7 @@ class _HomeState extends State<Home> {
                     minWidth: 40,
                     onPressed: () {
                       setState(() {
-                        currentScreen = CafeList();
+                        currentScreen = Main();
                         currentTab = 0;
                       });
                     },
@@ -77,7 +80,7 @@ class _HomeState extends State<Home> {
                             color: currentTab == 0 ? Colors.blue : Colors.grey,
                           ),
                           Text(
-                            'Dashboard menu',
+                            '홈',
                             style: TextStyle(
                               color:
                                   currentTab == 0 ? Colors.blue : Colors.grey,
@@ -95,9 +98,6 @@ class _HomeState extends State<Home> {
                     onPressed: () {
                       setState(() {
                         currentScreen = CafeList();
-                        // currentScreen = CafeDetailScreen(
-                        //   storeId: '0000001',
-                        // );
                         currentTab = 1;
                       });
                     },
@@ -105,14 +105,75 @@ class _HomeState extends State<Home> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.chat,
+                            Icons.dashboard,
                             color: currentTab == 1 ? Colors.blue : Colors.grey,
                           ),
                           Text(
-                            'Chat menu',
+                            '매장관리',
                             style: TextStyle(
                               color:
                                   currentTab == 1 ? Colors.blue : Colors.grey,
+                            ),
+                          )
+                        ]),
+                  ),
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MaterialButton(
+                    minWidth: 40,
+                    onPressed: () {
+                      setState(() {
+                        currentScreen = CafeList();
+                        // currentScreen = CafeDetailScreen(
+                        //   storeId: '0000001',
+                        // );
+                        currentTab = 2;
+                      });
+                    },
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.chat,
+                            color: currentTab == 2 ? Colors.blue : Colors.grey,
+                          ),
+                          Text(
+                            '주문관리',
+                            style: TextStyle(
+                              color:
+                                  currentTab == 2 ? Colors.blue : Colors.grey,
+                            ),
+                          )
+                        ]),
+                  ),
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MaterialButton(
+                    minWidth: 40,
+                    onPressed: () {
+                      setState(() {
+                        currentScreen = SettingPage();
+                        currentTab = 3;
+                      });
+                    },
+                    child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.dashboard,
+                            color: currentTab == 3 ? Colors.blue : Colors.grey,
+                          ),
+                          Text(
+                            '설정',
+                            style: TextStyle(
+                              color:
+                                  currentTab == 3 ? Colors.blue : Colors.grey,
                             ),
                           )
                         ]),
@@ -133,4 +194,31 @@ class _HomeState extends State<Home> {
   //   //스캔 완료하면 _output 에 문자열 저장하면서 상태 변경 요청.
   //   setState(() => _output = barcode);
   // }
+}
+
+class Main extends StatefulWidget {
+  const Main({Key? key}) : super(key: key);
+
+  @override
+  State<Main> createState() => _MainState();
+}
+
+class _MainState extends State<Main> {
+  String qrResult = '';
+
+  final PageStorageBucket bucket = PageStorageBucket();
+  Widget currentScreen = CafeDetailScreen(
+    storeId: 1,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Text(
+          '홈 화면',
+        )
+      ]),
+    );
+  }
 }

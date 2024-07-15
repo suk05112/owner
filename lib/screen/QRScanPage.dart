@@ -54,11 +54,11 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
       if (event.code != null) {
         //스캔된 QR코드에 특정 키워드가 들어있다면
         //QR스캔을 정지하고 이 화면을 닫으면서 QR결과값을 보내주도록한다.
-        if (event.code!.contains(widget.eventKeyword)) {
-          this.controller!.dispose();
-          Navigator.pop(context, event.code);
-        }
+        // if (event.code!.contains(widget.eventKeyword)) {
+        this.controller!.dispose();
+        Navigator.pop(context, event.code);
       }
+      // }
     });
   }
 }

@@ -54,7 +54,7 @@ PODS:
   - AWSPluginsCore (1.30.4):
     - Amplify (= 1.30.4)
     - AWSCore (~> 2.33.0)
-  - camera_avfoundation (0.0.1):
+  - camera (0.0.1):
     - Flutter
   - cloud_firestore (4.3.2):
     - Firebase/Firestore (= 10.7.0)
@@ -190,7 +190,7 @@ DEPENDENCIES:
   - amplify_auth_cognito_ios (from `.symlinks/plugins/amplify_auth_cognito_ios/ios`)
   - amplify_core (from `.symlinks/plugins/amplify_core/ios`)
   - amplify_flutter_ios (from `.symlinks/plugins/amplify_flutter_ios/ios`)
-  - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - camera (from `.symlinks/plugins/camera/ios`)
   - cloud_firestore (from `.symlinks/plugins/cloud_firestore/ios`)
   - firebase_auth (from `.symlinks/plugins/firebase_auth/ios`)
   - firebase_core (from `.symlinks/plugins/firebase_core/ios`)
@@ -246,8 +246,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/amplify_core/ios"
   amplify_flutter_ios:
     :path: ".symlinks/plugins/amplify_flutter_ios/ios"
-  camera_avfoundation:
-    :path: ".symlinks/plugins/camera_avfoundation/ios"
+  camera:
+    :path: ".symlinks/plugins/camera/ios"
   cloud_firestore:
     :path: ".symlinks/plugins/cloud_firestore/ios"
   firebase_auth:
@@ -297,7 +297,7 @@ SPEC CHECKSUMS:
   AWSMobileClient: ff115272d8b29f05443f82f5800036c498c5ca8b
   AWSPinpoint: e13098188d2907874edbca23df7fbb1b4a0992ba
   AWSPluginsCore: f2188458c27e6cb09597c67876f80611d14275d7
-  camera_avfoundation: 3125e8cd1a4387f6f31c6c63abb8a55892a9eeeb
+  camera: fe33292aff715a981eb34d7ce7b35b54337ff34c
   cloud_firestore: 99f5ab4992a0b85308946af974ba78a7a1179351
   Firebase: 0219acf760880eeec8ce479895bd7767466d9f81
   firebase_auth: b94604d7ea3eba03bb82e89f81547f045603b427
@@ -309,12 +309,12 @@ SPEC CHECKSUMS:
   FirebaseCore: e317665b9d744727a97e623edbbed009320afdd7
   FirebaseCoreExtension: f17247ba8c61e4d3c8d136b5e2de3cb4ac6a85b6
   FirebaseCoreInternal: 8845798510aae74703467480f71ac613788d0696
-  FirebaseFirestore: 7b7d95b74637ed61b76996077a2b292167dae7e5
+  FirebaseFirestore: 712ff268d746fc65efb361e9ce2cfeb458f10643
   FirebaseStorage: 4841efa304543e1f9e4ca116c559c7a1ea2a9d0f
-  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
+  Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_file_dialog: 4c014a45b105709a27391e266c277d7e588e9299
-  flutter_inappwebview: bfd58618f49dc62f2676de690fc6dcda1d6c3721
-  fluttertoast: fafc4fa4d01a6a9e4f772ecd190ffa525e9e2d9c
+  flutter_inappwebview: acd4fc0f012cefd09015000c241137d82f01ba62
+  fluttertoast: 31b00dabfa7fb7bacd9e7dbee580d7a2ff4bf265
   geocoding_ios: a389ea40f6f548de6e63006a2e31bf66ff80769a
   GoogleUtilities: c2bdc4cf2ce786c4d2e6b3bcfd599a25ca78f06f
   GTMSessionFetcher: c9e714f7eec91a55641e2bab9f45fd83a219b882
@@ -331,6 +331,6 @@ SPEC CHECKSUMS:
   SwiftLint: 284cea64b6187c5d6bd83e9a548a64104d546447
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
 
-PODFILE CHECKSUM: 7c0b4d6418ba244ee3a0a12f57f9f1eadde9517e
+PODFILE CHECKSUM: 7bb67882341f139e0e33d6151da32cfde038261c
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.15.2

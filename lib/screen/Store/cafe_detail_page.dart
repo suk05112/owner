@@ -173,23 +173,41 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
   }
 
   Widget StoreImagesGridview() {
+    print("StoreImagesGridview 호출됨 ${store!.store_photo_urls}");
     List<Widget> itemWidgets = store!.store_photo_urls.map((item) {
       return Container(
-        width: 100,
-        height: 100,
-        margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(5.0),
-          child: Image(
-            width: 100,
-            height: 100,
-            fit: BoxFit.fill,
-            image: NetworkImage(
-              item,
-            ),
-          ),
-        ),
-      );
+          width: 100,
+          height: 100,
+          margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+          child: ClipRRect(
+              borderRadius: BorderRadius.circular(5.0),
+              child: Image.network(item ?? "",
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
+                print(error);
+                return Image(
+                    image: AssetImage('assets/logo.jpeg'),
+                    width: 90,
+                    height: 90,
+                    fit: BoxFit.fill);
+              })));
+      // return Container(
+      //   width: 100,
+      //   height: 100,
+      //   margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+      //   child: ClipRRect(
+      //     borderRadius: BorderRadius.circular(5.0),
+      //     child: Image(
+      //       width: 100,
+      //       height: 100,
+      //       fit: BoxFit.fill,
+      //       image: NetworkImage(
+      //         item,
+      //       ),
+      //     ),
+      //   ),
+      // );
     }).toList();
 
     return SingleChildScrollView(
@@ -200,7 +218,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
 
   List dataSource() {
     // var items = List.generate(5, (i) => "Item $i");
-    var items = ["매장 정보 수정", "영업시간 수정", "메뉴관리", "주문내역 관리"];
+    var items = ["매장 정보 수정", /*"영업시간 수정",*/ "메뉴관리", "주문내역 관리"];
     return items;
   }
 
@@ -211,7 +229,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
         isRegister: false,
         store: store,
       ),
-      OperatingHoursSettingPage(),
+      // OperatingHoursSettingPage(),
       MenuManagementPage(
         storeId: widget.storeId,
       ),
@@ -233,10 +251,19 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
       itemCount: allItems.length,
       itemExtent: 46.0,
       itemBuilder: (context, index) {
-        return new GestureDetector(
+        return GestureDetector(
             //You need to make my child interactive
-            onTap: () => Navigator.push(context,
-                MaterialPageRoute(builder: (context) => selectedPage[index])),
+            onTap: () async {
+              final result = await Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => selectedPage[index]));
+              if (result.runtimeType == Store) {
+                await Future.delayed(Duration(seconds: 3));
+
+                setState(() {
+                  store = result;
+                });
+              }
+            },
             child: Column(
                 children: <Widget>[Text("${allItems[index]}"), Divider()]));
         // return ListTile(title: Text(allItems[index]));

@@ -8,8 +8,8 @@ part of 'update_store_post.dart';
 
 UpdateStorePost _$UpdateStorePostFromJson(Map<String, dynamic> json) =>
     UpdateStorePost(
-      owner_id: json['owner_id'] as int,
-      sotre_id: json['sotre_id'] as int,
+      owner_id: (json['owner_id'] as num).toInt(),
+      sotre_id: (json['sotre_id'] as num).toInt(),
       store_telephone: json['store_telephone'] as String?,
       store_description: json['store_description'] as String?,
       store_photo: json['store_photo'] as String?,

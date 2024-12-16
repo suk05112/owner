@@ -130,7 +130,7 @@ class _PhoneNumberVerificationWidgetState
                         controller: phoneNumberController,
                         keyboardType: TextInputType.number,
                         inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly, //숫자만!
+                          // FilteringTextInputFormatter.digitsOnly, //숫자만!
                           NumberFormatter(), // 자동하이픈
                           LengthLimitingTextInputFormatter(13)
                         ],
@@ -150,13 +150,14 @@ class _PhoneNumberVerificationWidgetState
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                               foregroundColor: Colors.white,
-                              backgroundColor: ColorAssset.color1,
+                              backgroundColor: ColorAssset.mainColor,
                               fixedSize: const Size(82, 55)),
                           onPressed: () {
                             setState(() {
                               isTouched = true;
                             });
-                            // verifyPhoneNumber("+821025446458");
+                            // verifyPhoneNumber("+821012345678");
+                            verifyPhoneNumber("+821025446458");
                           },
                           child: isTouched ? Text('재전송') : Text('인증'),
                         )),
@@ -191,7 +192,7 @@ class _PhoneNumberVerificationWidgetState
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
                                   foregroundColor: Colors.white,
-                                  backgroundColor: ColorAssset.color1,
+                                  backgroundColor: ColorAssset.mainColor,
                                   fixedSize: const Size(82, 55)),
                               onPressed: () async {
                                 PhoneAuthCredential credential =

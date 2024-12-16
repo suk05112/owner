@@ -7,8 +7,8 @@ part of 'store.dart';
 // **************************************************************************
 
 Store _$StoreFromJson(Map<String, dynamic> json) => Store(
-      owner_id: json['owner_id'] as int? ?? 0,
-      store_id: json['store_id'] as int? ?? 0,
+      owner_id: (json['owner_id'] as num?)?.toInt() ?? 0,
+      store_id: (json['store_id'] as num?)?.toInt() ?? 0,
       store_name: json['store_name'] as String? ?? "",
       store_logo: json['store_logo'] as String? ?? "",
       store_telephone: json['store_telephone'] as String? ?? "",
@@ -17,10 +17,12 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
               ?.map((e) => e as String)
               .toList() ??
           const [],
-      store_photo_cnt: json['store_photo_cnt'] as int? ?? 0,
+      store_photo_cnt: (json['store_photo_cnt'] as num?)?.toInt() ?? 0,
       store_address: json['store_address'] as String? ?? "",
       store_lat: (json['store_lat'] as num?)?.toDouble() ?? 0,
       store_lng: (json['store_lng'] as num?)?.toDouble() ?? 0,
+      business_registration:
+          Store._fileFromJson(json['business_registration'] as String?),
     );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
@@ -35,6 +37,8 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'store_address': instance.store_address,
       'store_lat': instance.store_lat,
       'store_lng': instance.store_lng,
+      'business_registration':
+          Store._fileToJson(instance.business_registration),
     };
 
 Body2 _$Body2FromJson(Map<String, dynamic> json) => Body2(
@@ -49,7 +53,7 @@ Map<String, dynamic> _$Body2ToJson(Body2 instance) => <String, dynamic>{
 
 StoreListResponse _$StoreListResponseFromJson(Map<String, dynamic> json) =>
     StoreListResponse(
-      statusCode: json['statusCode'] as int,
+      statusCode: (json['statusCode'] as num).toInt(),
       body: Body2.fromJson(json['body'] as Map<String, dynamic>),
     );
 
@@ -61,7 +65,7 @@ Map<String, dynamic> _$StoreListResponseToJson(StoreListResponse instance) =>
 
 StoreResponse _$StoreResponseFromJson(Map<String, dynamic> json) =>
     StoreResponse(
-      statusCode: json['statusCode'] as int,
+      statusCode: (json['statusCode'] as num).toInt(),
       store: Store.fromJson(json['store'] as Map<String, dynamic>),
     );
 
@@ -72,7 +76,7 @@ Map<String, dynamic> _$StoreResponseToJson(StoreResponse instance) =>
     };
 
 StoreCard _$StoreCardFromJson(Map<String, dynamic> json) => StoreCard(
-      status: json['status'] as int,
+      status: (json['status'] as num).toInt(),
       store_name: json['store_name'] as String,
       store_logo: json['store_logo'] as String,
     );

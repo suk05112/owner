@@ -2,6 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/StatusManager.dart';
+import 'package:owner/common/provier/user_provider.dart';
+import 'package:provider/provider.dart';
 
 import '../common/model/cafeInfo.dart';
 import 'Register/BasicInfoInputPage.dart';
@@ -15,6 +17,7 @@ import 'dart:convert';
 
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/provier/store_provider.dart';
+import 'package:owner/common/model/user.dart' as my_app;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -24,6 +27,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  my_app.User user = my_app.User(
+      owner_id: 0, name: 'name', email: 'email', phone_number: 'phone');
+
   TextEditingController idController = TextEditingController();
   TextEditingController pwController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -66,24 +72,28 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () async {
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) => Home()));
-                      // try {
-                      //   final newUser = await FirebaseAuth.instance
-                      //       .signInWithEmailAndPassword(
-                      //           email: "sujineasㅇmi1l@nav.com", password: "pw1234");
-                      //   if (newUser.user != null) {
-                      //     print("login success");
-                      //     print("new user " + newUser.user!.uid);
-                      //     // newUser.user.uid
-                      //     Navigator.push(
-                      //         context, MaterialPageRoute(builder: (context) => Home()));
-                      //   }
-                      // } on FirebaseAuthException catch (e) {
-                      //   if (e.code == 'user-not-found') {
-                      //     print('No user found for that email.');
-                      //   } else if (e.code == 'wrong-password') {
-                      //     print('Wrong password provided for that user.');
-                      //   }
-                      // }
+                      try {
+                        final newUser = await FirebaseAuth.instance
+                            .signInWithEmailAndPassword(
+                                email: "sujineasㅇmi1l@nav.com",
+                                password: "pw1234");
+                        if (newUser.user != null) {
+                          print("login success");
+                          print("new user " + newUser.user!.uid);
+                          user.email = newUser.user!.email!;
+                          Provider.of<UserProvider>(context, listen: false)
+                              .setUser(user);
+
+                          Navigator.push(context,
+                              MaterialPageRoute(builder: (context) => Home()));
+                        }
+                      } on FirebaseAuthException catch (e) {
+                        if (e.code == 'user-not-found') {
+                          print('No user found for that email.');
+                        } else if (e.code == 'wrong-password') {
+                          print('Wrong password provided for that user.');
+                        }
+                      }
                     },
                     child: Text("로그인"),
                   ),

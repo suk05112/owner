@@ -20,12 +20,14 @@ class MenuGetResponse {
 class MenuPostResponse {
   int statusCode;
   int menu_id;
-  String menu_url;
+  String menu_put_url;
+  String menu_get_url;
 
   MenuPostResponse(
       {required this.statusCode,
       required this.menu_id,
-      required this.menu_url});
+      required this.menu_put_url,
+      required this.menu_get_url});
 
   factory MenuPostResponse.fromJson(Map<String, dynamic> json) =>
       _$MenuPostResponseFromJson(json);
@@ -33,9 +35,39 @@ class MenuPostResponse {
 }
 
 @JsonSerializable()
+class MenuUpdateResponse {
+  int statusCode;
+  String msg;
+  String menu_put_url;
+  String menu_get_url;
+
+  MenuUpdateResponse(
+      {required this.statusCode,
+      required this.msg,
+      required this.menu_put_url,
+      required this.menu_get_url});
+
+  factory MenuUpdateResponse.fromJson(Map<String, dynamic> json) =>
+      _$MenuUpdateResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$MenuUpdateResponseToJson(this);
+}
+
+@JsonSerializable()
+class MenuDeleteResponse {
+  int statusCode;
+  String msg;
+
+  MenuDeleteResponse({required this.statusCode, required this.msg});
+
+  factory MenuDeleteResponse.fromJson(Map<String, dynamic> json) =>
+      _$MenuDeleteResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$MenuDeleteResponseToJson(this);
+}
+
+@JsonSerializable()
 class Menu {
   int menu_id;
-  int store_Id;
+  int store_id;
   String name;
   int price;
   String menu_image_url;
@@ -44,7 +76,7 @@ class Menu {
 
   Menu(
       {required this.menu_id,
-      required this.store_Id,
+      required this.store_id,
       required this.name,
       required this.price,
       required this.menu_image_url,

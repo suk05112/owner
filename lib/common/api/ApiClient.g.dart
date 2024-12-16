@@ -13,8 +13,7 @@ class _ApiClient implements ApiClient {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??=
-        'https://ot113tt778.execute-api.us-east-2.amazonaws.com/staging';
+    baseUrl ??= 'http://18.221.2.135';
   }
 
   final Dio _dio;
@@ -35,7 +34,7 @@ class _ApiClient implements ApiClient {
     )
             .compose(
               _dio.options,
-              '/store/${store_Id}',
+              '/store/info/${store_Id}',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -82,12 +81,39 @@ class _ApiClient implements ApiClient {
     )
             .compose(
               _dio.options,
-              '/store/',
+              '/store/register',
               queryParameters: queryParameters,
               data: _data,
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = StorePostResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
+  Future<StoreUpdateResponse> updateStore(
+    menu_id,
+    store,
+  ) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(store.toJson());
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<StoreUpdateResponse>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/store/update/${menu_id}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = StoreUpdateResponse.fromJson(_result.data!);
     return value;
   }
 
@@ -138,7 +164,10 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<MenuPostResponse> addMenu(menu) async {
+  Future<MenuPostResponse> addMenu(
+    store_id,
+    menu,
+  ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -152,12 +181,85 @@ class _ApiClient implements ApiClient {
     )
             .compose(
               _dio.options,
-              '/menu/',
+              '/menu/add/${store_id}',
               queryParameters: queryParameters,
               data: _data,
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = MenuPostResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
+  Future<MenuUpdateResponse> updateMenu(
+    menu_id,
+    menu,
+  ) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(menu.toJson());
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<MenuUpdateResponse>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/menu/update/${menu_id}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = MenuUpdateResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
+  Future<MenuDeleteResponse> deleteMenu(menu_id) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<MenuDeleteResponse>(Options(
+      method: 'DELETE',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/menu/delete/${menu_id}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = MenuDeleteResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
+  Future<GifticonPatchResponse> useGifticon(gifticon_id) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<GifticonPatchResponse>(Options(
+      method: 'PATCH',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/gifticon/use/${gifticon_id}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = GifticonPatchResponse.fromJson(_result.data!);
     return value;
   }
 

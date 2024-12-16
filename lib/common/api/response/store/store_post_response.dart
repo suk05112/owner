@@ -23,6 +23,24 @@ class StorePostResponse {
 }
 
 @JsonSerializable()
+class StoreUpdateResponse {
+  int statusCode;
+  String msg;
+  List<String> store_photo_urls;
+  List<String> store_photo_get_urls;
+
+  StoreUpdateResponse(
+      {required this.statusCode,
+      required this.msg,
+      required this.store_photo_urls,
+      required this.store_photo_get_urls});
+
+  factory StoreUpdateResponse.fromJson(Map<String, dynamic> json) =>
+      _$StoreUpdateResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$StoreUpdateResponseToJson(this);
+}
+
+@JsonSerializable()
 class PresignedUrl {
   String? logo;
   List<String>? storePhoto;

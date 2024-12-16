@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:owner/common/provier/gifticon_provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class QRCheckScreen extends StatefulWidget {
@@ -56,7 +57,10 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
         //QR스캔을 정지하고 이 화면을 닫으면서 QR결과값을 보내주도록한다.
         // if (event.code!.contains(widget.eventKeyword)) {
         this.controller!.dispose();
+        GifticonProvider().useGifticon(int.tryParse(event.code ?? "0") ?? 0);
         Navigator.pop(context, event.code);
+      } else {
+        print("여기 타버림ㅜ");
       }
       // }
     });

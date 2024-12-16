@@ -13,11 +13,11 @@ class Api {
   var client = ApiClient(Dio()..interceptors.add(CustomLogInterceptor()));
 
   static const String STAGING_URL =
-      "https://ot113tt778.execute-api.us-east-2.amazonaws.com/staging/";
+      "http://18.221.2.135";
   static const String STAGING_URL_V2 =
-      "https://ot113tt778.execute-api.us-east-2.amazonaws.com/staging/";
+      "http://18.221.2.135";
   static const String BASE_URL =
-      "https://ot113tt778.execute-api.us-east-2.amazonaws.com/staging/";
+      "http://18.221.2.135";
   static final _options = BaseOptions(
       baseUrl: STAGING_URL_V2,
       headers: _headers,

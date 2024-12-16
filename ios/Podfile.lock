@@ -138,6 +138,8 @@ PODS:
   - flutter_inappwebview/Core (0.0.1):
     - Flutter
     - OrderedSet (~> 5.0)
+  - flutter_secure_storage (6.0.0):
+    - Flutter
   - fluttertoast (0.0.2):
     - Flutter
     - Toast
@@ -228,6 +230,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_file_dialog (from `.symlinks/plugins/flutter_file_dialog/ios`)
   - flutter_inappwebview (from `.symlinks/plugins/flutter_inappwebview/ios`)
+  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - geocoding_ios (from `.symlinks/plugins/geocoding_ios/ios`)
   - GoogleUtilities
@@ -303,6 +306,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_file_dialog/ios"
   flutter_inappwebview:
     :path: ".symlinks/plugins/flutter_inappwebview/ios"
+  flutter_secure_storage:
+    :path: ".symlinks/plugins/flutter_secure_storage/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
   geocoding_ios:
@@ -359,6 +364,7 @@ SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_file_dialog: 4c014a45b105709a27391e266c277d7e588e9299
   flutter_inappwebview: 3d32228f1304635e7c028b0d4252937730bbc6cf
+  flutter_secure_storage: d33dac7ae2ea08509be337e775f6b59f1ff45f12
   fluttertoast: e9a18c7be5413da53898f660530c56f35edfba9c
   geocoding_ios: a389ea40f6f548de6e63006a2e31bf66ff80769a
   GoogleUtilities: ea963c370a38a8069cc5f7ba4ca849a60b6d7d15
@@ -380,4 +386,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 77981e5394e73bb83ffb4ece15177d831fbaf460
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

@@ -1,5 +1,14 @@
 import 'package:flutter/material.dart';
 
 class ColorAssset {
-  static const color1 = Color(0xff9D9BFF);
+  static const Color mainColor = Color(0xffFF4c4c);
+  // static final Color mainColor = hexToColor('#FF4C4C)');
+
+  static Color hexToColor(String hexString) {
+    String hexStr = hexString.replaceAll('#', '');
+    if (hexStr.length == 6) {
+      hexStr = "0xFF" + hexStr;
+    }
+    return Color(int.parse(hexStr, radix: 16));
+  }
 }

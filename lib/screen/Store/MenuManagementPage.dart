@@ -39,11 +39,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
         await Api().client.getMenuList(1).then((value) => setState(() {
               menu = value.menuList;
               menuLength = value;
-              print("메뉴 수" + menuLength.toString());
             }));
-
-    print("읽어온 메뉴" + menuLength.toString());
-    print(menu![0].description);
   }
 
   Widget buildItem(String text) {
@@ -96,13 +92,28 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                   ;
                   return InkWell(
                       onTap: () async {
-                        final modified_menu = await Navigator.push(
+                        final result = await Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) => EditMenuPage(
                                       menu: menu?[index],
-                                      storeId: 51,
+                                      storeId: menu![index].store_id,
+                                      menuId: menu?[index].menu_id,
                                     )));
+                        // 메뉴수정이면 Menu를 삭제면 int형의 menu_id를 리턴함
+                        if (result.runtimeType == Menu) {
+                          // 메뉴 리스트에서 수정된 메뉴를 반영
+                          print("메뉴 수정 완료");
+                          setState(() {
+                            menu![index] = result;
+                          });
+                        } else if (result.runtimeType == int) {
+                          setState(() {
+                            menu?.removeWhere((item) => item.menu_id == result);
+                          });
+                        } else {
+                          print("No menu modification received.");
+                        }
                       },
                       child: Column(
                         children: [
@@ -116,19 +127,19 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
               ),
             ),
             // Expanded(child: const ReorderableExample()),
-            Container(
-              height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.red,
-                ),
-                onPressed: () async {
-                  Navigator.pop(context);
-                },
-                child: Text('확인'),
-              ),
-            ),
+            // Container(
+            //   height: 48,
+            //   child: ElevatedButton(
+            //     style: ElevatedButton.styleFrom(
+            //       foregroundColor: Colors.white,
+            //       backgroundColor: Colors.red,
+            //     ),
+            //     onPressed: () async {
+            //       Navigator.pop(context);
+            //     },
+            //     child: Text('확인'),
+            //   ),
+            // ),
           ])),
     );
   }
@@ -170,9 +181,12 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                       MaterialPageRoute(
                           builder: (context) => EditMenuPage(
                                 storeId: widget.storeId,
-                                menuId: menuLength,
                               )));
-                  print("메뉴 추가 선택됨");
+                  setState(() {
+                    print("메뉴 수정 완료");
+
+                    menu!.add(modified_menu);
+                  });
                 } else if (value == 2) {
                   print("Logout menu is selected.");
                 }
@@ -183,13 +197,20 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   }
 
   Widget MenuItem(Menu menu) {
+    print("MenuItem: ${menu.menu_image_url}");
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Image.network(menu.menu_image_url,
+            headers: {
+              "Cache-Control": "no-cache",
+            },
             width: 90,
             height: 90,
             fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
+          print("Image load failed: $error");
+
           return Image(
               image: AssetImage('assets/americano.jpeg'),
               width: 90,
@@ -231,7 +252,6 @@ class _ReorderableExampleState extends State<ReorderableExample> {
   }
 
   Future<void> _initRetrieval() async {
-    print("이건 실행됨?");
     // menuList = service.retrieveMenu(_storeId);
   }
 
@@ -297,7 +317,6 @@ class _ReorderableExampleState extends State<ReorderableExample> {
                     },
                   );
                 } else {
-                  print("여기 걸림ㅜㅜ");
                   return const Center(
                     child: CircularProgressIndicator(),
                   );

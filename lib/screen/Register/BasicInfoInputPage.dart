@@ -170,7 +170,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                       'userName': "sujin",
                                       'email': idController.text,
                                       'storeId': "0000000"
-                                              .substring(7 - _myDocCnt.count) +
+                                              .substring(7 - _myDocCnt.count!) +
                                           _myDocCnt.count.toString(),
                                     });
                                   } else {

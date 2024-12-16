@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/model/cafeInfo.dart';
+import 'package:owner/common/model/user.dart';
+import 'package:owner/common/provier/gifticon_provider.dart';
+import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/register.dart';
 import 'package:owner/screen/Register/register_store_page.dart';
 
 import 'package:owner/screen/Store/cafe_list_page.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:owner/screen/home.dart';
 import 'package:provider/provider.dart';
 import 'common/provier/store_provider.dart';
 import 'firebase_options.dart';
@@ -29,25 +33,43 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    // User? user = Provider.of<UserProvider>(context).user;
+
     return MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (context) => StoreProvider()),
-        ],
-        child: MaterialApp(
-          title: 'Flutter Demo',
-          theme: ThemeData(
-            primarySwatch: Colors.blue,
-          ),
-          routes: {
-            '/': (context) => const LoginScreen(),
-            // '/': (context) => const MyHomePage(
-            //       title: 'my page',
-            //     ),
-            '/add': (context) => const CafeList(),
-            '/edit': (context) => const DocumentGuidePage(),
-          },
-          // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-        ));
+      providers: [
+        ChangeNotifierProvider(create: (context) => StoreProvider()),
+        ChangeNotifierProvider(create: (context) => GifticonProvider()),
+        ChangeNotifierProvider(create: (context) => UserProvider()),
+      ],
+      // child:
+      //  MaterialApp(
+      //   title: 'Flutter Demo',
+      //   theme: ThemeData(
+      //     primarySwatch: Colors.blue,
+      //   ),
+      child: Consumer<UserProvider>(
+        builder: (context, userProvider, child) {
+          User? user = userProvider.user;
+
+          return MaterialApp(
+            title: 'Flutter Demo',
+            theme: ThemeData(
+              primarySwatch: Colors.blue,
+            ),
+            home: user == null ? const LoginScreen() : const Home(),
+          );
+        },
+      ),
+      // routes: {
+      //   '/': (context) => const LoginScreen(),
+      //   // '/': (context) => const MyHomePage(
+      //   //       title: 'my page',
+      //   //     ),
+      //   '/add': (context) => const CafeList(),
+      //   '/edit': (context) => const DocumentGuidePage(),
+      // },
+      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+    );
   }
 }
 

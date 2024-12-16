@@ -58,10 +58,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   List<File> _storeImage = []; //갤러리에서 가져온 매장 사진
   List<String>? savedStoreImage; //기존 저장된 매장 사진
   File? _imageFile;
+  bool isClickedPhotoUploadPage = false;
 
   @override
   void initState() {
-    print("넘어온 이미지 ${widget.store?.business_registration ?? "이미지 없"}}");
     _isRegister = widget.isRegister;
     if (widget.store != null) {
       _store = widget.store;
@@ -71,8 +71,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
     //매장 정보 수정 화면일 경우
     if (_isRegister == false) {
-      // nameController.text =
-      // _store?.store_name == null ? "" : "${_store?.store_name}";
       telePhoneController.text =
           _store?.store_telephone == null ? "" : "${_store?.store_telephone}";
       // addrController.text =
@@ -81,6 +79,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
           ? ""
           : "${_store?.store_description}";
       savedStoreImage = _store?.store_photo_urls;
+      print("savedStoreImage ${savedStoreImage}");
     } else {
       savedStoreImage = null;
     }
@@ -114,26 +113,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                //매장 이름
-                // Text(
-                //   "매장 이름",
-                //   style: TextAssset.header2,
-                // ),
-                // SizedBox(height: 5),
-
-                // TextFormField(
-                //   controller: nameController,
-                //   keyboardType: TextInputType.text,
-                //   decoration: inputDecoration.copyWith(hintText: "매장 이름 입력"),
-                //   validator: (value) {
-                //     if (value == null || value.isEmpty) {
-                //       return 'Please enter Name';
-                //     }
-                //     return null;
-                //   },
-                // ),
-                // SizedBox(height: 5),
-
                 //가게 전호번호
                 Text(
                   "매장 전화번호",
@@ -306,7 +285,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                     minimumSize: const Size.fromHeight(50), // NEW
                   ),
                   onPressed: () async {
-                    registerStore();
                     // storePhoto
                     //     .asMap()
                     //     .forEach((index, value) => uploadImg(index, value));
@@ -314,11 +292,21 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                     setState(() {
                       // _profileImageURL = downloadURL;
                     });
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) =>
-                                const SettingOpeningDatePage()));
+
+                    if (_isRegister) {
+                      registerStore();
+
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  const SettingOpeningDatePage()));
+                    } else {
+                      if (_store != null) {
+                        await updateStore()
+                            .then((value) => Navigator.pop(context, _store));
+                      }
+                    }
                   },
                   child: Text('다음'),
                 ),
@@ -347,19 +335,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   void registerStore() async {
     print("register store 호출");
 
-    // Store store = Store(
-    //     owner_id: 1,
-    //     store_logo: "new logo",
-    //     store_name: nameController.text,
-    //     store_telephone: telePhoneController.text,
-    //     store_photo_cnt: 5,
-    //     store_photo: "photo",
-    //     store_address: "Adr",
-    //     store_lat: 1,
-    //     store_lng: 1,
-    //     store_description: introController.text);
-
-    // _store!.store_name = nameController.text;
     _store!.store_telephone = telePhoneController.text;
     _store!.store_photo_cnt = _storeImage.length;
     // _store!.store_address = addrController.text + detailAddrController.text;
@@ -393,6 +368,43 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     });
   }
 
+  Future<void> updateStore() async {
+    _store?.store_telephone = telePhoneController.text;
+    _store?.store_description = introController.text;
+    if (isClickedPhotoUploadPage == false) {
+      _store!.store_photo_cnt = -1;
+    } else {
+      _store!.store_photo_cnt = _storeImage.length;
+    }
+
+    await Api()
+        .client
+        .updateStore(_store!.store_id, _store!)
+        .then((response) async {
+      final store_photo_urls = response.store_photo_urls;
+      print("su>> store_photo_urls: ${store_photo_urls}");
+      _store?.store_photo_urls = response.store_photo_get_urls;
+
+      if (isClickedPhotoUploadPage == true) {
+        uploadStoreImages(store_photo_urls);
+      }
+    }).onError((error, stackTrace) {
+      if (error is DioError) {
+        print('DioError (fallback): $error.message}');
+      } else {
+        print('Unknown error: ${error.runtimeType} - $error');
+      }
+      // DioError dioError = error as DioError;
+      // print("등록 실패" + dioError.message);
+      // if (dioError.response?.statusCode == 404) {
+      //   // showToastMsg(Strings.error_network);
+      // } else {
+      //   // showToastMsg("Error : [${dioError.message}]");
+      // }
+      // result = false;
+    });
+  }
+
   //매장 로고 업로드
   Future<void> uploadLogoImage(store_logo_url) async {
     try {
@@ -418,12 +430,16 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   //매장 사진 업로드
   Future<void> uploadStoreImages(store_photo_urls) async {
+    print("store_photo_urls, ${store_photo_urls}");
+    print("su>>${_storeImage}");
+
     store_photo_urls.asMap().forEach((idx, store_photo_url) async {
       try {
         final response = await http.put(
           Uri.parse(store_photo_url),
           body: await _storeImage[idx].readAsBytes(),
         );
+        await Future.delayed(Duration(seconds: 1));
 
         if (response.statusCode == 200) {
           // 이미지 업로드 성공
@@ -504,9 +520,9 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   Widget StoreImagesGridview() {
     print("StoreImagesGridview:: 함수 진입");
-    print(savedStoreImage);
-    print("savedStoreImage.is null: ${savedStoreImage == null}");
-    print("savedStoreImage.isEmpty: ${savedStoreImage?.isEmpty}");
+    // print(savedStoreImage);
+
+    print("su3>>${_storeImage}");
 
     List<Widget> itemWidgets = [];
 
@@ -596,11 +612,16 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
                 setState(() {
                   _storeImage = result;
+                  isClickedPhotoUploadPage = true;
+                  print("su2>>${_storeImage}");
+                  _store?.store_photo_cnt = _storeImage.length;
+
+                  // savedStoreImage = result; // 수정 시 기존 저장된 이미지도 갱신
                 });
               },
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(5.0),
-                  child: Image(
+                  child: const Image(
                     image: AssetImage('assets/camera.jpeg'),
                     width: 100,
                     height: 100,

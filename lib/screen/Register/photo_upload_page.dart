@@ -212,6 +212,8 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
               print("pop될 이미지");
               print(selectedImages);
               final storageRef = FirebaseStorage.instance.ref();
+              print("su1>>${selectedImages}");
+
               Navigator.pop(context, selectedImages);
             },
             child: Text('확인'),

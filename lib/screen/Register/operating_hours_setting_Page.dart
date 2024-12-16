@@ -77,7 +77,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
     return Scaffold(
         appBar: AppBar(
           title: Text("운영시간 관리하기"),
-          backgroundColor: ColorAssset.color1,
+          backgroundColor: ColorAssset.mainColor,
         ),
         body: SafeArea(
             child: SingleChildScrollView(

@@ -2,10 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
-// import 'package:owner/common/DatabaseService.dart';
-// import 'package:owner/common/model/Menu.dart';
 import '../../common/api/response/menu.dart';
 
 import 'package:http/http.dart' as http;
@@ -33,9 +32,13 @@ class _EditMenuPageState extends State<EditMenuPage> {
   void initState() {
     super.initState();
     print("menu id " + widget.menuId.toString());
+    print("menu url ${widget.menu?.menu_image_url}");
+
     if (widget.menu != null) {
       menuNameInputController.text = widget.menu!.name;
       menuPriceInputController.text = widget.menu!.price.toString();
+      menuDescInputController.text = widget.menu!.description;
+
       _fileFromImageUrl().then((value) => {
             setState(() {
               _image = value;
@@ -72,17 +75,6 @@ class _EditMenuPageState extends State<EditMenuPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              // Text("메뉴수정"),
-              // Container(
-              //   width: double.infinity,
-              //   child: Column(
-              //       crossAxisAlignment: CrossAxisAlignment.center,
-              //       children: [
-              //         Image(
-              //             image: AssetImage('assets/americano.jpeg'),
-              //             height: 200),
-              //       ]),
-              // ),
               menuImage(),
               Container(
                 height: 15,
@@ -92,8 +84,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
               TextFormField(
                 controller: menuNameInputController,
                 keyboardType: TextInputType.text,
-                decoration: inputDecoration.copyWith(
-                    hintText: "${widget.menu?.description}"),
+                decoration: inputDecoration.copyWith(hintText: "메뉴명을 입력해 주세요"),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "빈 문자열";
@@ -106,29 +97,28 @@ class _EditMenuPageState extends State<EditMenuPage> {
               ),
               //가격
               Text("가격"),
-              Row(
-                children: [
-                  Flexible(
-                    child: TextFormField(
-                      controller: menuPriceInputController,
-                      keyboardType: TextInputType.text,
-                      decoration: inputDecoration.copyWith(
-                          hintText: "${widget.menu?.price}"),
-                      textAlign: TextAlign.end,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "빈 문자열";
-                        }
-                        return null;
-                      },
-                    ),
+              TextFormField(
+                controller: menuPriceInputController,
+                keyboardType: TextInputType.text,
+                decoration: InputDecoration(
+                  hintStyle: TextAssset.placeholder,
+                  suffixText: '원',
+                  hintText: "${widget.menu?.price}",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
                   ),
-                  Container(
-                    width: 5,
-                  ),
-                  Text("원")
-                ],
+                  isDense: true,
+                  contentPadding: EdgeInsets.fromLTRB(21, 14, 21, 18),
+                ),
+                textAlign: TextAlign.end,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "빈 문자열";
+                  }
+                  return null;
+                },
               ),
+
               Container(
                 height: 15,
               ),
@@ -137,8 +127,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
               TextFormField(
                 controller: menuDescInputController,
                 keyboardType: TextInputType.text,
-                decoration: inputDecoration.copyWith(
-                    hintText: "${widget.menu?.description}"),
+                decoration: inputDecoration.copyWith(hintText: "메뉴설명을 입력해 주세요"),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return "빈 문자열";
@@ -151,6 +140,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
               ),
 
               Text("상태"),
+
               Spacer(),
               Btns(context)
             ]),
@@ -159,81 +149,85 @@ class _EditMenuPageState extends State<EditMenuPage> {
   }
 
   Widget Btns(context) {
-    return Container(
-        width: double.infinity,
-        child: Row(
-          // mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            Flexible(
-                flex: 1,
-                child: SizedBox(
-                  width: double.infinity, // <-- Your width
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 151, 125, 253),
-                      // minimumSize: const Size.fromHeight(50), // NEW
-                    ),
-                    onPressed: () {
-                      print("edit menu:: onpressed");
-                      if (widget.menu == null) {
-                        print("edit menu:: onpressed:: if");
+    bool isUpdated = widget.menuId != null;
 
-                        //메뉴 새로 등록
-                        var new_menu = Menu(
-                            store_Id: 1,
-                            name: menuNameInputController.text,
-                            menu_id: -1,
-                            description: menuDescInputController.text,
-                            price: int.parse(menuPriceInputController.text),
-                            menu_image_url: "",
-                            status: 1);
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: ColorAssset.mainColor,
+                textStyle: TextStyle(fontWeight: FontWeight.w600)
 
-                        Api().client.addMenu(new_menu).then(
-                            (response) => {uploadMenuImage(response.menu_url)});
+                // minimumSize: const Size.fromHeight(50), // NEW
+                ),
+            onPressed: () {
+              //메뉴 새로 등록
+              var new_menu = Menu(
+                  store_id: 1,
+                  name: menuNameInputController.text,
+                  menu_id: -1,
+                  description: menuDescInputController.text,
+                  price: int.parse(menuPriceInputController.text),
+                  menu_image_url: "",
+                  status: 1);
 
-                        Navigator.pop(context, new_menu);
-                      } else {
-                        print("edit menu:: onpressed:: else");
+              if (isUpdated) {
+                //메뉴 수정
+                new_menu = Menu(
+                    store_id: widget.storeId,
+                    name: menuNameInputController.text,
+                    menu_id: widget.menu!.menu_id,
+                    description: menuDescInputController.text,
+                    price: int.parse(menuPriceInputController.text),
+                    menu_image_url: "",
+                    status: 1);
 
-                        //메뉴 업데이트
-                        var new_menu = Menu(
-                            store_Id: 1,
-                            name: menuNameInputController.text,
-                            menu_id: widget.menuId ?? -1,
-                            description: menuDescInputController.text,
-                            price: int.parse(menuPriceInputController.text),
-                            menu_image_url: "",
-                            status: 2);
-
-                        Navigator.pop(context, new_menu);
-                      }
-                    },
-                    child: Text('확인'),
-                  ),
-                )),
-            SizedBox(
-              width: 10,
+                Api()
+                    .client
+                    .updateMenu(new_menu.menu_id, new_menu)
+                    .then((response) async => {
+                          await uploadMenuImage(response.menu_put_url),
+                          new_menu.menu_image_url = response.menu_get_url,
+                          Navigator.pop(context, new_menu)
+                        });
+              } else {
+                //메뉴 등록
+                Api()
+                    .client
+                    .addMenu(new_menu.store_id, new_menu)
+                    .then((response) async => {
+                          await uploadMenuImage(response.menu_put_url),
+                          new_menu.menu_image_url = response.menu_get_url,
+                          Navigator.pop(context, new_menu)
+                        });
+              }
+            },
+            child: Text('확인'),
+          ),
+        ),
+        SizedBox(width: double.infinity, height: 5),
+        SizedBox(
+          width: double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: ColorAssset.mainColor,
+              // minimumSize: const Size.fromHeight(50), // NEW
             ),
-            Flexible(
-                flex: 1,
-                child: SizedBox(
-                  width: double.infinity, // <-- Your width
-                  height: 50,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 151, 125, 253),
-                      // minimumSize: const Size.fromHeight(50), // NEW
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text('이전'),
-                  ),
-                ))
-          ],
-        ));
+            onPressed: () {
+              Api().client.deleteMenu(widget.menu!.menu_id).then(
+                  (response) => {Navigator.pop(context, widget.menu!.menu_id)});
+            },
+            child: Text('메뉴 삭제'),
+          ),
+        )
+      ],
+    );
   }
 
   Widget menuImage() {
@@ -242,12 +236,21 @@ class _EditMenuPageState extends State<EditMenuPage> {
           pickMenuImage();
         },
         child: Container(
-          width: double.infinity,
+          width: 100,
+          height: 100,
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
             _image == null
                 ? Image.asset('assets/americano.jpeg')
-                : Image.file(File(_image!.path))
+                : Image.network(widget.menu?.menu_image_url ?? "",
+                    width: 90, height: 90, fit: BoxFit.fill,
+                    errorBuilder: (context, error, stackTrace) {
+                    return Image(
+                        image: AssetImage('assets/logo.jpeg'),
+                        width: 90,
+                        height: 90,
+                        fit: BoxFit.fill);
+                  })
           ]),
         ));
   }
@@ -259,8 +262,6 @@ class _EditMenuPageState extends State<EditMenuPage> {
     if (pickedImage != null) {
       setState(() {
         _image = File(pickedImage.path);
-        print("이미지 변경됨");
-        print(_image);
       });
     } else {
       print("pick image is null");

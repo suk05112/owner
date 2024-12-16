@@ -17,22 +17,23 @@ class Store {
   int store_photo_cnt;
   String store_address;
   double store_lat, store_lng;
+
+  @JsonKey(fromJson: _fileFromJson, toJson: _fileToJson)
   File? business_registration;
 
-  Store({
-    this.owner_id = 0,
-    this.store_id = 0,
-    this.store_name = "",
-    this.store_logo = "",
-    this.store_telephone = "",
-    this.store_description = "",
-    this.store_photo_urls = const [],
-    this.store_photo_cnt = 0,
-    this.store_address = "",
-    this.store_lat = 0,
-    this.store_lng = 0,
-    // this.business_registration = File(),
-  });
+  Store(
+      {this.owner_id = 0,
+      this.store_id = 0,
+      this.store_name = "",
+      this.store_logo = "",
+      this.store_telephone = "",
+      this.store_description = "",
+      this.store_photo_urls = const [],
+      this.store_photo_cnt = 0,
+      this.store_address = "",
+      this.store_lat = 0,
+      this.store_lng = 0,
+      this.business_registration});
   // Store({
   //   required this.owner_id,
   //   required this.store_name,
@@ -49,6 +50,17 @@ class Store {
 
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
   Map<String, dynamic> toJson() => _$StoreToJson(this);
+
+  static File? _fileFromJson(String? filePath) {
+    if (filePath == null) {
+      return null;
+    }
+    return File(filePath);
+  }
+
+  static String? _fileToJson(File? file) {
+    return file?.path;
+  }
 }
 
 @JsonSerializable()

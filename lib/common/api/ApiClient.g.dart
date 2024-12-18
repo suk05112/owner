@@ -21,6 +21,53 @@ class _ApiClient implements ApiClient {
   String? baseUrl;
 
   @override
+  Future<OwnerLoginResponse> login(uid) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<OwnerLoginResponse>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/owner/login/${uid}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = OwnerLoginResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
+  Future<OwnerRegisterResponse> registerOwner(owner) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(owner.toJson());
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<OwnerRegisterResponse>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/owner/register',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = OwnerRegisterResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
   Future<StoreResponse> getStoreDetailInfo(store_Id) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -260,6 +307,56 @@ class _ApiClient implements ApiClient {
             )
             .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = GifticonPatchResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
+  Future<InquiryPostResponse> subjectInquiry(
+    owner_id,
+    inquiry,
+  ) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(inquiry.toJson());
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<InquiryPostResponse>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/owner/inquiry/${owner_id}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = InquiryPostResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
+  Future<InquiryListResponse> getInquiry(owner_id) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<InquiryListResponse>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              '/owner/inquiry/${owner_id}',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = InquiryListResponse.fromJson(_result.data!);
     return value;
   }
 

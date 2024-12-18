@@ -41,12 +41,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => GifticonProvider()),
         ChangeNotifierProvider(create: (context) => UserProvider()),
       ],
-      // child:
-      //  MaterialApp(
-      //   title: 'Flutter Demo',
-      //   theme: ThemeData(
-      //     primarySwatch: Colors.blue,
-      //   ),
+
       child: Consumer<UserProvider>(
         builder: (context, userProvider, child) {
           User? user = userProvider.user;

@@ -1,11 +1,12 @@
 import 'dart:async';
-// import 'dart:html';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:owner/common/api/API.dart';
+import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/model/request/OwnerPost.dart';
+import 'package:owner/common/widget/CommonDialog.dart';
 
 import '../../common/widget/CommonWidget.dart';
 import 'DocumentInputPage.dart';
@@ -49,6 +50,11 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   TextEditingController idController = TextEditingController();
   TextEditingController pwController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  String? name;
+  String? email; // 이메일 값을 저장
+  String? phone_number;
+  String? password;
+  String? confirmPassword; // 비밀번호 확인 값
 
   @override
   Widget build(BuildContext context) {
@@ -62,41 +68,47 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                 title: "이름",
                 hintText: "Enter your name",
                 validator: validateName,
+                onChanged: (newName) {
+                  setState(() {
+                    name = newName;
+                  });
+                },
               ),
-              PhoneNumberVerificationWidget(successCallback: (phoneNumber) {
+              PhoneNumberVerificationWidget(successCallback: (newPhoneNumber) {
                 // 여기서 phoneNumber 변수에 인증된 전화번호가 들어옵니다.
-                if (phoneNumber != null) {
-                  print("회원가입 전화번호 인증 성공: $phoneNumber");
+                if (newPhoneNumber != null) {
+                  print("회원가입 전화번호 인증 성공: $newPhoneNumber");
+                  phone_number = newPhoneNumber;
                 } else {
                   print("전화번호 인증 실패");
                 }
               }), //전화번호
-              IDVerificationWidget(), //아이디
+              IDVerificationWidget(
+                onEmailChanged: (newEmail) {
+                  setState(() {
+                    email = newEmail; // 이메일 값 업데이트
+                  });
+                },
+              ), //아이디
               InputInfoWidget(
                 title: "비밀번호",
                 hintText: "Enter your email",
                 validator: validatePhoneNumber,
+                onChanged: (newPassword) {
+                  setState(() {
+                    password = newPassword;
+                  });
+                },
               ),
               InputInfoWidget(
                 title: "비밀번호 확인",
                 hintText: "Enter your email",
                 validator: validatePhoneNumber,
-              ),
-              InputInfoWidget(
-                title: "이메일",
-                hintText: "Enter your email",
-                validator: validatePhoneNumber,
-              ),
-              TextButton(
-                onPressed: () async {
-                  _formKey.currentState?.validate();
-
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SignUpCompletePage()));
+                onChanged: (newConfirmPassword) {
+                  setState(() {
+                    confirmPassword = newConfirmPassword;
+                  });
                 },
-                child: Text("가입하기"),
               ),
 
               Container(
@@ -119,13 +131,18 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                               // minimumSize: const Size.fromHeight(50), // NEW
                             ),
                             onPressed: () {
-                              Navigator.pop(context);
+                              // Navigator.pop(context);
+                              CommonDialog.show(
+                                  context: context,
+                                  title: "인증 실패",
+                                  content: "다시 확인",
+                                  buttonText: "확인");
                             },
                             child: Text('이전'),
                           ),
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 10,
                       ),
                       Flexible(
@@ -155,24 +172,20 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                 UserCredential userCredential =
                                     await FirebaseAuth.instance
                                         .createUserWithEmailAndPassword(
-                                            email: "sujineami1l3@nav.com",
-                                            password: "pw1234")
+                                            email: email ?? "",
+                                            password: password ?? "")
                                         .then((value) async {
-                                  print("됨?");
                                   if (value.user!.email != null) {
-                                    print("됨?2");
                                     FirebaseAuth.instance.currentUser!
                                         .updateDisplayName("displayName");
-                                    FirebaseFirestore.instance
-                                        .collection('user')
-                                        .doc(value.user!.uid)
-                                        .set({
-                                      'userName': "sujin",
-                                      'email': idController.text,
-                                      'storeId': "0000000"
-                                              .substring(7 - _myDocCnt.count!) +
-                                          _myDocCnt.count.toString(),
-                                    });
+
+                                    OwnerRegisterPost owner = OwnerRegisterPost(
+                                        uid: value.user!.uid,
+                                        phone_number: phone_number ?? "",
+                                        name: name ?? "",
+                                        email: email ?? "");
+
+                                    Api().client.registerOwner(owner);
                                   } else {
                                     print("여기 걸림"); // Navigator.pop(context);
                                   }
@@ -183,24 +196,31 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                               } on FirebaseAuthException catch (e) {
                                 if (e.code == 'weak-password') {
                                   print('the password provided is too weak');
+                                  CommonDialog.show(
+                                      context: context,
+                                      title: "비밀번호 확인",
+                                      content: "취약한 비밀번호입니다. 다른 비밀번호를 사용해주세요.",
+                                      buttonText: "확인");
                                 } else if (e.code == 'email-already-in-use') {
                                   print(
                                       'The account already exists for that email.');
+                                  CommonDialog.show(
+                                      context: context,
+                                      title: "아이디 확인",
+                                      content:
+                                          "이미 사용중인 아이디입니다. 다른 아이디를 사용해주세요.",
+                                      buttonText: "확인");
                                 } else {
                                   print(e.code);
-                                  print('11111');
                                 }
-                              } catch (e) {
-                                print('끝');
-                              }
-                              ;
+                              } catch (e) {}
 
-                              OwnerPost body = OwnerPost(
-                                  uid: "flutter uid",
-                                  password: "flutter pw",
-                                  phone: "flutter phone",
-                                  name: "sujinnn",
-                                  bankbook: "aldjfladf");
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SignUpCompletePage()));
+
                               // prov.postRequest(body);
                               // Navigator.push(
                               //     context,
@@ -233,12 +253,17 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
 }
 
 class InputInfoWidget extends StatefulWidget {
-  InputInfoWidget(
-      {required this.title, required this.hintText, required this.validator});
+  InputInfoWidget({
+    required this.title,
+    required this.hintText,
+    required this.validator,
+    required this.onChanged,
+  });
 
   final String title;
   String hintText;
   Function(String?) validator;
+  final Function(String) onChanged;
 
   @override
   State<InputInfoWidget> createState() => _InputInfoWidgetState();
@@ -261,6 +286,9 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
             decoration: inputDecoration.copyWith(hintText: widget.hintText),
             validator: (value) {
               return widget.validator(value);
+            },
+            onChanged: (value) {
+              widget.onChanged(value); // 입력 값 변경 시 콜백 호출
             },
           ),
         ]);
@@ -314,6 +342,10 @@ void signUpWithEmail(String email, String password) async {
 }
 
 class IDVerificationWidget extends StatefulWidget {
+  final Function(String) onEmailChanged; // 이메일 변경 시 호출되는 콜백
+
+  IDVerificationWidget({required this.onEmailChanged});
+
   @override
   State<IDVerificationWidget> createState() => _IDVerificationWidgetState();
 }
@@ -340,13 +372,12 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
                     child: TextFormField(
                       // style: TextStyle(fontSize: 15, height: 0.1),
                       controller: idController,
-                      keyboardType: TextInputType.number,
-
                       decoration:
                           inputDecoration.copyWith(hintText: "아이디를 입력하세요"),
                       onChanged: (text) async {
                         final check = await checkEmail(text);
                         setState(() => hasRecipe = check);
+                        widget.onEmailChanged(text); // 부모에게 이메일 값 전달
                       },
                       // validator: (_) => (hasRecipe) ? "Exists" : null,
                       validator: (value) {
@@ -364,22 +395,22 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
                       },
                     ),
                   ),
-                  SizedBox(
-                    width: 10,
-                  ),
-                  Expanded(
-                    flex: 1,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 151, 125, 253),
-                        minimumSize: const Size.fromHeight(50), // NEW
-                      ),
-                      onPressed: () {
-                        _formKey.currentState?.validate();
-                      },
-                      child: Text('중복 확인'),
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: 10,
+                  // ),
+                  // Expanded(
+                  //   flex: 1,
+                  //   child: ElevatedButton(
+                  //     style: ElevatedButton.styleFrom(
+                  //       backgroundColor: Color.fromARGB(255, 151, 125, 253),
+                  //       minimumSize: const Size.fromHeight(50), // NEW
+                  //     ),
+                  //     onPressed: () {
+                  //       _formKey.currentState?.validate();
+                  //     },
+                  //     child: Text('중복 확인'),
+                  //   ),
+                  // ),
                 ],
               )
             ]));
@@ -404,17 +435,6 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
     } else {
       print("안걸림");
     }
-    // checkEmail(value).then((result) => check = result);
-    // if (check == false) {
-    //   print("값 걸림");
-    // } else {
-    //   print("안걸림");
-    // }
-
-    // if (await checkEmail(value) == false) {
-    //   return "중복된 이메일 입니다. 다른 이메일을 입력해주세요.";
-    // }
-
     return null;
   }
 

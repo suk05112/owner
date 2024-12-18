@@ -24,19 +24,22 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   // Future<List<Menu>>? menuList;
   List<Menu>? menu;
   var menuLength;
+  late int _storeId;
 
   final data = [1, 2, 3, 4, 5];
 
   @override
   void initState() {
     super.initState();
+    _storeId = widget.storeId;
     _initRetrieval();
+    print("menu page sotreId: ${widget.storeId}");
   }
 
   Future<void> _initRetrieval() async {
     print("이건 실행됨?");
     var menuList =
-        await Api().client.getMenuList(1).then((value) => setState(() {
+        await Api().client.getMenuList(_storeId).then((value) => setState(() {
               menu = value.menuList;
               menuLength = value;
             }));
@@ -54,93 +57,53 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-          Spacer(),
-          Text("메뉴 관리"),
-          Spacer(),
-          PopupMenu(),
-        ]),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [Spacer(), Text("메뉴 관리"), Spacer(), PopupMenu()],
+        ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
-      body: Center(
-          child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-            // Container(
-            //   height: 50,
-            // ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(8),
-                itemCount: menu?.length ?? 0 + 1,
-                itemBuilder: (BuildContext context, int index) {
-                  menuLength = index;
-                  // if (index == 0) return HeaderTile();
-                  if (menu == null) {
-                    print(menu);
-                    return Text("등록된 메뉴가 없습니다. 메뉴를 추가해주세요.");
-                    // return CircularProgressIndicator();
-                  }
-                  if (index == (menu?.length ?? 1)) {
-                    return TextButton(
-                      onPressed: () {},
-                      child: Text("메뉴 추가"),
-                    );
-                  }
-                  ;
-                  return InkWell(
+      body: menu == null
+          ? Center(child: CircularProgressIndicator())
+          : menu!.isEmpty
+              ? Center(child: Text("등록된 메뉴가 없습니다. 메뉴를 추가해주세요."))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(8),
+                  itemCount: menu!.length + 1,
+                  itemBuilder: (context, index) {
+                    if (index == menu!.length) {
+                      return TextButton(
+                        onPressed: () {},
+                        child: Text("메뉴 추가"),
+                      );
+                    }
+                    return InkWell(
                       onTap: () async {
                         final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => EditMenuPage(
-                                      menu: menu?[index],
-                                      storeId: menu![index].store_id,
-                                      menuId: menu?[index].menu_id,
-                                    )));
-                        // 메뉴수정이면 Menu를 삭제면 int형의 menu_id를 리턴함
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => EditMenuPage(
+                              menu: menu![index],
+                              storeId: _storeId,
+                              menuId: menu![index].menu_id,
+                            ),
+                          ),
+                        );
                         if (result.runtimeType == Menu) {
-                          // 메뉴 리스트에서 수정된 메뉴를 반영
-                          print("메뉴 수정 완료");
                           setState(() {
                             menu![index] = result;
                           });
                         } else if (result.runtimeType == int) {
                           setState(() {
-                            menu?.removeWhere((item) => item.menu_id == result);
+                            menu!.removeWhere((item) => item.menu_id == result);
                           });
-                        } else {
-                          print("No menu modification received.");
                         }
                       },
-                      child: Column(
-                        children: [
-                          MenuItem(menu![index]),
-                          Container(
-                            height: 5,
-                          )
-                        ],
-                      ));
-                },
-              ),
-            ),
-            // Expanded(child: const ReorderableExample()),
-            // Container(
-            //   height: 48,
-            //   child: ElevatedButton(
-            //     style: ElevatedButton.styleFrom(
-            //       foregroundColor: Colors.white,
-            //       backgroundColor: Colors.red,
-            //     ),
-            //     onPressed: () async {
-            //       Navigator.pop(context);
-            //     },
-            //     child: Text('확인'),
-            //   ),
-            // ),
-          ])),
+                      child: MenuItem(menu![index]),
+                    );
+                  },
+                ),
     );
   }
 

@@ -21,6 +21,9 @@ class Store {
   @JsonKey(fromJson: _fileFromJson, toJson: _fileToJson)
   File? business_registration;
 
+  @JsonKey(fromJson: _fileFromJson, toJson: _fileToJson)
+  File? bank_book;
+
   Store(
       {this.owner_id = 0,
       this.store_id = 0,
@@ -33,7 +36,8 @@ class Store {
       this.store_address = "",
       this.store_lat = 0,
       this.store_lng = 0,
-      this.business_registration});
+      this.business_registration,
+      this.bank_book});
   // Store({
   //   required this.owner_id,
   //   required this.store_name,

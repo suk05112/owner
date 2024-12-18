@@ -157,7 +157,13 @@ class _PhoneNumberVerificationWidgetState
                               isTouched = true;
                             });
                             // verifyPhoneNumber("+821012345678");
-                            verifyPhoneNumber("+821025446458");
+                            String rawPhoneNumber = phoneNumberController.text;
+                            if (rawPhoneNumber.startsWith("0")) {
+                              rawPhoneNumber =
+                                  rawPhoneNumber.replaceFirst("0", "");
+                            }
+                            final phoneNumber = "+82$rawPhoneNumber";
+                            verifyPhoneNumber(phoneNumber);
                           },
                           child: isTouched ? Text('재전송') : Text('인증'),
                         )),
@@ -213,7 +219,7 @@ class _PhoneNumberVerificationWidgetState
                                     print("phone로그인된것 로그아웃");
 
                                     widget.successCallback(
-                                        authCredential.user!.uid);
+                                        phoneNumberController.text);
                                   }
                                 }
                                 // signInWithPhoneAuthCredential(phoneAuthCredential);
@@ -267,32 +273,27 @@ class NumberFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
       TextEditingValue oldValue, TextEditingValue newValue) {
-    var text = newValue.text;
+    var text = newValue.text.replaceAll('-', ''); // 기존 하이픈 제거
 
-    if (newValue.selection.baseOffset == 0) {
+    if (text.isEmpty) {
       return newValue;
     }
 
     var buffer = StringBuffer();
     for (int i = 0; i < text.length; i++) {
       buffer.write(text[i]);
-      var nonZeroIndex = i + 1;
-      if (nonZeroIndex <= 3) {
-        if (nonZeroIndex % 3 == 0 && nonZeroIndex != text.length) {
-          buffer.write('-'); // Add double spaces.
-        }
-      } else {
-        if (nonZeroIndex % 7 == 0 &&
-            nonZeroIndex != text.length &&
-            nonZeroIndex > 4) {
+      if (i == 2 || i == 6) {
+        // 3번째(인덱스 2)와 7번째(인덱스 6) 글자 뒤에 하이픈 추가
+        if (i < text.length - 1) {
           buffer.write('-');
         }
       }
     }
 
-    var string = buffer.toString();
-    return newValue.copyWith(
-        text: string,
-        selection: TextSelection.collapsed(offset: string.length));
+    var formattedText = buffer.toString();
+    return TextEditingValue(
+      text: formattedText,
+      selection: TextSelection.collapsed(offset: formattedText.length),
+    );
   }
 }

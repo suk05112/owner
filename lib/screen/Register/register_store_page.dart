@@ -345,6 +345,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       var storeId = response.store_id;
       var store_logo_url = response.store_logo_url;
       final store_photo_urls = response.store_photo_urls;
+      final bankBook_put_url = response.bankBook_put_url;
+      final business_put_url = response.business_put_url;
 
       print(storeId);
       print(store_logo_url);
@@ -352,6 +354,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
       uploadLogoImage(store_logo_url);
       uploadStoreImages(store_photo_urls);
+      uploadBusinessImage(bankBook_put_url, business_put_url);
 
       print("등록성공" + storeId.toString());
 
@@ -382,6 +385,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         .updateStore(_store!.store_id, _store!)
         .then((response) async {
       final store_photo_urls = response.store_photo_urls;
+
       print("su>> store_photo_urls: ${store_photo_urls}");
       _store?.store_photo_urls = response.store_photo_get_urls;
 
@@ -456,39 +460,35 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     });
   }
 
-  _addressAPI() async {
-    Kpostal model = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => KpostalView(
-              kakaoKey: '8ba72a270b2ab65050c15f1aa2cce9a9',
-              useLocalServer: false,
-              callback: (Kpostal result) {
-                setState(() {
-                  print("주소callback");
-                  print(result.postCode);
-                  // addrController.text =
-                  // result.address ?? "주소 없음" + result.buildingName ?? "";
-                  _store!.store_lat = result.latitude as double;
-                  _store!.store_lng = result.longitude as double;
+  //통장사본, 사업자등록증 업로드
+  Future<void> uploadBusinessImage(bankBook_put_url, business_put_url) async {
+    try {
+      http.Response response = await http.put(
+        Uri.parse(bankBook_put_url),
+        body: await _store?.bank_book?.readAsBytes(),
+        headers: {
+          // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
+        },
+      );
 
-                  // this.address = result.address;
-                  // this.latitude = result.latitude.toString();
-                  // this.longitude = result.longitude.toString();
-                  // this.kakaoLatitude = result.kakaoLatitude.toString();
-                  // this.kakaoLongitude = result.kakaoLongitude.toString();
-                });
-              }),
-        ));
+      http.Response response2 = await http.put(
+        Uri.parse(business_put_url),
+        body: await _store?.business_registration?.readAsBytes(),
+        headers: {
+          // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
+        },
+      );
 
-    // Kpostal result = await Navigator.push(context, MaterialPageRoute(builder: (_) => KpostalView()));
-    //     print(result.address);
-    print("검색된 주소");
-    print('${model.addressEng!} ${model.address!} ${model.buildingName!}');
-    print("latitude: ${model.latitude} / longitude: ${model.longitude}");
-    print("through KAKAO Geocoder");
-    print(
-        "latitude: ${model.kakaoLatitude} / longitude: ${model.kakaoLongitude}");
+      if (response.statusCode == 200 && response2.statusCode == 200) {
+        // 이미지 업로드 성공
+        print('Image uploaded successfully.');
+      } else {
+        // 이미지 업로드 실패
+        print('Image upload failed. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
   }
 
   final inputDecoration = InputDecoration(

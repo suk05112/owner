@@ -1,9 +1,15 @@
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kpostal/kpostal.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
+import 'package:owner/common/model/user.dart';
+import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/screen/Register/SingUpCompletePage.dart';
 import 'package:owner/screen/Register/register_store_page.dart';
+import 'package:provider/provider.dart';
+import 'package:remedi_kopo/remedi_kopo.dart';
 import 'dart:io';
 
 import '../../common/Style/TextAsset.dart';
@@ -29,10 +35,8 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
 
   final _formKey = GlobalKey<FormState>();
 
-  Store _store = Store(owner_id: 1);
+  late Store _store;
   late File? imageFile;
-  File? _businessRegistration;
-  File? _bankBook;
   bool _isChecked = false;
 
   var userImage;
@@ -45,6 +49,13 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
     isDense: true,
     contentPadding: EdgeInsets.fromLTRB(21, 14, 21, 18),
   );
+
+  void initState() {
+    super.initState();
+    User? user = Provider.of<UserProvider>(context, listen: false).user;
+
+    _store = Store(owner_id: user?.owner_id ?? 0);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +84,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                             controller: nameController,
                             keyboardType: TextInputType.text,
                             decoration:
-                                inputDecoration.copyWith(hintText: "매장 이름 입력"),
+                                inputDecoration.copyWith(hintText: "이름 입력"),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter Name';
@@ -186,7 +197,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                             validator: validatebankBook,
                           ),
 
-                          ExpansionTile(
+                          const ExpansionTile(
                               iconColor: Colors.black,
                               collapsedIconColor: Colors.black,
                               title: Text(
@@ -231,8 +242,8 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                       // width: 30,
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Color.fromARGB(
-                                              255, 151, 125, 253),
+                                          backgroundColor:
+                                              ColorAssset.mainColor,
                                           // minimumSize: const Size.fromHeight(50), // NEW
                                         ),
                                         onPressed: () {
@@ -253,8 +264,8 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                       // width: 30,
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: Color.fromARGB(
-                                              255, 151, 125, 253),
+                                          backgroundColor:
+                                              ColorAssset.mainColor,
                                           // minimumSize: const Size.fromHeight(50), // NEW
                                         ),
                                         onPressed: () {
@@ -265,8 +276,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                           _store.store_name =
                                               storenNameController.text;
                                           _store.store_address =
-                                              addrController.text +
-                                                  detailAddrController.text;
+                                              "${addrController.text} ${detailAddrController.text}";
 
                                           Navigator.push(
                                               context,
@@ -277,7 +287,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                                         store: _store,
                                                       )));
                                         },
-                                        child: Text('다음'),
+                                        child: const Text('다음'),
                                       ),
                                     ),
                                   ),
@@ -326,7 +336,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
         context,
         MaterialPageRoute(
           builder: (_) => KpostalView(
-              kakaoKey: '8ba72a270b2ab65050c15f1aa2cce9a9',
+              kakaoKey: '16dd251b86287783606ea600a98c7131',
               useLocalServer: false,
               callback: (Kpostal result) {
                 setState(() {
@@ -429,52 +439,4 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
       ],
     );
   }
-
-/*
-  Future getImage() async {
-    final pickedFile = await picker.getImage(
-      source: ImageSource.gallery,
-      imageQuality: 65,
-    );
-
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
-      }
-    });
-  }
-
-  Future uploadImage() async {
-    FirebaseStorage storage =
-        FirebaseStorage.instanceFor(bucket: "gs://cafe-owner.appspot.com");
-    final storageRef = FirebaseStorage.instance.ref();
-
-    Reference reference =
-        storageRef.child('images/${DateTime.now().toString()}.jpeg');
-    UploadTask uploadTask = reference.putFile(_image);
-    TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-    String imageUrl = await taskSnapshot.ref.getDownloadURL();
-    print('Image URL: $imageUrl');
-  }
-
-  Future<String?> uploadImageToFirebaseStorage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
-    final File imageFile = File(pickedFile!.path);
-
-    String fileName = DateTime.now().toString();
-    Reference storageReference = FirebaseStorage.instance.ref().child(fileName);
-
-    try {
-      await storageReference.putFile(imageFile);
-      String imageUrl = await storageReference.getDownloadURL();
-      return imageUrl;
-    } on FirebaseException catch (e) {
-      print(e);
-      return null;
-    }
-  }
-
-  */
 }

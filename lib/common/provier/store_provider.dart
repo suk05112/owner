@@ -19,10 +19,10 @@ class StoreProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchStoreList() async {
+  Future<void> fetchStoreList(int owner_id) async {
     try {
       print("store_provider::fetchStoreList:: fetch 호출");
-      var response = await Api().client.getStoreList(1);
+      var response = await Api().client.getStoreList(owner_id);
       setStoreCard(response.body.store);
     } catch (error) {
       print("store_provider::fetchStoreList:: fetch 오류: $error");

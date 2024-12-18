@@ -1,3 +1,4 @@
+import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
@@ -5,6 +6,7 @@ import 'package:owner/common/api/response/owner/find_ownername_response.dart';
 import 'package:owner/common/api/response/store/store_post_response.dart';
 import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/common/api/response/GifticonResponse.dart';
+import 'package:owner/common/model/inquiry.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:dio/dio.dart';
 
@@ -13,6 +15,16 @@ part 'ApiClient.g.dart';
 @RestApi(baseUrl: "http://18.221.2.135")
 abstract class ApiClient {
   factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
+
+  @GET("/owner/login/{uid}")
+  Future<OwnerLoginResponse> login(
+    @Path('uid') String uid,
+  );
+
+  @POST("/owner/register")
+  Future<OwnerRegisterResponse> registerOwner(
+    @Body() OwnerRegisterPost owner,
+  );
 
   @GET("/store/info/{store_Id}")
   Future<StoreResponse> getStoreDetailInfo(
@@ -62,8 +74,20 @@ abstract class ApiClient {
   Future<MenuDeleteResponse> deleteMenu(
     @Path('menu_id') int menu_id,
   );
+
   @PATCH("/gifticon/use/{gifticon_id}")
   Future<GifticonPatchResponse> useGifticon(
     @Path('gifticon_id') int gifticon_id,
+  );
+
+  @POST("/owner/inquiry/{owner_id}")
+  Future<InquiryPostResponse> subjectInquiry(
+    @Path('owner_id') int owner_id,
+    @Body() Inquiry inquiry,
+  );
+
+  @GET("/owner/inquiry/{owner_id}")
+  Future<InquiryListResponse> getInquiry(
+    @Path('owner_id') int owner_id,
   );
 }

@@ -23,6 +23,7 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
       store_lng: (json['store_lng'] as num?)?.toDouble() ?? 0,
       business_registration:
           Store._fileFromJson(json['business_registration'] as String?),
+      bank_book: Store._fileFromJson(json['bank_book'] as String?),
     );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
@@ -39,6 +40,7 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'store_lng': instance.store_lng,
       'business_registration':
           Store._fileToJson(instance.business_registration),
+      'bank_book': Store._fileToJson(instance.bank_book),
     };
 
 Body2 _$Body2FromJson(Map<String, dynamic> json) => Body2(

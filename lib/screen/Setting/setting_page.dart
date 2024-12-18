@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:owner/screen/Setting/user_info_page.dart';
+import 'package:owner/screen/inquiry_page.dart';
 
 import '../../common/Style/CommonSection.dart';
-import '../../common/Style/TextAsset.dart';
-import '../../common/api/request/store/store.dart';
-import '../../common/model/cafeInfo.dart';
-import '../../common/model/OperatingHours.dart';
 import '../Register/operating_hours_setting_Page.dart';
-import '../Register/register_store_page.dart';
 import '../Store/MenuManagementPage.dart';
 
 class SettingPage extends StatefulWidget {
@@ -64,13 +61,11 @@ class _SettingPageState extends State<SettingPage> {
   List getSelectedPage() {
     // var items = List.generate(5, (i) => "Item $i");
     var items = [
-      OperatingHoursSettingPage(),
+      UserInfoPage(),
       MenuManagementPage(
         storeId: _storeId,
       ),
-      MenuManagementPage(
-        storeId: _storeId,
-      ),
+      InquiryPage(),
       const OperatingHoursSettingPage(),
       OperatingHoursSettingPage(),
       MenuManagementPage(

@@ -2,7 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/StatusManager.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:provider/provider.dart';
 
 import '../common/model/cafeInfo.dart';
@@ -30,9 +32,8 @@ class _LoginScreenState extends State<LoginScreen> {
   my_app.User user = my_app.User(
       owner_id: 0, name: 'name', email: 'email', phone_number: 'phone');
 
-  TextEditingController idController = TextEditingController();
-  TextEditingController pwController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  String userId = '';
+  String userPw = '';
 
   @override
   Widget build(BuildContext context) {
@@ -50,48 +51,49 @@ class _LoginScreenState extends State<LoginScreen> {
                       fontWeight: FontWeight.w400,
                     ),
                   ),
-                  Container(
-                    width: 100,
-                    height: 100,
-                    child: Image.network(
-                      'https://cafe-platform-bucket.s3.amazonaws.com/dog.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAZXR665FZ6NASG4GZ%2F20230904%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Date=20230904T150858Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=664b89c45e23a0cdac3505dd102e17812731065d68193ce0f476e8bddc886de9',
-                    ),
-                  ),
                   SizedBox(
                     height: 18,
                   ),
-                  LoginFormWidget(),
+                  LoginFormWidget(onLoginInputChanged: (id, pw) {
+                    setState(() {
+                      userId = id;
+                      userPw = pw;
+                    });
+                  }),
                   SizedBox(
                     height: 90,
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 151, 125, 253),
+                      backgroundColor: ColorAssset.mainColor,
                       minimumSize: const Size.fromHeight(50), // NEW
                     ),
                     onPressed: () async {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => Home()));
                       try {
+                        print('입력된 pw ${userPw}');
                         final newUser = await FirebaseAuth.instance
                             .signInWithEmailAndPassword(
-                                email: "sujineasㅇmi1l@nav.com",
-                                password: "pw1234");
+                                email: userId, password: userPw);
                         if (newUser.user != null) {
-                          print("login success");
-                          print("new user " + newUser.user!.uid);
-                          user.email = newUser.user!.email!;
-                          Provider.of<UserProvider>(context, listen: false)
-                              .setUser(user);
-
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => Home()));
+                          user.email = userId;
+                          login(newUser.user!.uid);
+                        } else {
+                          CommonDialog.show(
+                              context: context,
+                              title: "로그인 실패",
+                              content: "입력된 정보가 올바르지 않습니다. 다시 입력해주세요",
+                              buttonText: "확인");
                         }
                       } on FirebaseAuthException catch (e) {
                         if (e.code == 'user-not-found') {
                           print('No user found for that email.');
                         } else if (e.code == 'wrong-password') {
                           print('Wrong password provided for that user.');
+                          CommonDialog.show(
+                              context: context,
+                              title: "로그인 실패",
+                              content: "잘못된 비밀번호 입니다. 다시 입력해주세요",
+                              buttonText: "확인");
                         }
                       }
                     },
@@ -133,53 +135,33 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   ),
                   TextButton(
-                    onPressed: () async {
-                      print("main init state 호출");
-                      var picker = ImagePicker();
-                      var image =
-                          await picker.pickImage(source: ImageSource.gallery);
-                      try {
-                        http.Response response = await http.put(
-                          Uri.parse(
-                              "https://cafe-platform-bucket.s3.amazonaws.com/logo/store_logo_30.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAZXR665FZ6NASG4GZ%2F20230906%2Fap-northeast-2%2Fs3%2Faws4_request&X-Amz-Date=20230906T163856Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=e58aa6dd5f0df0cca763df1e398ea0871af40bda87cebdc065f0636e98df098f"),
-                          body: await image?.readAsBytes(),
-                          headers: {
-                            'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
-                          },
-                        );
-
-                        if (response.statusCode == 200) {
-                          // 이미지 업로드 성공
-                          print('Image uploaded successfully.');
-                        } else {
-                          // 이미지 업로드 실패
-                          print(
-                              'Image upload failed. Status code: ${response.statusCode}');
-                        }
-                      } catch (e) {
-                        print('Error: $e');
-                      }
-
-                      // StoreProvider().getStoreList();
-                      // CafeInfo response = await Api().client.getStoreList(2);
-                      // Api().client.getStoreList(2).then((it) => {logger.i(it));
-
-                      // await FirebaseAuth.instance.signOut();
-                      // if (FirebaseAuth.instance.currentUser?.uid == null) {
-                      //   print("로그 아웃 후 Null");
-                      // } else {
-                      //   print("로그아웃 안됨");
-                      // }
-                    },
+                    onPressed: () async {},
                     child: Text("로그아웃"),
                   ),
                 ])));
   }
+
+  void login(uid) async {
+    print("로그인 함수 호출 ${uid}");
+    var response = await Api().client.login(uid);
+    if (response.owner_id != null) {
+      print(
+          "로그인 성공 ${response.owner_id}, ${response.name}, ${response.phone_number}");
+      user.owner_id = response.owner_id ?? 0;
+      user.phone_number = response.phone_number;
+      user.name = response.name;
+      Navigator.push(context, MaterialPageRoute(builder: (context) => Home()));
+    }
+
+    Provider.of<UserProvider>(context, listen: false).setUser(user);
+  }
 }
 
 class LoginFormWidget extends StatefulWidget {
-  const LoginFormWidget({Key? key}) : super(key: key);
+  final Function(String id, String pw) onLoginInputChanged;
 
+  const LoginFormWidget({Key? key, required this.onLoginInputChanged})
+      : super(key: key);
   @override
   State<LoginFormWidget> createState() => _LoginFormWidgetState();
 }
@@ -208,6 +190,10 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                   }
                   return null;
                 },
+                onChanged: (value) {
+                  widget.onLoginInputChanged(
+                      idController.text, pwController.text);
+                },
               ),
               const SizedBox(height: 8.0),
               TextFormField(
@@ -220,6 +206,10 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                     return 'Please enter Name';
                   }
                   return null;
+                },
+                onChanged: (value) {
+                  widget.onLoginInputChanged(
+                      idController.text, pwController.text);
                 },
               ),
             ]));

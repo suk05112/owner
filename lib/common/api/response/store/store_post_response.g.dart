@@ -14,6 +14,8 @@ StorePostResponse _$StorePostResponseFromJson(Map<String, dynamic> json) =>
       store_photo_urls: (json['store_photo_urls'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
+      bankBook_put_url: json['bankBook_put_url'] as String,
+      business_put_url: json['business_put_url'] as String,
     )..presignedUrl = json['presignedUrl'] == null
         ? null
         : PresignedUrl.fromJson(json['presignedUrl'] as Map<String, dynamic>);
@@ -25,6 +27,8 @@ Map<String, dynamic> _$StorePostResponseToJson(StorePostResponse instance) =>
       'store_logo_url': instance.store_logo_url,
       'store_photo_urls': instance.store_photo_urls,
       'presignedUrl': instance.presignedUrl,
+      'bankBook_put_url': instance.bankBook_put_url,
+      'business_put_url': instance.business_put_url,
     };
 
 StoreUpdateResponse _$StoreUpdateResponseFromJson(Map<String, dynamic> json) =>

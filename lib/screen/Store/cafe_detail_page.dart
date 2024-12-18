@@ -6,10 +6,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/model/user.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/provier/store_provider.dart';
+import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/main.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
+import 'package:provider/provider.dart';
 
 // import '../../common/DatabaseService.dart';
 import '../../common/Style/TextAsset.dart';
@@ -56,12 +59,6 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
     var response = await StoreProvider().getDetailStore(_storeId);
     store = response;
     print(" _initRetrieval 호출1 ${store?.store_photo_urls ?? "photo url null"}");
-
-    // StoreProvider()
-    //     .getDetailStore()
-    //     .then((value) => print(" _initRetrieval 호출2 ${value}"));
-
-    // print(" _initRetrieval 호출2 ${store}");
     return response;
   }
 
@@ -141,12 +138,23 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                             Divider(),
 
                             //운영시간
+                            // Column(
+                            //   crossAxisAlignment: CrossAxisAlignment.start,
+                            //   children: [
+                            //     Text("운영시간", style: TextAssset.header2),
+                            //     // Spacer(),
+                            //     Text(store?.store_description ?? "매장 설명 없음",
+                            //         style: TextAssset.body)
+                            //   ],
+                            // ),
+
+                            //운영시간
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("운영시간", style: TextAssset.header2),
+                                Text("매장주소", style: TextAssset.header2),
                                 // Spacer(),
-                                Text(store?.store_description ?? "매장 설명 없음",
+                                Text(store?.store_address ?? "매장 설명 없음",
                                     style: TextAssset.body)
                               ],
                             ),
@@ -224,6 +232,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
 
   List dataSource2() {
     // var items = List.generate(5, (i) => "Item $i");
+    print("detail page sotreId: ${widget.storeId}");
     var items = [
       RegisterStorePage(
         isRegister: false,

@@ -3,27 +3,23 @@ import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
+import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonWidget.dart';
 import 'package:owner/common/api/API.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/register.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_core/firebase_core.dart';
-
-import 'package:owner/common/model/cafeInfo.dart';
-
 import '../../common/api/request/store/store.dart';
 import '../../common/model/CafeBasicInfo.dart';
 import '../../common/provier/store_provider.dart';
 import '../Register/DocumentInputPage.dart';
-import '../Register/register_store_page.dart';
 import 'cafe_detail_page.dart';
+import 'package:owner/common/model/user.dart' as my_app;
 
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(CafeList());
+  runApp(const CafeList());
 }
 
 class CafeList extends StatefulWidget {
@@ -41,54 +37,50 @@ class _CafeListState extends State<CafeList> {
 
   @override
   void initState() {
-    print("init state 호출");
-    // getData();
     super.initState();
-    Provider.of<StoreProvider>(context, listen: false).fetchStoreList();
-    print("init state:: StoreProvider.fetchStoreList 호출 후 ");
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    my_app.User? user = Provider.of<UserProvider>(context, listen: false).user;
+    print("여기 호출됨? ${user?.owner_id}");
 
-    // _initRetrieval();
+    Provider.of<StoreProvider>(context, listen: false)
+        .fetchStoreList(user?.owner_id ?? 0);
+    // });
+
+    print("init state:: StoreProvider.fetchStoreList 호출 후 ");
   }
 
   Future _initRetrieval() async {
-    print(" _initRetrieval 호출");
     print(FirebaseAuth.instance.currentUser?.displayName);
     print(FirebaseAuth.instance.currentUser?.email);
-    // getStoreList(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("내 매장관리"),
+        centerTitle: true,
+      ),
       body: Consumer<StoreProvider>(
         builder: (context, storeProvider, child) {
           List<Store> storeList = storeProvider.storeCards ?? [];
-          print("cafe_list_builder:: ${storeList}");
           return Column(
             children: <Widget>[
               Expanded(
-                child: ListView.separated(
+                child: ListView.builder(
                   itemCount: storeList.length + 1,
                   itemBuilder: (context, index) {
                     if (index == storeList.length) {
                       return Column(
                         children: <Widget>[
-                          // storeCard(null),
                           TextButton(
                             onPressed: () {
-                              print("container 눌림");
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) =>
                                       const DocumentInputPage(),
                                 ),
-                                // MaterialPageRoute(
-                                //   builder: (context) => const RegisterStorePage(
-                                //     isRegister: true,
-                                //     store: null,
-                                //   ),
-                                // ),
                               );
                             },
                             child: const Text("매장 추가"),
@@ -98,10 +90,6 @@ class _CafeListState extends State<CafeList> {
                     } else {
                       return storeCard(storeList[index]);
                     }
-                  },
-                  separatorBuilder: (BuildContext context, int index) {
-                    if (index == 0) return SizedBox.shrink();
-                    return const Divider();
                   },
                 ),
               ),
@@ -119,9 +107,7 @@ class _CafeListState extends State<CafeList> {
             Consumer<StoreProvider>(builder: (context, storeProvider, child) {
           return Scaffold(
               body: Column(children: [
-            Text("dmdkdkkd"),
             Expanded(
-                // child: ListView.separated(
                 child: ListView.builder(
               itemCount: storeProvider.storeCards?.length ?? 5,
               itemBuilder: (context, index) {
@@ -131,19 +117,11 @@ class _CafeListState extends State<CafeList> {
                     storeCard(storeProvider.storeCards?[index]),
                     TextButton(
                       onPressed: () {
-                        print("container 눌림");
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
                                     const DocumentInputPage()));
-                        // Navigator.push(
-                        //     context,
-                        //     MaterialPageRoute(
-                        //         builder: (context) => const RegisterStorePage(
-                        //               isRegister: true,
-                        //               store: null,
-                        //             )));
                       },
                       child: const Text("매장 추가"),
                     ),
@@ -152,11 +130,7 @@ class _CafeListState extends State<CafeList> {
                   return storeCard(storeProvider.storeCards?[index]);
                 }
               },
-              // separatorBuilder: (BuildContext context, int index) {
-              //   if (index == 0) return SizedBox.shrink();
-              //   return const Divider();
-              // },
-            ))
+            )),
           ]));
         }));
   }
@@ -167,15 +141,12 @@ class _CafeListState extends State<CafeList> {
     try {
       final response = await Api().client.getStoreList(1);
       currentContext?.read<StoreProvider>().setStoreCard(response.body.store);
-      print("get store list");
       print(response);
-      // _isFirstSlotLoaded = true;
     } catch (error) {
-      // stopLoading();
       currentContext?.read<StoreProvider>().setStoreCard(null);
       // _isFirstSlotLoaded = true;
       showModalDialog(context,
-          "서버에서 오류가 발생하였습니다.\n앱 종료 후 다시 접속해 주세요.\n문제가 지속될 경우, 고객센터(service@loplat.com)로 문의부탁드립니다.");
+          "서버에서 오류가 발생하였습니다.\n앱 종료 후 다시 접속해 주세요.\n문제가 지속될 경우, 고객센터(service@.com)로 문의부탁드립니다.");
       rethrow;
     }
   }
@@ -183,7 +154,6 @@ class _CafeListState extends State<CafeList> {
   GestureDetector storeCard(Store? store) {
     return GestureDetector(
         onTap: () {
-          print("item 선택됨");
           Navigator.push(
               context,
               MaterialPageRoute(
@@ -194,33 +164,40 @@ class _CafeListState extends State<CafeList> {
         child: SizedBox(
           height: 130,
           child: Container(
-            margin: EdgeInsets.all(10),
-            padding: EdgeInsets.all(5),
+            margin: const EdgeInsets.all(10),
+            padding: const EdgeInsets.fromLTRB(20, 5, 10, 5),
             decoration: BoxDecoration(
-              border: Border.all(color: Color.fromARGB(255, 0, 0, 0)),
-              borderRadius: BorderRadius.all(Radius.circular(5.0)),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.5),
+                  spreadRadius: 5,
+                  blurRadius: 7,
+                  offset: const Offset(0, 3), // changes position of shadow
+                ),
+              ],
             ),
+            width: 400,
             child: Row(children: [
-              Expanded(
-                  child:
-                      // Image(
-                      //     image: AssetImage('assets/logo.jpeg'),
-                      //     width: 90,
-                      //     height: 90,
-                      //     fit: BoxFit.fill)
-                      Image.network(store!.store_logo,
-                          width: 90, height: 90, fit: BoxFit.fill,
-                          errorBuilder: (context, error, stackTrace) {
-                return Image(
+              Image.network(store!.store_logo,
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
+                return const Image(
                     image: AssetImage('assets/logo.jpeg'),
                     width: 90,
                     height: 90,
                     fit: BoxFit.fill);
-              })),
-              Spacer(),
-              Text("${store?.store_name}"),
+              }),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [Text(store.store_name), Text(store.store_address)],
+                ),
+              )
             ]),
-            width: 400,
           ),
         ));
   }

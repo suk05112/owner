@@ -167,7 +167,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
             onPressed: () {
               //메뉴 새로 등록
               var new_menu = Menu(
-                  store_id: 1,
+                  store_id: widget.storeId,
                   name: menuNameInputController.text,
                   menu_id: -1,
                   description: menuDescInputController.text,

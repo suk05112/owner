@@ -10,12 +10,16 @@ class StorePostResponse {
   String store_logo_url;
   List<String> store_photo_urls;
   PresignedUrl? presignedUrl;
+  String bankBook_put_url;
+  String business_put_url;
 
   StorePostResponse(
       {required this.statusCode,
       required this.store_id,
       required this.store_logo_url,
-      required this.store_photo_urls});
+      required this.store_photo_urls,
+      required this.bankBook_put_url,
+      required this.business_put_url});
 
   factory StorePostResponse.fromJson(Map<String, dynamic> json) =>
       _$StorePostResponseFromJson(json);

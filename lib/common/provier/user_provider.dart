@@ -45,6 +45,7 @@ class UserProvider with ChangeNotifier {
 
   /// Load the user from secure storage (private method)
   Future<User?> _loadUserFromStorage() async {
+    print("_loadUserFromStorage 호출됨");
     try {
       final userJson = await _storage.read(key: "user");
       if (userJson != null) {

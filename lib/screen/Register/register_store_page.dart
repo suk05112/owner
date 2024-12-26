@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/APIDioClient.dart';
 import 'package:owner/common/api/request/store/store.dart';
@@ -100,11 +101,12 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text("매장 등록하기"),
         elevation: 0,
-        // title: const Text("Add Employee"),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Form(
           key: _formKey,
@@ -114,11 +116,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 //가게 전호번호
-                Text(
+                const Text(
                   "매장 전화번호",
                   style: TextAssset.header2,
                 ),
-                SizedBox(height: 5),
+                const SizedBox(height: 5),
 
                 TextFormField(
                   controller: telePhoneController,
@@ -141,10 +143,21 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 TextFormField(
                   controller: introController,
                   keyboardType: TextInputType.text,
-                  // maxLines: null,  //height 제한 X, 글자 수 에 따라 유동적으로 변함
-                  maxLines: 6,
+                  maxLines: null, //height 제한 X, 글자 수 에 따라 유동적으로 변함
+                  // maxLines: 6,
                   // maxLength: 200,
-                  decoration: inputDecoration.copyWith(hintText: "매장 소개 입력"),
+                  decoration: InputDecoration(
+                    hintStyle: TextAssset.placeholder,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    isDense: true,
+                    contentPadding: EdgeInsets.fromLTRB(21, 10, 21, 10),
+                    // contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    // contentPadding: EdgeInsets.symmetric(vertical: 5), // <-- SEE HERE
+                    // contentPadding:
+                    //     const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0)
+                  ).copyWith(hintText: "매장 소개 입력"),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter store description';
@@ -281,8 +294,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                     : const Text("매장 이름/주소/사업자 등록번호 로고 수정은 문의로만 변경 가능합니다."),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Color.fromARGB(255, 151, 125, 253),
+                    backgroundColor: ColorAssset.mainColor,
                     minimumSize: const Size.fromHeight(50), // NEW
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
                   ),
                   onPressed: () async {
                     // storePhoto
@@ -308,7 +324,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                       }
                     }
                   },
-                  child: Text('다음'),
+                  child: const Text(
+                    '다음',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             ),
@@ -348,10 +367,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       final bankBook_put_url = response.bankBook_put_url;
       final business_put_url = response.business_put_url;
 
-      print(storeId);
-      print(store_logo_url);
-      print(response.store_photo_urls[0]);
-
       uploadLogoImage(store_logo_url);
       uploadStoreImages(store_photo_urls);
       uploadBusinessImage(bankBook_put_url, business_put_url);
@@ -361,7 +376,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       // ApiServiceImpl().uploadImage();
     }).onError((error, stackTrace) {
       DioError dioError = error as DioError;
-      print("등록 실패" + dioError.message);
+      // print("등록 실패" + dioError.message);
       if (dioError.response?.statusCode == 404) {
         // showToastMsg(Strings.error_network);
       } else {
@@ -493,15 +508,19 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   final inputDecoration = InputDecoration(
     hintStyle: TextAssset.placeholder,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(5.0),
-      // borderSide: const BorderSide(
-      //   color: Colors.redAccent,
-      //   width: 2,
-      // ),
-    ),
+    border:
+        UnderlineInputBorder(borderSide: new BorderSide(style: BorderStyle.none)
+            // borderRadius: BorderRadius.circular(8.0),
+
+            // border: OutlineInputBorder(
+            //   borderRadius: BorderRadius.circular(5.0),
+            // borderSide: const BorderSide(
+            //   color: Colors.redAccent,
+            //   width: 2,
+            // ),
+            ),
     isDense: true,
-    contentPadding: EdgeInsets.fromLTRB(21, 14, 21, 18),
+    contentPadding: EdgeInsets.fromLTRB(0, 10, 21, 10),
     // contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
     // contentPadding: EdgeInsets.symmetric(vertical: 5), // <-- SEE HERE
     // contentPadding:
@@ -510,10 +529,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   final buttonStyle = ButtonStyle(
       foregroundColor:
-          MaterialStateProperty.all<Color>(Color.fromARGB(255, 0, 0, 0)),
+          WidgetStateProperty.all<Color>(Color.fromARGB(255, 0, 0, 0)),
       backgroundColor:
-          MaterialStateProperty.all<Color>(Color.fromARGB(255, 154, 152, 152)),
-      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          WidgetStateProperty.all<Color>(Color.fromARGB(255, 154, 152, 152)),
+      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
           RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
               side: BorderSide(color: Color.fromARGB(255, 255, 255, 255)))));
@@ -563,7 +582,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                   child: Image.network(item,
                       width: 90, height: 90, fit: BoxFit.fill,
                       errorBuilder: (context, error, stackTrace) {
-                    return Image(
+                    return const Image(
                         image: AssetImage('assets/logo.jpeg'),
                         width: 90,
                         height: 90,
@@ -573,8 +592,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       }
     } else {
       //photo uplopad page에서 저장버튼을 누르고 back
-      print("else 탐");
-
       itemWidgets = _storeImage.map((item) {
         return Container(
           width: 100,
@@ -607,7 +624,9 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                   context,
                   MaterialPageRoute(
                       builder: (context) => PhotoUploadePage(
-                          savedImageUrl: savedStoreImage ?? [])),
+                            savedImageUrl: savedStoreImage ?? [],
+                            storeImage: _storeImage,
+                          )),
                 );
 
                 setState(() {

@@ -4,21 +4,22 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
 // import 'package:flutter_reorderable_grid_view/widgets/reorderable_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/main.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:http/http.dart' as http;
-
-// import 'package:flutter_reorderable_grid_view/entities/order_update_entity.dart';
-// import 'package:flutter_reorderable_grid_view/widgets/reorderable_builder.dart';
-// import 'package:flutter_reorderable_grid_view/widgets/reorderable_scrolling_listener.dart';
-// import 'package:flutter_reorderable_grid_view/widgets/widgets.dart';
+import 'package:image/image.dart' as img;
+import 'package:exif/exif.dart';
 
 class PhotoUploadePage extends StatefulWidget {
-  const PhotoUploadePage({Key? key, required this.savedImageUrl});
+  const PhotoUploadePage(
+      {Key? key, required this.savedImageUrl, required this.storeImage});
   final List<String> savedImageUrl;
+  final List<File> storeImage;
 
   @override
   State<PhotoUploadePage> createState() => _PhotoUploadePageState();
@@ -36,9 +37,12 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
   final data = [1, 2, 3, 4, 5];
 
   bool isInit = false;
+  bool isLoading = false; // Track loading state
+
   @override
   void initState() {
     super.initState();
+    selectedImages = widget.storeImage;
     _initRetrieval();
   }
 
@@ -53,6 +57,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
       var url = e.value;
       // setState(() async {
       selectedImages.add(await getImageFileFromUrl(url, idx));
+
       // });
     }));
 
@@ -107,6 +112,10 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
   }
 
   Future getImage() async {
+    setState(() {
+      isLoading = true; // Start loading
+    });
+
     final pickedFile = await picker.pickMultiImage(
         //   imageQuality: 100, // To set quality of images
         // maxHeight: 1000, // To set maxheight of images that you want in your app
@@ -121,34 +130,80 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     // variable so that we can easily show them in UI
     if (xfilePick.isNotEmpty) {
       for (var i = 0; i < xfilePick.length; i++) {
-        selectedImages.add(File(xfilePick[i].path));
+        selectedImages.add(await fixExifRotation(xfilePick[i].path));
+
+        // selectedImages.add(File(xfilePick[i].path));
       }
       setState(
-        () {},
+        () {
+          isLoading = false; // Images are loaded, stop loading
+        },
       );
     } else {
-      // If no image is selected it will show a
-      // snackbar saying nothing is selected
+      // If no image is selected, show a snackbar
+      setState(() {
+        isLoading = false; // Stop loading
+      });
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Nothing is selected')));
     }
   }
 
-/*
-  Future<File> getImageFileFromAssets(String path) async {
-    final byteData = await rootBundle.load('assets/$path');
+  Future<File> fixExifRotation(String imagePath) async {
+    final originalFile = File(imagePath);
+    List<int> imageBytes = await originalFile.readAsBytes();
 
-    final file = File('${(await getTemporaryDirectory()).path}/$path');
-    file.writeAsBytes(byteData.buffer
-        .asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+    final originalImage = img.decodeImage(Uint8List.fromList(imageBytes));
 
-    return file;
+    final height = originalImage!.height;
+    final width = originalImage.width;
+
+    // Let's check for the image size
+    // This will be true also for upside-down photos but it's ok for me
+    if (height >= width) {
+      // I'm interested in portrait photos so
+      // I'll just return here
+      return originalFile;
+    }
+
+    // We'll use the exif package to read exif data
+    // This is map of several exif properties
+    // Let's check 'Image Orientation'
+    final exifData = await readExifFromBytes(imageBytes);
+
+    img.Image fixedImage = img.copyRotate(originalImage, angle: 0);
+
+    if (exifData.containsKey('Image Orientation')) {
+      final orientation = exifData['Image Orientation']!.printable;
+      print("Image Orientation: $orientation");
+    } else {
+      print("key 없음");
+    }
+    if (height < width) {
+      print('Rotating image necessary');
+      // rotate
+      if (exifData['Image Orientation']!.printable.contains('Horizontal')) {
+        // fixedImage = img.copyRotate(originalImage, angle: 90);
+      } else if (exifData['Image Orientation']!.printable.contains('180')) {
+        // fixedImage = img.copyRotate(originalImage, angle: -90);
+      } else if (exifData['Image Orientation']!.printable.contains('CW')) {
+        fixedImage = img.copyRotate(originalImage, angle: -90);
+      } else {
+        fixedImage = img.copyRotate(originalImage, angle: 0);
+      }
+    }
+
+    // Here you can select whether you'd like to save it as png
+    // or jpg with some compression
+    // I choose jpg with 100% quality
+    final fixedFile =
+        await originalFile.writeAsBytes(img.encodeJpg(fixedImage));
+
+    return fixedFile;
   }
-  */
 
   @override
   Widget build(BuildContext context) {
-    print("build 실행");
     Widget buildItem(String text) {
       return Card(
         key: ValueKey(text),
@@ -194,99 +249,93 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
       );
     }
 
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Container(
-            height: 40,
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () async {
-              print("pop될 이미지");
-              print(selectedImages);
-              final storageRef = FirebaseStorage.instance.ref();
-              print("su1>>${selectedImages}");
+        appBar: AppBar(
+          title: const Text("매장사진 업로드"),
+        ),
+        body: Container(
+          margin: EdgeInsets.fromLTRB(10, 5, 10, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              FutureBuilder<List<File>>(
+                future: _loadImages(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done) {
+                    print("connection done");
+                  }
+                  if ((snapshot.connectionState == ConnectionState.waiting &&
+                          isInit == false) ||
+                      (isLoading == true)) {
+                    return const CircularProgressIndicator(); // 데이터 로딩 중일 때 표시할 위젯
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    isInit = true;
+                    // 데이터 로딩이 완료된 경우 화면을 그립니다.
+                    selectedImages =
+                        isInit == false ? snapshot.data ?? [] : selectedImages;
+                    print("build:: ${selectedImages}");
 
-              Navigator.pop(context, selectedImages);
-            },
-            child: Text('확인'),
-          ),
-          FutureBuilder<List<File>>(
-            future: _loadImages(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.done) {
-                print("connection done");
-              }
-              if (snapshot.connectionState == ConnectionState.waiting &&
-                  isInit == false) {
-                return CircularProgressIndicator(); // 데이터 로딩 중일 때 표시할 위젯
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else {
-                isInit = true;
-                // 데이터 로딩이 완료된 경우 화면을 그립니다.
-                selectedImages =
-                    isInit == false ? snapshot.data ?? [] : selectedImages;
-                print("build:: ${selectedImages}");
+                    return Expanded(
+                      // height: 800,
+                      child: ReorderableGridView.count(
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        crossAxisCount: 3,
+                        header: [
+                          GestureDetector(
+                            onTap: () {
+                              getImage();
+                            },
+                            child: const Image(
+                              image: AssetImage('assets/camera.jpeg'),
+                              width: 1500,
+                              height: 100,
+                            ),
+                          )
+                        ],
 
-                return Container(
-                  height: 800,
-                  child: ReorderableGridView.count(
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    crossAxisCount: 3,
-                    header: [
-                      GestureDetector(
-                        onTap: () {
-                          print("touch 됨");
-                          getImage();
+                        children: selectedImages.asMap().entries.map((entry) {
+                          final index = entry.key;
+                          final image = entry.value;
+                          return selectedImg(image, index);
+                        }).toList(),
+                        // children:
+                        // selectedImages.map((e) => selectedImg(e)).toList(),
+                        // children: this.data.map((e) => buildItem("$e")).toList(),
+                        onReorder: (oldIndex, newIndex) {
+                          setState(() {
+                            // final element = data.removeAt(oldIndex);
+                            // data.insert(newIndex, element);
+                            final element = selectedImages.removeAt(oldIndex);
+                            selectedImages.insert(newIndex, element);
+                          });
                         },
-                        child: Image(
-                          image: AssetImage('assets/camera.jpeg'),
-                          width: 1500,
-                          height: 100,
-                        ),
-                      )
-                    ],
+                      ),
+                    );
+                  }
+                },
+              ),
+              Spacer(),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: ColorAssset.mainColor,
+                ),
+                onPressed: () async {
+                  print("pop될 이미지");
+                  print(selectedImages);
+                  final storageRef = FirebaseStorage.instance.ref();
+                  print("su1>>${selectedImages}");
 
-                    children: selectedImages.asMap().entries.map((entry) {
-                      final index = entry.key;
-                      final image = entry.value;
-                      return selectedImg(image, index);
-                    }).toList(),
-                    // children:
-                    // selectedImages.map((e) => selectedImg(e)).toList(),
-                    // children: this.data.map((e) => buildItem("$e")).toList(),
-                    onReorder: (oldIndex, newIndex) {
-                      setState(() {
-                        // final element = data.removeAt(oldIndex);
-                        // data.insert(newIndex, element);
-                        final element = selectedImages.removeAt(oldIndex);
-                        selectedImages.insert(newIndex, element);
-                      });
-                    },
-                  ),
-                );
-
-                // return Container(
-                //   height: 800,
-                //   child: ReorderableGridView.count(
-                //     // ...
-                //   ),
-                // );
-              }
-            },
+                  Navigator.pop(context, selectedImages);
+                },
+                child: Text('확인'),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ));
   }
 
   void _onReorder(int oldIndex, int newIndex) {

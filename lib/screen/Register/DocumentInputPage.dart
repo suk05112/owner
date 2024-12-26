@@ -41,13 +41,13 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
 
   var userImage;
 
-  final inputDecoration = InputDecoration(
+  final inputDecoration = const InputDecoration(
     hintStyle: TextAssset.placeholder,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(5.0),
-    ),
+    border: UnderlineInputBorder(
+        // borderRadius: BorderRadius.circular(5.0),
+        ),
     isDense: true,
-    contentPadding: EdgeInsets.fromLTRB(21, 14, 21, 18),
+    contentPadding: EdgeInsets.fromLTRB(0, 5, 21, 5),
   );
 
   void initState() {
@@ -62,10 +62,11 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
     return Scaffold(
         appBar: AppBar(
           elevation: 0,
-          // title: const Text("Add Employee"),
+          title: const Text("매장 등록하기"),
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
         ),
+        backgroundColor: Colors.white,
         body: SingleChildScrollView(
             child: Form(
                 key: _formKey,
@@ -112,7 +113,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                               return null;
                             },
                           ),
-                          SizedBox(height: 15),
+                          SizedBox(height: 5),
 
                           // 가게 주소
                           Column(
@@ -127,7 +128,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Flexible(
-                                          flex: 3,
+                                          flex: 2,
                                           child: TextFormField(
                                             style: TextAssset.placeholder2,
                                             enabled: false,
@@ -151,8 +152,11 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                           flex: 1,
                                           child: ElevatedButton(
                                             style: ElevatedButton.styleFrom(
-                                              backgroundColor: Color.fromARGB(
-                                                  255, 151, 125, 253),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5.0),
+                                              ),
+                                              backgroundColor: Colors.white,
                                               minimumSize:
                                                   const Size.fromHeight(
                                                       50), // NEW
@@ -160,10 +164,14 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                             onPressed: () async {
                                               _addressAPI();
                                             },
-                                            child: Text('주소 검색'),
+                                            child: const Text(
+                                              '주소 검색',
+                                              style: TextStyle(
+                                                  color: Colors.black),
+                                            ),
                                           ))
                                     ]),
-                                SizedBox(
+                                const SizedBox(
                                   height: 5,
                                 ),
                                 //상세주소
@@ -179,19 +187,21 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                     return null;
                                   },
                                 ),
-                                SizedBox(height: 15),
+                                SizedBox(height: 5),
                               ]),
+
+                          InputInfoWidget(
+                            title: "사업자 등록번호",
+                            hintText: "사업자 등록번호 입력",
+                            validator: validateName,
+                          ),
+
+                          const SizedBox(height: 5),
 
                           DocumentUploadWidget(
                             title: "사업자 등록증",
                             validator: validateBR,
                           ),
-                          InputInfoWidget(
-                            title: "사업자 등록번호",
-                            hintText: "Enter your 사업자 등록번호",
-                            validator: validateName,
-                          ),
-
                           DocumentUploadWidget(
                             title: "통장 사본",
                             validator: validatebankBook,
@@ -224,74 +234,39 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                               Text("[필수] 개인정보 수집 및 이용 동의합니다")
                             ],
                           ),
-
-                          //이전, 다음 버튼
                           Container(
-                            margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
                             width: double.infinity,
-                            height: 100,
-                            child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  Flexible(
-                                    flex: 1,
-                                    child: SizedBox(
-                                      width: double.infinity, // <-- Your width
-                                      height: 50,
-                                      // width: 30,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              ColorAssset.mainColor,
-                                          // minimumSize: const Size.fromHeight(50), // NEW
-                                        ),
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text('이전'),
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Flexible(
-                                    flex: 1,
-                                    child: Container(
-                                      width: double.infinity, // <-- Your width
-                                      height: 50,
-                                      // width: 30,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor:
-                                              ColorAssset.mainColor,
-                                          // minimumSize: const Size.fromHeight(50), // NEW
-                                        ),
-                                        onPressed: () {
-                                          if (!_isChecked) {
-                                            showToast();
-                                            return;
-                                          }
-                                          _store.store_name =
-                                              storenNameController.text;
-                                          _store.store_address =
-                                              "${addrController.text} ${detailAddrController.text}";
+                            height: 50,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: ColorAssset.mainColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5.0),
+                                ),
+                                // minimumSize: const Size.fromHeight(50), // NEW
+                              ),
+                              onPressed: () {
+                                if (!_isChecked) {
+                                  showToast();
+                                  return;
+                                }
+                                _store.store_name = storenNameController.text;
+                                _store.store_address =
+                                    "${addrController.text} ${detailAddrController.text}";
 
-                                          Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                  builder: (context) =>
-                                                      RegisterStorePage(
-                                                        isRegister: true,
-                                                        store: _store,
-                                                      )));
-                                        },
-                                        child: const Text('다음'),
-                                      ),
-                                    ),
-                                  ),
-                                ]),
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => RegisterStorePage(
+                                              isRegister: true,
+                                              store: _store,
+                                            )));
+                              },
+                              child: const Text(
+                                '다음',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            ),
                           ),
                         ])))));
   }
@@ -375,29 +350,44 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
         const SizedBox(height: 5.0),
-        Container(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
+        Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
               Text(
                 widget.title,
                 style: TextAssset.header2,
               ),
-              ElevatedButton(
-                onPressed: () async {
-                  final pickedImage =
-                      await picker.pickImage(source: ImageSource.gallery);
-                  if (pickedImage != null) {
-                    widget.validator(File(pickedImage.path));
-                    setState(() {
-                      uploadedFilename = pickedImage.name;
-
-                      // _buisi = File(pickedImage.path);
-                    });
-                  }
-                },
-                child: Text('업로드'),
+              Container(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xffF2F2F2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  ),
+                  onPressed: uploadedFilename == null
+                      ? () async {
+                          final pickedImage = await picker.pickImage(
+                              source: ImageSource.gallery);
+                          if (pickedImage != null) {
+                            widget.validator(File(pickedImage.path));
+                            setState(() {
+                              uploadedFilename = pickedImage.name;
+                            });
+                          }
+                        }
+                      : null,
+                  child: uploadedFilename == null
+                      ? const Text(
+                          '파일 업로드',
+                          style: TextStyle(color: Colors.black),
+                        )
+                      : const Text('업로드 완료',
+                          style: TextStyle(color: Colors.black)),
+                ),
               ),
               Visibility(
                 visible: uploadedFilename != null,
@@ -435,7 +425,7 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
               const SizedBox(
                 height: 5.0,
               ),
-            ]))
+            ])
       ],
     );
   }

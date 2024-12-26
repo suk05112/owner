@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/model/request/OwnerPost.dart';
@@ -27,10 +28,10 @@ class _BasicInfoInputPageState extends State<BasicInfoInputPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text("가입하기"),
         ),
+        // backgroundColor: Colors.white,
         body: SingleChildScrollView(
             scrollDirection: Axis.vertical,
             child: Column(
@@ -126,8 +127,11 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                           // width: 30,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Color.fromARGB(255, 151, 125, 253),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                              backgroundColor: ColorAssset.mainColor,
+                              foregroundColor: Colors.white,
                               // minimumSize: const Size.fromHeight(50), // NEW
                             ),
                             onPressed: () {
@@ -153,9 +157,11 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                           // width: 30,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor:
-                                  Color.fromARGB(255, 151, 125, 253),
-                              // minimumSize: const Size.fromHeight(50), // NEW
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                              foregroundColor: Colors.white,
+                              backgroundColor: ColorAssset.mainColor,
                             ),
                             onPressed: () async {
                               AggregateQuerySnapshot _myDocCnt =

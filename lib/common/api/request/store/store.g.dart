@@ -24,6 +24,9 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
       business_registration:
           Store._fileFromJson(json['business_registration'] as String?),
       bank_book: Store._fileFromJson(json['bank_book'] as String?),
+      updated_time: json['updated_time'] == null
+          ? null
+          : DateTime.parse(json['updated_time'] as String),
     );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
@@ -38,6 +41,7 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'store_address': instance.store_address,
       'store_lat': instance.store_lat,
       'store_lng': instance.store_lng,
+      'updated_time': instance.updated_time?.toIso8601String(),
       'business_registration':
           Store._fileToJson(instance.business_registration),
       'bank_book': Store._fileToJson(instance.bank_book),
@@ -56,13 +60,15 @@ Map<String, dynamic> _$Body2ToJson(Body2 instance) => <String, dynamic>{
 StoreListResponse _$StoreListResponseFromJson(Map<String, dynamic> json) =>
     StoreListResponse(
       statusCode: (json['statusCode'] as num).toInt(),
-      body: Body2.fromJson(json['body'] as Map<String, dynamic>),
+      store: (json['store'] as List<dynamic>)
+          .map((e) => Store.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$StoreListResponseToJson(StoreListResponse instance) =>
     <String, dynamic>{
       'statusCode': instance.statusCode,
-      'body': instance.body,
+      'store': instance.store,
     };
 
 StoreResponse _$StoreResponseFromJson(Map<String, dynamic> json) =>

@@ -15,8 +15,7 @@ class ApiServiceImpl implements ApiDioClient {
   @override
   void uploadImage() async {
     final pickedFile =
-        await ImagePicker().getImage(source: ImageSource.gallery);
-
+        await ImagePicker().pickImage(source: ImageSource.gallery);
     Map<String, String> headers = {
       'Content-Type': 'image',
       'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',

@@ -9,7 +9,7 @@ class TextAssset {
     fontFamily: 'Inter',
   );
   static const header2 = TextStyle(
-    fontSize: 17,
+    fontSize: 14,
     color: Color(0xff131313),
     fontStyle: FontStyle.normal,
     fontWeight: FontWeight.w600,

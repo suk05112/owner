@@ -21,6 +21,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
     User? user = Provider.of<UserProvider>(context).user;
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("내정보"),
+      ),
       body: SafeArea(
           bottom: false,
           child: Container(
@@ -32,7 +35,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   textBaseline: TextBaseline.alphabetic,
                   children: [
-                    Text("내정보"),
+                    // Text("내정보"),
                     Container(
                       width: double.infinity,
                       // height: double.infinity,

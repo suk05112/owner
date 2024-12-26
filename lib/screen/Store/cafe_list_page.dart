@@ -38,13 +38,11 @@ class _CafeListState extends State<CafeList> {
   @override
   void initState() {
     super.initState();
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
     my_app.User? user = Provider.of<UserProvider>(context, listen: false).user;
     print("여기 호출됨? ${user?.owner_id}");
 
     Provider.of<StoreProvider>(context, listen: false)
         .fetchStoreList(user?.owner_id ?? 0);
-    // });
 
     print("init state:: StoreProvider.fetchStoreList 호출 후 ");
   }
@@ -58,7 +56,7 @@ class _CafeListState extends State<CafeList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("내 매장관리"),
+        title: const Text("내 매장관리"),
         centerTitle: true,
       ),
       body: Consumer<StoreProvider>(
@@ -140,7 +138,7 @@ class _CafeListState extends State<CafeList> {
 
     try {
       final response = await Api().client.getStoreList(1);
-      currentContext?.read<StoreProvider>().setStoreCard(response.body.store);
+      currentContext?.read<StoreProvider>().setStoreCard(response.store);
       print(response);
     } catch (error) {
       currentContext?.read<StoreProvider>().setStoreCard(null);

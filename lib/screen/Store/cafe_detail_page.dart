@@ -65,119 +65,135 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // appBar: AppBar(
-        //   elevation: 0,
-        //   title: const Text("Add Employee"),
-        // ),
+        appBar: AppBar(
+          elevation: 0,
+          title: const Text("내 매장관리"),
+        ),
         body: SafeArea(
-      child: SingleChildScrollView(
-          child: isLoading
-              ? Center(
-                  child: const CircularProgressIndicator(),
-                )
-              : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Container(
-                      margin: EdgeInsets.fromLTRB(21, 0, 21, 21),
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            //Header
-                            CommonSection.getHeader("내 매장관리"),
-                            SizedBox(height: 13),
-
-                            //매장 로고, 매장이름
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Image(
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.fill,
-                                  image: NetworkImage(
-                                    store?.store_logo ?? "",
-                                  ),
-                                ),
-                                SizedBox(width: 20),
-                                // Spacer(),
-                                Column(
+          child: SingleChildScrollView(
+              child: isLoading
+                  ? Center(
+                      child: const CircularProgressIndicator(),
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                          Container(
+                              margin: EdgeInsets.fromLTRB(21, 0, 21, 21),
+                              child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(store?.store_name ?? "매장 이름",
-                                        style: TextAssset.header2),
-                                    // Spacer(),
-                                    Text(store?.store_address ?? "매장 주소 없음",
-                                        style: TextAssset.body)
-                                  ],
-                                ),
-                              ],
-                            ),
+                                    //Header
+                                    // CommonSection.getHeader("내 매장관리"),
+                                    // SizedBox(height: 13),
 
-                            Divider(),
-                            //전화번호
-                            Row(
-                              children: [
-                                Text("전화번호", style: TextAssset.header2),
-                                SizedBox(width: 20),
-                                // Spacer(),
-                                Text(store?.store_telephone ?? "전화번호 없음",
-                                    style: TextAssset.body)
-                              ],
-                            ),
-                            Divider(),
+                                    //매장 로고, 매장이름
+                                    Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Image(
+                                          width: 100,
+                                          height: 100,
+                                          fit: BoxFit.fill,
+                                          image: NetworkImage(
+                                            store?.store_logo ?? "",
+                                          ),
+                                        ),
+                                        SizedBox(width: 20),
+                                        // Spacer(),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(store?.store_name ?? "매장 이름",
+                                                style: TextAssset.header2),
+                                            // Spacer(),
+                                            Text(
+                                                store?.store_address ??
+                                                    "매장 주소 없음",
+                                                style: TextAssset.body)
+                                          ],
+                                        ),
+                                      ],
+                                    ),
 
-                            //매장소개
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("매장소개", style: TextAssset.header2),
-                                // Spacer(),
-                                Text(store?.store_description ?? "매장 설명 없음",
-                                    style: TextAssset.body)
-                              ],
-                            ),
-                            Divider(),
+                                    Divider(),
+                                    //전화번호
+                                    Row(
+                                      children: [
+                                        Text("전화번호", style: TextAssset.header2),
+                                        SizedBox(width: 20),
+                                        // Spacer(),
+                                        Text(
+                                            store?.store_telephone ?? "전화번호 없음",
+                                            style: TextAssset.body)
+                                      ],
+                                    ),
+                                    Divider(),
 
-                            //운영시간
-                            // Column(
-                            //   crossAxisAlignment: CrossAxisAlignment.start,
-                            //   children: [
-                            //     Text("운영시간", style: TextAssset.header2),
-                            //     // Spacer(),
-                            //     Text(store?.store_description ?? "매장 설명 없음",
-                            //         style: TextAssset.body)
-                            //   ],
-                            // ),
+                                    //매장소개
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("매장소개", style: TextAssset.header2),
+                                        // Spacer(),
+                                        Text(
+                                            store?.store_description ??
+                                                "매장 설명 없음",
+                                            style: TextAssset.body)
+                                      ],
+                                    ),
+                                    Divider(),
 
-                            //운영시간
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("매장주소", style: TextAssset.header2),
-                                // Spacer(),
-                                Text(store?.store_address ?? "매장 설명 없음",
-                                    style: TextAssset.body)
-                              ],
-                            ),
-                            Divider(),
+                                    //운영시간
+                                    // Column(
+                                    //   crossAxisAlignment: CrossAxisAlignment.start,
+                                    //   children: [
+                                    //     Text("운영시간", style: TextAssset.header2),
+                                    //     // Spacer(),
+                                    //     Text(store?.store_description ?? "매장 설명 없음",
+                                    //         style: TextAssset.body)
+                                    //   ],
+                                    // ),
 
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("매장 사진", style: TextAssset.header2),
-                                // Spacer(),
-                                StoreImagesGridview(),
-                              ],
-                            ),
-                          ])),
-                  Divider(thickness: 10, height: 10, color: Color(0xffF3F5F7)),
-                  //매장관리 메뉴
-                  Container(
-                    margin: EdgeInsets.fromLTRB(21, 25, 21, 21),
-                    height: 300,
-                    child: getListView(),
-                  )
-                ])),
-    ));
+                                    //운영시간
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("매장주소", style: TextAssset.header2),
+                                        // Spacer(),
+                                        Text(store?.store_address ?? "매장 설명 없음",
+                                            style: TextAssset.body)
+                                      ],
+                                    ),
+                                    Divider(),
+
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text("매장 사진",
+                                            style: TextAssset.header2),
+                                        // Spacer(),
+                                        StoreImagesGridview(),
+                                      ],
+                                    ),
+                                  ])),
+                          Divider(
+                              thickness: 10,
+                              height: 10,
+                              color: Color(0xffF3F5F7)),
+                          //매장관리 메뉴
+                          Container(
+                            margin: EdgeInsets.fromLTRB(21, 25, 21, 21),
+                            height: 300,
+                            child: getListView(),
+                          )
+                        ])),
+        ));
   }
 
   Widget StoreImagesGridview() {

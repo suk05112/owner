@@ -65,6 +65,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5.0),
+                      ),
                       backgroundColor: ColorAssset.mainColor,
                       minimumSize: const Size.fromHeight(50), // NEW
                     ),
@@ -97,7 +100,10 @@ class _LoginScreenState extends State<LoginScreen> {
                         }
                       }
                     },
-                    child: Text("로그인"),
+                    child: Text(
+                      "로그인",
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -133,10 +139,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text("비밀번호 찾기"),
                       ),
                     ],
-                  ),
-                  TextButton(
-                    onPressed: () async {},
-                    child: Text("로그아웃"),
                   ),
                 ])));
   }

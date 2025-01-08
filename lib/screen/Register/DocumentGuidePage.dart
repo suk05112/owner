@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/main.dart';
 
 import 'BasicInfoInputPage.dart';
@@ -25,25 +26,29 @@ class DocumentGuidePage extends StatelessWidget {
             Container(
                 // decoration:
                 // BoxDecoration(border: Border.all(color: Colors.blueAccent)),
+                padding: EdgeInsets.fromLTRB(21, 5, 21, 5),
                 child: Column(
                     // mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                  Text(
-                    "가입 전 준비해 주세요",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
-                  ),
-                  SizedBox(height: 20),
-                  Container(
-                    // decoration: BoxDecoration(
-                    // border: Border.all(color: Colors.blueAccent)),
-                    child: Text(
-                        "사업자 등록증 \n 영업 신고증\n 통장사본 \n 사업자 등록증에 있는 사업자와 동일해야 합니다."),
-                  ),
-                ])),
+                      Text(
+                        "가입 전 준비해 주세요",
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 30),
+                      ),
+                      SizedBox(height: 20),
+                      Container(
+                        child: Text(
+                            "사업자 등록증 \n 영업 신고증\n 통장사본 \n 사업자 등록증에 있는 사업자와 동일해야 합니다."),
+                      ),
+                    ])),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 151, 125, 253),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(5.0),
+                ),
+                backgroundColor: ColorAssset.mainColor,
+                foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(50), // NEW
               ),
               onPressed: () {

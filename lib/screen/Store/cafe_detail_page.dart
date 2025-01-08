@@ -11,6 +11,7 @@ import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/main.dart';
+import 'package:owner/screen/Settlement/settlement_page.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
 import 'package:provider/provider.dart';
 
@@ -32,7 +33,11 @@ class CafeDetailScreen extends StatefulWidget {
   State<CafeDetailScreen> createState() => _CafeDetailScreenState();
 }
 
-class _CafeDetailScreenState extends State<CafeDetailScreen> {
+class _CafeDetailScreenState extends State<CafeDetailScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   // DatabaseService service = DatabaseService();
   Future<CafeInfo>? cafeList;
   Future<OperatingHours>? operatingHours;
@@ -83,11 +88,12 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                               child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    //Header
-                                    // CommonSection.getHeader("내 매장관리"),
-                                    // SizedBox(height: 13),
-
-                                    //매장 로고, 매장이름
+                                    store?.inspection_status == 2
+                                        ? inspectionMsg(
+                                            store?.inspection_msg ?? "")
+                                        : SizedBox(
+                                            height: 0,
+                                          ),
                                     Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -147,18 +153,6 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                                     ),
                                     Divider(),
 
-                                    //운영시간
-                                    // Column(
-                                    //   crossAxisAlignment: CrossAxisAlignment.start,
-                                    //   children: [
-                                    //     Text("운영시간", style: TextAssset.header2),
-                                    //     // Spacer(),
-                                    //     Text(store?.store_description ?? "매장 설명 없음",
-                                    //         style: TextAssset.body)
-                                    //   ],
-                                    // ),
-
-                                    //운영시간
                                     Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
@@ -216,22 +210,6 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                     height: 90,
                     fit: BoxFit.fill);
               })));
-      // return Container(
-      //   width: 100,
-      //   height: 100,
-      //   margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
-      //   child: ClipRRect(
-      //     borderRadius: BorderRadius.circular(5.0),
-      //     child: Image(
-      //       width: 100,
-      //       height: 100,
-      //       fit: BoxFit.fill,
-      //       image: NetworkImage(
-      //         item,
-      //       ),
-      //     ),
-      //   ),
-      // );
     }).toList();
 
     return SingleChildScrollView(
@@ -242,7 +220,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
 
   List dataSource() {
     // var items = List.generate(5, (i) => "Item $i");
-    var items = ["매장 정보 수정", /*"영업시간 수정",*/ "메뉴관리", "주문내역 관리"];
+    var items = ["매장 정보 수정", /*"영업시간 수정",*/ "메뉴관리", "주문내역 관리", "정산내역"];
     return items;
   }
 
@@ -262,9 +240,26 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
         isRegister: false,
         store: store,
       ),
+      SettlementPage(
+        storeId: _storeId,
+      ),
     ];
 
     return items;
+  }
+
+  Widget inspectionMsg(String msg) {
+    return Container(
+        margin: EdgeInsets.fromLTRB(0, 2, 0, 5),
+        decoration: BoxDecoration(
+          color: Color(0xECECEC),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        width: 400,
+        child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [Text("**승인 반려**"), Text(msg)]));
   }
 
 //Converting the dataSources as a widget

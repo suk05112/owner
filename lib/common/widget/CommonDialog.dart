@@ -6,6 +6,8 @@ class CommonDialog {
     required String title,
     required String content,
     required String buttonText,
+    required VoidCallback onPressed, // onPressed 매개변수 추가
+    bool cancel = false,
   }) {
     showDialog(
       context: context,
@@ -28,15 +30,43 @@ class CommonDialog {
             ],
           ),
           actions: <Widget>[
-            TextButton(
-              child: Text(buttonText),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
+            if (cancel)
+              WithCancelBtn(context, onPressed)
+            else
+              OKBtn(context, onPressed)
           ],
         );
       },
+    );
+  }
+
+  static Widget OKBtn(context, onPressed) {
+    return TextButton(
+      child: Text('확인'),
+      onPressed: () {
+        onPressed();
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  static Widget WithCancelBtn(context, onPressed) {
+    return Row(
+      children: [
+        TextButton(
+          child: Text('취소'),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        TextButton(
+          child: Text('확인'), // cancel이 true일 때 "확인", false일 때 buttonText
+          onPressed: () {
+            onPressed(); // 전달받은 onPressed 함수 호출
+            Navigator.pop(context);
+          },
+        ),
+      ],
     );
   }
 }

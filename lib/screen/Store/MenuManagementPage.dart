@@ -37,7 +37,6 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   }
 
   Future<void> _initRetrieval() async {
-    print("이건 실행됨?");
     var menuList =
         await Api().client.getMenuList(_storeId).then((value) => setState(() {
               menu = value.menuList;
@@ -64,6 +63,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
+      backgroundColor: Colors.white,
       body: menu == null
           ? Center(child: CircularProgressIndicator())
           : menu!.isEmpty
@@ -74,7 +74,14 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                   itemBuilder: (context, index) {
                     if (index == menu!.length) {
                       return TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EditMenuPage(
+                                        storeId: widget.storeId,
+                                      )));
+                        },
                         child: Text("메뉴 추가"),
                       );
                     }
@@ -120,25 +127,22 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
               // child: Text("text"),
               itemBuilder: (context) {
                 return [
-                  PopupMenuItem<int>(
+                  // PopupMenuItem<int>(
+                  //   value: 0,
+                  //   child: Text("메뉴 순서 변경"),
+                  // ),
+                  const PopupMenuItem<int>(
                     value: 0,
-                    child: Text("메뉴 순서 변경"),
-                  ),
-                  PopupMenuItem<int>(
-                    value: 1,
                     child: Text("메뉴 추가"),
                   ),
-                  PopupMenuItem<int>(
-                    value: 2,
-                    child: Text("Logout"),
-                  ),
+                  // PopupMenuItem<int>(
+                  //   value: 2,
+                  //   child: Text("Logout"),
+                  // ),
                 ];
               },
               onSelected: (value) async {
                 if (value == 0) {
-                  print("My account menu is selected.");
-                } else if (value == 1) {
-                  print("menu id in manage" + await menuLength.toString());
                   final modified_menu = await Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -147,9 +151,11 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                               )));
                   setState(() {
                     print("메뉴 수정 완료");
-
                     menu!.add(modified_menu);
                   });
+                  print("My account menu is selected.");
+                } else if (value == 1) {
+                  print("menu id in manage" + await menuLength.toString());
                 } else if (value == 2) {
                   print("Logout menu is selected.");
                 }
@@ -162,34 +168,36 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   Widget MenuItem(Menu menu) {
     print("MenuItem: ${menu.menu_image_url}");
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Image.network(menu.menu_image_url,
-            headers: {
-              "Cache-Control": "no-cache",
-            },
-            width: 90,
-            height: 90,
-            fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
-          print("Image load failed: $error");
-
-          return Image(
-              image: AssetImage('assets/americano.jpeg'),
-              width: 90,
-              height: 90,
-              fit: BoxFit.fill);
-        }),
-        // Image(image: AssetImage('assets/americano.jpeg'), height: 100),
-        Container(
-          width: 15,
-        ),
-        Column(
+    return Container(
+        margin: const EdgeInsets.fromLTRB(0, 1, 0, 1),
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [Text(menu.name), Text("${menu.price}")],
-        )
-      ],
-    );
+          children: [
+            Image.network(menu.menu_image_url,
+                headers: const {
+                  "Cache-Control": "no-cache",
+                },
+                width: 90,
+                height: 90,
+                fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
+              print("Image load failed: $error");
+
+              return const Image(
+                  image: AssetImage('assets/americano.jpeg'),
+                  width: 90,
+                  height: 90,
+                  fit: BoxFit.fill);
+            }),
+            // Image(image: AssetImage('assets/americano.jpeg'), height: 100),
+            Container(
+              width: 15,
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text(menu.name), Text("${menu.price}")],
+            )
+          ],
+        ));
   }
 }
 

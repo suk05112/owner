@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
+import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/model/request/OwnerPost.dart';
@@ -27,16 +28,22 @@ class _BasicInfoInputPageState extends State<BasicInfoInputPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text("가입하기"),
-        ),
-        // backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-            scrollDirection: Axis.vertical,
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [BasicInfoFormWidget()])));
+    return GestureDetector(
+        onTap: () {
+          //FocusManager.instance.primaryFocus?.unfocus();
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              title: Text("가입하기"),
+              backgroundColor: Colors.white,
+            ),
+            backgroundColor: Colors.white,
+            body: SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [BasicInfoFormWidget()]))));
   }
 }
 
@@ -113,7 +120,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
               ),
 
               Container(
-                margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                // margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
                 width: double.infinity,
                 height: 100,
                 child: Row(
@@ -140,7 +147,8 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                   context: context,
                                   title: "인증 실패",
                                   content: "다시 확인",
-                                  buttonText: "확인");
+                                  buttonText: "확인",
+                                  onPressed: () {});
                             },
                             child: Text('이전'),
                           ),
@@ -206,7 +214,8 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                       context: context,
                                       title: "비밀번호 확인",
                                       content: "취약한 비밀번호입니다. 다른 비밀번호를 사용해주세요.",
-                                      buttonText: "확인");
+                                      buttonText: "확인",
+                                      onPressed: () {});
                                 } else if (e.code == 'email-already-in-use') {
                                   print(
                                       'The account already exists for that email.');
@@ -215,7 +224,8 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                       title: "아이디 확인",
                                       content:
                                           "이미 사용중인 아이디입니다. 다른 아이디를 사용해주세요.",
-                                      buttonText: "확인");
+                                      buttonText: "확인",
+                                      onPressed: () {});
                                 } else {
                                   print(e.code);
                                 }
@@ -285,7 +295,10 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 10.0),
-          Text(widget.title),
+          Text(
+            widget.title,
+            style: TextAssset.header2,
+          ),
           TextFormField(
             controller: inputController,
             keyboardType: TextInputType.text,
@@ -300,13 +313,14 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         ]);
   }
 
-  final inputDecoration = InputDecoration(
-      border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-          borderSide: const BorderSide(
-            color: Colors.redAccent,
-            width: 2,
-          )));
+  final inputDecoration = InputDecoration(border: UnderlineInputBorder()
+      // border: OutlineInputBorder(
+      //     borderRadius: BorderRadius.circular(8.0),
+      //     borderSide: const BorderSide(
+      //       color: Colors.redAccent,
+      //       width: 2,
+      //     ))
+      );
 }
 
 final inputDecoration = InputDecoration(
@@ -369,7 +383,10 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(height: 10.0),
-              Text("이메일"),
+              Text(
+                "이메일",
+                style: TextAssset.header2,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: <Widget>[
@@ -461,11 +478,12 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
 
   final inputDecoration = InputDecoration(
     // isDense: true,
-    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 2,
-        )),
+    border: UnderlineInputBorder(
+        // borderRadius: BorderRadius.circular(8.0),
+        // borderSide: const BorderSide(
+        //   color: Colors.redAccent,
+        //   width: 2,
+        // )
+        ),
   );
 }

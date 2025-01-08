@@ -27,6 +27,8 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
       updated_time: json['updated_time'] == null
           ? null
           : DateTime.parse(json['updated_time'] as String),
+      inspection_msg: json['inspection_msg'] as String?,
+      inspection_status: (json['inspection_status'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
@@ -45,6 +47,8 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'business_registration':
           Store._fileToJson(instance.business_registration),
       'bank_book': Store._fileToJson(instance.bank_book),
+      'inspection_msg': instance.inspection_msg,
+      'inspection_status': instance.inspection_status,
     };
 
 Body2 _$Body2FromJson(Map<String, dynamic> json) => Body2(

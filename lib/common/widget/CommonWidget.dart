@@ -120,12 +120,13 @@ class _PhoneNumberVerificationWidgetState
   final inputDecoration = InputDecoration(
     // isDense: true,
     // contentPadding: EdgeInsets.fromLTRB(27, 14, 21, 18),
-    border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8.0),
-        borderSide: const BorderSide(
-          color: Colors.redAccent,
-          width: 2,
-        )),
+    border: UnderlineInputBorder(
+        // borderRadius: BorderRadius.circular(8.0),
+        // borderSide: const BorderSide(
+        //   color: Colors.redAccent,
+        //   width: 2,
+        // )
+        ),
   );
 
   void _startCountdown() {
@@ -160,7 +161,10 @@ class _PhoneNumberVerificationWidgetState
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(height: 10.0),
-              const Text("휴대폰 번호"),
+              const Text(
+                "휴대폰 번호",
+                style: TextAssset.header2,
+              ),
               Form(
                 key: phoneFormKey, // Wrap the input fields with the form
                 child: Row(
@@ -198,11 +202,11 @@ class _PhoneNumberVerificationWidgetState
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(5.0),
                                 ),
-                                foregroundColor: Colors.white,
+                                foregroundColor: Colors.black,
                                 backgroundColor:
                                     _remainingTime > 0 || smsVerifyState
                                         ? Colors.grey
-                                        : ColorAssset.mainColor,
+                                        : Colors.white,
                                 fixedSize: const Size(82, 55)),
                             onPressed: _remainingTime > 0 || smsVerifyState
                                 ? null

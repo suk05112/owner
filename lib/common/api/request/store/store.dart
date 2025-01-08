@@ -25,23 +25,26 @@ class Store {
 
   @JsonKey(fromJson: _fileFromJson, toJson: _fileToJson)
   File? bank_book;
+  String? inspection_msg;
+  int? inspection_status;
 
-  Store({
-    this.owner_id = 0,
-    this.store_id = 0,
-    this.store_name = "",
-    this.store_logo = "",
-    this.store_telephone = "",
-    this.store_description = "",
-    this.store_photo_urls = const [],
-    this.store_photo_cnt = 0,
-    this.store_address = "",
-    this.store_lat = 0,
-    this.store_lng = 0,
-    this.business_registration,
-    this.bank_book,
-    this.updated_time,
-  });
+  Store(
+      {this.owner_id = 0,
+      this.store_id = 0,
+      this.store_name = "",
+      this.store_logo = "",
+      this.store_telephone = "",
+      this.store_description = "",
+      this.store_photo_urls = const [],
+      this.store_photo_cnt = 0,
+      this.store_address = "",
+      this.store_lat = 0,
+      this.store_lng = 0,
+      this.business_registration,
+      this.bank_book,
+      this.updated_time,
+      this.inspection_msg,
+      this.inspection_status});
 
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
   Map<String, dynamic> toJson() => _$StoreToJson(this);

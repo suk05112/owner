@@ -36,6 +36,30 @@ class OwnerRegisterResponse {
 }
 
 @JsonSerializable()
+class OwnerFind {
+  String name;
+  String phone_number;
+
+  OwnerFind({required this.name, required this.phone_number});
+
+  factory OwnerFind.fromJson(Map<String, dynamic> json) =>
+      _$OwnerFindFromJson(json);
+  Map<String, dynamic> toJson() => _$OwnerFindToJson(this);
+}
+
+@JsonSerializable()
+class OwnerFindPw {
+  String email;
+  String phone_number;
+
+  OwnerFindPw({required this.email, required this.phone_number});
+
+  factory OwnerFindPw.fromJson(Map<String, dynamic> json) =>
+      _$OwnerFindPwFromJson(json);
+  Map<String, dynamic> toJson() => _$OwnerFindPwToJson(this);
+}
+
+@JsonSerializable()
 class OwnerLoginResponse {
   int statusCode;
   int? owner_id;

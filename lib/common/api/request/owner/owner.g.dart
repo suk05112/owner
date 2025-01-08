@@ -36,6 +36,27 @@ Map<String, dynamic> _$OwnerRegisterResponseToJson(
       'owner_id': instance.owner_id,
     };
 
+OwnerFind _$OwnerFindFromJson(Map<String, dynamic> json) => OwnerFind(
+      name: json['name'] as String,
+      phone_number: json['phone_number'] as String,
+    );
+
+Map<String, dynamic> _$OwnerFindToJson(OwnerFind instance) => <String, dynamic>{
+      'name': instance.name,
+      'phone_number': instance.phone_number,
+    };
+
+OwnerFindPw _$OwnerFindPwFromJson(Map<String, dynamic> json) => OwnerFindPw(
+      email: json['email'] as String,
+      phone_number: json['phone_number'] as String,
+    );
+
+Map<String, dynamic> _$OwnerFindPwToJson(OwnerFindPw instance) =>
+    <String, dynamic>{
+      'email': instance.email,
+      'phone_number': instance.phone_number,
+    };
+
 OwnerLoginResponse _$OwnerLoginResponseFromJson(Map<String, dynamic> json) =>
     OwnerLoginResponse(
       statusCode: (json['statusCode'] as num).toInt(),

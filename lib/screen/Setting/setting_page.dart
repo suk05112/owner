@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:owner/screen/Setting/user_info_page.dart';
+import 'package:owner/screen/Settlement/settlement_page.dart';
 import 'package:owner/screen/inquiry_page.dart';
 
 import '../../common/Style/CommonSection.dart';
@@ -48,7 +49,7 @@ class _SettingPageState extends State<SettingPage> {
     var items = [
       "내 정보",
       "공지사항",
-      "고객센터",
+      "문의하기",
       "정산계좌 관리",
       "자주묻는 질문",
       "알림",

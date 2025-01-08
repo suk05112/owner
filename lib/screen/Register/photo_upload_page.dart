@@ -15,6 +15,22 @@ import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:exif/exif.dart';
 
+Future<File> resizeImage(File originalFile, int maxWidth, int maxHeight) async {
+  Uint8List imageBytes = await originalFile.readAsBytes();
+  img.Image? decodedImage = img.decodeImage(imageBytes);
+
+  if (decodedImage == null) {
+    throw Exception("Failed to decode image");
+  }
+
+  img.Image resizedImage =
+      img.copyResize(decodedImage, width: maxWidth, height: maxHeight);
+  File resizedFile = File(originalFile.path);
+  resizedFile.writeAsBytesSync(img.encodeJpg(resizedImage, quality: 85));
+
+  return resizedFile;
+}
+
 class PhotoUploadePage extends StatefulWidget {
   const PhotoUploadePage(
       {Key? key, required this.savedImageUrl, required this.storeImage});
@@ -55,8 +71,15 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     await Future.wait(widget.savedImageUrl.asMap().entries.map((e) async {
       var idx = e.key;
       var url = e.value;
+
+      var imageFile = await getImageFileFromUrl(url, idx);
+      var resizedImage = await resizeImage(imageFile, 800, 800);
+      selectedImages.add(resizedImage);
+      setState(() {}); // UI 업데이트
+
+      // selectedImages.add(await getImageFileFromUrl(url, idx));
+
       // setState(() async {
-      selectedImages.add(await getImageFileFromUrl(url, idx));
 
       // });
     }));
@@ -117,10 +140,10 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     });
 
     final pickedFile = await picker.pickMultiImage(
-        //   imageQuality: 100, // To set quality of images
-        // maxHeight: 1000, // To set maxheight of images that you want in your app
-        // maxWidth: 1000
-        ); // To set maxheight of images that you want in your app
+      imageQuality: 70, // To set quality of images
+      // maxHeight: 1000, // To set maxheight of images that you want in your app
+      // maxWidth: 1000
+    ); // To set maxheight of images that you want in your app
     List<XFile> xfilePick = pickedFile;
 
     print("image 선택됨");

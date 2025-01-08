@@ -85,7 +85,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               context: context,
                               title: "로그인 실패",
                               content: "입력된 정보가 올바르지 않습니다. 다시 입력해주세요",
-                              buttonText: "확인");
+                              buttonText: "확인",
+                              onPressed: () {});
                         }
                       } on FirebaseAuthException catch (e) {
                         if (e.code == 'user-not-found') {
@@ -96,7 +97,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               context: context,
                               title: "로그인 실패",
                               content: "잘못된 비밀번호 입니다. 다시 입력해주세요",
-                              buttonText: "확인");
+                              buttonText: "확인",
+                              onPressed: () {});
                         }
                       }
                     },
@@ -172,6 +174,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
   TextEditingController idController = TextEditingController();
   TextEditingController pwController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool hidePassword = true;
 
   @override
   Widget build(BuildContext context) {
@@ -201,8 +204,26 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
               TextFormField(
                 controller: pwController,
                 keyboardType: TextInputType.text,
-                decoration:
-                    inputDecoration.copyWith(hintText: "Enter your password"),
+                obscureText: hidePassword,
+                decoration: InputDecoration(
+                  hintText: "Enter your password",
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: const BorderSide(
+                        color: Colors.redAccent,
+                        width: 2,
+                      )),
+                  suffixIcon: IconButton(
+                    icon: hidePassword
+                        ? Icon(Icons.visibility_off)
+                        : Icon(Icons.visibility),
+                    onPressed: () {
+                      setState(() {
+                        hidePassword = !hidePassword;
+                      });
+                    },
+                  ),
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter Name';
@@ -225,79 +246,3 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
             width: 2,
           )));
 }
-
-/*
-
-class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const TodosWidget(),
-    );
-  }
-}
-
-
-class TodosWidget extends StatefulWidget {
-  const TodosWidget({Key? key}) : super(key: key);
-
-  @override
-  _TodosWidgetState createState() => _TodosWidgetState();
-}
-class _TodosWidgetState extends State<TodosWidget> {
-  List<TempStore> news = [];
-  bool isLoading = true;
-  NewsProviders newsProvider = NewsProviders();
-
-  Future initNews() async {
-    news = await newsProvider.getNews();
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    initNews().then((_) {
-      setState(() {
-        isLoading = false;
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("뉴스 http"),
-      ),
-      body: isLoading
-          ? Center(
-              child: const CircularProgressIndicator(),
-            )
-          : GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 2 / 3,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20),
-              itemCount: news.length,
-              itemBuilder: (context, index) {
-                return Container(
-                  padding: EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      Text(news[index].name ?? "no name"),
-                      Text(news[index].store_logo ?? "no logo"),
-                    ],
-                  ),
-                );
-              }),
-    );
-  }
-}
-*/

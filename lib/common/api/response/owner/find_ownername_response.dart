@@ -6,8 +6,9 @@ part 'find_ownername_response.g.dart';
 @JsonSerializable()
 class FindOwnernameResponse {
   int statusCode;
-  String? id;
-  String? createdTime;
+  int? owner_id;
+  String? email;
+  String? created_time;
   String? msg;
 
   FindOwnernameResponse({required this.statusCode});

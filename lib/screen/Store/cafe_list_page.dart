@@ -160,43 +160,136 @@ class _CafeListState extends State<CafeList> {
                       )));
         },
         child: SizedBox(
-          height: 130,
+          height: 150,
           child: Container(
-            margin: const EdgeInsets.all(10),
-            padding: const EdgeInsets.fromLTRB(20, 5, 10, 5),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(5),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 5,
-                  blurRadius: 7,
-                  offset: const Offset(0, 3), // changes position of shadow
-                ),
-              ],
-            ),
-            width: 400,
-            child: Row(children: [
-              Image.network(store!.store_logo,
-                  width: 90,
-                  height: 90,
-                  fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
-                return const Image(
-                    image: AssetImage('assets/logo.jpeg'),
-                    width: 90,
-                    height: 90,
-                    fit: BoxFit.fill);
-              }),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [Text(store.store_name), Text(store.store_address)],
-                ),
-              )
-            ]),
-          ),
+              margin: const EdgeInsets.all(10),
+              padding: const EdgeInsets.fromLTRB(20, 5, 10, 5),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: const Offset(0, 3), // changes position of shadow
+                  ),
+                ],
+              ),
+              width: 400,
+              child: Column(
+                children: [
+                  inspection_status(store?.inspection_status ?? -1),
+                  const SizedBox(
+                    height: 2,
+                  ),
+                  Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                    Image.network(store!.store_logo,
+                        width: 90, height: 90, fit: BoxFit.fill,
+                        errorBuilder: (context, error, stackTrace) {
+                      return const Image(
+                          image: AssetImage('assets/logo.jpeg'),
+                          width: 90,
+                          height: 90,
+                          fit: BoxFit.fill);
+                    }),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(store.store_name),
+                          Text(store.store_address)
+                        ],
+                      ),
+                    )
+                  ]),
+                ],
+              )),
         ));
+  }
+
+  Widget inspection_status(int status) {
+    if (status == 0) {
+      return Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+            decoration: BoxDecoration(
+              color: Color(0xFF57B3FC),
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              "승인대기",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Spacer()
+        ],
+      );
+    } else if (status == 1) {
+      return Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+            decoration: BoxDecoration(
+              color: Color(0xFF57B3FC),
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              "승인대기",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+          Spacer()
+        ],
+      );
+    } else if (status == 1) {
+      return Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+            decoration: BoxDecoration(
+              color: Color(0xFF57B3FC),
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              "운영 중",
+              style: TextStyle(
+                color: Colors.green,
+              ),
+            ),
+          ),
+          Spacer()
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          Spacer(),
+          Container(
+            padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+            decoration: BoxDecoration(
+              color: Color(0xFF57B3FC),
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              "심사 반려",
+              style: TextStyle(
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
   }
 }

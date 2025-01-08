@@ -11,15 +11,17 @@ FindOwnernameResponse _$FindOwnernameResponseFromJson(
     FindOwnernameResponse(
       statusCode: (json['statusCode'] as num).toInt(),
     )
-      ..id = json['id'] as String?
-      ..createdTime = json['createdTime'] as String?
+      ..owner_id = (json['owner_id'] as num?)?.toInt()
+      ..email = json['email'] as String?
+      ..created_time = json['created_time'] as String?
       ..msg = json['msg'] as String?;
 
 Map<String, dynamic> _$FindOwnernameResponseToJson(
         FindOwnernameResponse instance) =>
     <String, dynamic>{
       'statusCode': instance.statusCode,
-      'id': instance.id,
-      'createdTime': instance.createdTime,
+      'owner_id': instance.owner_id,
+      'email': instance.email,
+      'created_time': instance.created_time,
       'msg': instance.msg,
     };

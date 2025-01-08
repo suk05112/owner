@@ -4,6 +4,7 @@ import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/api/response/store/store_post_response.dart';
+import 'package:owner/common/model/Settlement.dart';
 import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/common/api/response/GifticonResponse.dart';
 import 'package:owner/common/model/inquiry.dart';
@@ -48,9 +49,14 @@ abstract class ApiClient {
     @Body() Store store,
   );
 
-  @POST("owner/find_username")
-  Future<FindOwnernameResponse> findOwnername(
-    @Body() String uid,
+  @POST("/owner/find_ownerId")
+  Future<FindOwnernameResponse> findOwnerId(
+    @Body() OwnerFind ownerFind,
+  );
+
+  @POST("/owner/find_ownerPw")
+  Future<String> findOwnerPw(
+    @Body() OwnerFindPw ownerFind,
   );
 
   @GET("/menu/list/{store_Id}")
@@ -89,5 +95,15 @@ abstract class ApiClient {
   @GET("/owner/inquiry/{owner_id}")
   Future<InquiryListResponse> getInquiry(
     @Path('owner_id') int owner_id,
+  );
+
+  @GET("/settlement/list/{store_id}")
+  Future<SettlementList> getSettlementListByStore(
+    @Path('store_id') int store_id,
+  );
+
+  @GET("/settlement/detail/{settlement_id}")
+  Future<DetailSettlementList> getDetailSettlements(
+    @Path('settlement_id') int settlement_id,
   );
 }

@@ -99,73 +99,80 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("매장 등록하기"),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-      ),
-      backgroundColor: Colors.white,
-      body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Container(
-            margin: EdgeInsets.fromLTRB(27, 0, 27, 21),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                //가게 전호번호
-                const Text(
-                  "매장 전화번호",
-                  style: TextAssset.header2,
-                ),
-                const SizedBox(height: 5),
+    return GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+          appBar: AppBar(
+            title: _isRegister ? const Text("매장 등록하기") : const Text("매장 수정하기"),
+            elevation: 0,
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+          ),
+          backgroundColor: Colors.white,
+          body: Form(
+              key: _formKey,
+              child: Column(children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Container(
+                      margin: const EdgeInsets.fromLTRB(27, 0, 27, 21),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          //가게 전호번호
+                          const Text(
+                            "매장 전화번호",
+                            style: TextAssset.header2,
+                          ),
+                          const SizedBox(height: 5),
 
-                TextFormField(
-                  controller: telePhoneController,
-                  keyboardType: TextInputType.text,
-                  decoration: inputDecoration.copyWith(hintText: "매장 전화번호 입력"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter telephone';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 15),
+                          TextFormField(
+                            controller: telePhoneController,
+                            keyboardType: TextInputType.text,
+                            decoration: inputDecoration.copyWith(
+                                hintText: "매장 전화번호 입력"),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter telephone';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 15),
 
-                //매장 설명
-                Text(
-                  "매장 설명",
-                  style: TextAssset.header2,
-                ),
-                TextFormField(
-                  controller: introController,
-                  keyboardType: TextInputType.text,
-                  maxLines: null, //height 제한 X, 글자 수 에 따라 유동적으로 변함
-                  // maxLines: 6,
-                  // maxLength: 200,
-                  decoration: InputDecoration(
-                    hintStyle: TextAssset.placeholder,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                    isDense: true,
-                    contentPadding: EdgeInsets.fromLTRB(21, 10, 21, 10),
-                    // contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                    // contentPadding: EdgeInsets.symmetric(vertical: 5), // <-- SEE HERE
-                    // contentPadding:
-                    //     const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0)
-                  ).copyWith(hintText: "매장 소개 입력"),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter store description';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 15),
+                          //매장 설명
+                          Text(
+                            "매장 설명",
+                            style: TextAssset.header2,
+                          ),
+                          TextFormField(
+                            controller: introController,
+                            keyboardType: TextInputType.text,
+                            maxLines: null,
+                            maxLength: 200,
+                            decoration: InputDecoration(
+                              hintStyle: TextAssset.placeholder,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(5.0),
+                              ),
+                              isDense: true,
+                              contentPadding:
+                                  EdgeInsets.fromLTRB(21, 10, 21, 10),
+                              // contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                              // contentPadding: EdgeInsets.symmetric(vertical: 5), // <-- SEE HERE
+                              // contentPadding:
+                              //     const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0)
+                            ).copyWith(hintText: "매장 소개 입력(200자 이내)"),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter store description';
+                              }
+                              return null;
+                            },
+                          ),
+                          SizedBox(height: 15),
 
 /*
                 //주소
@@ -235,106 +242,116 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                           ])
                     : SizedBox(height: 0),
 */
-                SizedBox(height: 15),
+                          SizedBox(height: 15),
 
-                //매장 로고 업로드
-                _isRegister
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                            Text(
-                              "로고 사진",
-                              style: TextAssset.header2,
-                            ),
-                            Row(
-                              children: [
-                                GestureDetector(
-                                    onTap: () async {
-                                      _getLogoImage();
-                                    },
-                                    child: ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(5.0),
-                                        child: Image(
-                                          image:
-                                              AssetImage('assets/camera.jpeg'),
-                                          width: 100,
-                                          height: 100,
-                                        ))),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                _logoImage != null
-                                    ? ClipRRect(
-                                        borderRadius:
-                                            BorderRadius.circular(5.0),
-                                        child: Image.file(
-                                          File(_logoImage!.path),
-                                          fit: BoxFit.cover,
-                                          width: 100,
-                                          height: 100,
-                                        ))
-                                    : Text(''),
-                              ],
-                            )
-                          ])
-                    : SizedBox(height: 0),
+                          //매장 로고 업로드
+                          _isRegister
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                      const Text(
+                                        "로고 사진",
+                                        style: TextAssset.header2,
+                                      ),
+                                      Row(
+                                        children: [
+                                          GestureDetector(
+                                              onTap: () async {
+                                                _getLogoImage();
+                                              },
+                                              child: ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
+                                                  child: const Image(
+                                                    image: AssetImage(
+                                                        'assets/camera.jpeg'),
+                                                    width: 100,
+                                                    height: 100,
+                                                  ))),
+                                          SizedBox(
+                                            width: 10,
+                                          ),
+                                          _logoImage != null
+                                              ? ClipRRect(
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          5.0),
+                                                  child: Image.file(
+                                                    File(_logoImage!.path),
+                                                    fit: BoxFit.cover,
+                                                    width: 100,
+                                                    height: 100,
+                                                  ))
+                                              : Text(''),
+                                        ],
+                                      )
+                                    ])
+                              : SizedBox(height: 0),
 
-                //가게 대표 사진
-                Text(
-                  "가게 대표 사진",
-                  style: TextAssset.header2,
-                ),
-                StoreImagesGridview(),
+                          //가게 대표 사진
+                          Text(
+                            "가게 대표 사진",
+                            style: TextAssset.header2,
+                          ),
+                          StoreImagesGridview(),
 
-                SizedBox(height: 15),
-
-                _isRegister
-                    ? SizedBox()
-                    : const Text("매장 이름/주소/사업자 등록번호 로고 수정은 문의로만 변경 가능합니다."),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ColorAssset.mainColor,
-                    minimumSize: const Size.fromHeight(50), // NEW
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0),
+                          SizedBox(height: 15),
+                        ],
+                      ),
                     ),
                   ),
-                  onPressed: () async {
-                    // storePhoto
-                    //     .asMap()
-                    //     .forEach((index, value) => uploadImg(index, value));
-
-                    setState(() {
-                      // _profileImageURL = downloadURL;
-                    });
-
-                    if (_isRegister) {
-                      registerStore();
-
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  const SettingOpeningDatePage()));
-                    } else {
-                      if (_store != null) {
-                        await updateStore()
-                            .then((value) => Navigator.pop(context, _store));
-                      }
-                    }
-                  },
-                  child: const Text(
-                    '다음',
-                    style: TextStyle(color: Colors.white),
-                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+                Container(
+                  margin: const EdgeInsets.fromLTRB(27, 0, 27, 21),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _isRegister
+                            ? SizedBox()
+                            : const Text(
+                                "매장 이름/주소/사업자 등록번호/로고 수정은 문의로만 변경 가능합니다."),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: ColorAssset.mainColor,
+                            minimumSize: const Size.fromHeight(50), // NEW
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(5.0),
+                            ),
+                          ),
+                          onPressed: () async {
+                            // storePhoto
+                            //     .asMap()
+                            //     .forEach((index, value) => uploadImg(index, value));
+
+                            setState(() {
+                              // _profileImageURL = downloadURL;
+                            });
+
+                            if (_isRegister) {
+                              registerStore();
+
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SettingOpeningDatePage()));
+                            } else {
+                              if (_store != null) {
+                                await updateStore().then(
+                                    (value) => Navigator.pop(context, _store));
+                              }
+                            }
+                          },
+                          child: const Text(
+                            '다음',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ]),
+                )
+              ])),
+        ));
   }
 
   Future<void> _saveAssetImageAsFile() async {

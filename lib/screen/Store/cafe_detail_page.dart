@@ -33,12 +33,7 @@ class CafeDetailScreen extends StatefulWidget {
   State<CafeDetailScreen> createState() => _CafeDetailScreenState();
 }
 
-class _CafeDetailScreenState extends State<CafeDetailScreen>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-
-  // DatabaseService service = DatabaseService();
+class _CafeDetailScreenState extends State<CafeDetailScreen> {
   Future<CafeInfo>? cafeList;
   Future<OperatingHours>? operatingHours;
   late int _storeId;
@@ -98,15 +93,19 @@ class _CafeDetailScreenState extends State<CafeDetailScreen>
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Image(
-                                          width: 100,
-                                          height: 100,
-                                          fit: BoxFit.fill,
-                                          image: NetworkImage(
-                                            store?.store_logo ?? "",
+                                        ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(5.0),
+                                          child: Image(
+                                            width: 100,
+                                            height: 100,
+                                            fit: BoxFit.fill,
+                                            image: NetworkImage(
+                                              store?.store_logo ?? "",
+                                            ),
                                           ),
                                         ),
-                                        SizedBox(width: 20),
+                                        const SizedBox(width: 20),
                                         // Spacer(),
                                         Column(
                                           crossAxisAlignment:
@@ -196,12 +195,14 @@ class _CafeDetailScreenState extends State<CafeDetailScreen>
       return Container(
           width: 100,
           height: 100,
-          margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+          margin: const EdgeInsets.fromLTRB(0, 2, 2, 0),
           child: ClipRRect(
               borderRadius: BorderRadius.circular(5.0),
-              child: Image.network(item ?? "",
+              child: Image.network(item,
                   width: 90,
                   height: 90,
+                  cacheWidth: 100,
+                  cacheHeight: 100,
                   fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
                 print(error);
                 return Image(
@@ -225,8 +226,6 @@ class _CafeDetailScreenState extends State<CafeDetailScreen>
   }
 
   List dataSource2() {
-    // var items = List.generate(5, (i) => "Item $i");
-    print("detail page sotreId: ${widget.storeId}");
     var items = [
       RegisterStorePage(
         isRegister: false,

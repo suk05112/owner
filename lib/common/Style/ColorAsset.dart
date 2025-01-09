@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 class ColorAssset {
   static const Color mainColor = Color(0xffFF4c4c);
+  static const Color bankBackground = Color(0xffFAFAFC);
+
   // static final Color mainColor = hexToColor('#FF4C4C)');
 
   static Color hexToColor(String hexString) {

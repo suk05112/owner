@@ -2,12 +2,9 @@ import 'dart:developer';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonWidget.dart';
 import 'package:owner/common/api/API.dart';
-// import 'package:owner/common/api/response/store/store.dart';
-import 'package:owner/register.dart';
 
 import '../../common/api/request/store/store.dart';
 import '../../common/model/CafeBasicInfo.dart';
@@ -45,11 +42,6 @@ class _CafeListState extends State<CafeList> {
         .fetchStoreList(user?.owner_id ?? 0);
 
     print("init state:: StoreProvider.fetchStoreList 호출 후 ");
-  }
-
-  Future _initRetrieval() async {
-    print(FirebaseAuth.instance.currentUser?.displayName);
-    print(FirebaseAuth.instance.currentUser?.email);
   }
 
   @override
@@ -167,43 +159,46 @@ class _CafeListState extends State<CafeList> {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(5),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
+                    color: Colors.grey,
                     spreadRadius: 5,
                     blurRadius: 7,
-                    offset: const Offset(0, 3), // changes position of shadow
+                    offset: Offset(0, 3), // changes position of shadow
                   ),
                 ],
               ),
-              width: 400,
+              width: double.infinity,
               child: Column(
                 children: [
                   inspection_status(store?.inspection_status ?? -1),
                   const SizedBox(
                     height: 2,
                   ),
-                  Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                    Image.network(store!.store_logo,
-                        width: 90, height: 90, fit: BoxFit.fill,
-                        errorBuilder: (context, error, stackTrace) {
-                      return const Image(
-                          image: AssetImage('assets/logo.jpeg'),
-                          width: 90,
-                          height: 90,
-                          fit: BoxFit.fill);
-                    }),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(store.store_name),
-                          Text(store.store_address)
-                        ],
-                      ),
-                    )
-                  ]),
+                  Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Image.network(store!.store_logo,
+                            width: 90, height: 90, fit: BoxFit.fill,
+                            errorBuilder: (context, error, stackTrace) {
+                          return const Image(
+                              image: AssetImage('assets/logo.jpeg'),
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.fill);
+                        }),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(10, 5, 10, 5),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(store.store_name),
+                              Text(store.store_address)
+                            ],
+                          ),
+                        )
+                      ]),
                 ],
               )),
         ));
@@ -213,10 +208,11 @@ class _CafeListState extends State<CafeList> {
     if (status == 0) {
       return Row(
         children: [
+          const Spacer(),
           Container(
             padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
             decoration: BoxDecoration(
-              color: Color(0xFF57B3FC),
+              color: const Color(0xFF57B3FC),
               borderRadius: BorderRadius.circular(5.0),
             ),
             alignment: Alignment.center,
@@ -227,62 +223,61 @@ class _CafeListState extends State<CafeList> {
               ),
             ),
           ),
-          Spacer()
         ],
       );
     } else if (status == 1) {
       return Row(
         children: [
+          const Spacer(),
           Container(
             padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
             decoration: BoxDecoration(
-              color: Color(0xFF57B3FC),
+              color: Colors.green,
               borderRadius: BorderRadius.circular(5.0),
             ),
             alignment: Alignment.center,
             child: const Text(
-              "승인대기",
+              "운영중",
               style: TextStyle(
                 color: Colors.white,
               ),
             ),
           ),
-          Spacer()
         ],
       );
-    } else if (status == 1) {
+    } else if (status == 2) {
       return Row(
         children: [
+          const Spacer(),
           Container(
             padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
             decoration: BoxDecoration(
-              color: Color(0xFF57B3FC),
-              borderRadius: BorderRadius.circular(5.0),
-            ),
-            alignment: Alignment.center,
-            child: const Text(
-              "운영 중",
-              style: TextStyle(
-                color: Colors.green,
-              ),
-            ),
-          ),
-          Spacer()
-        ],
-      );
-    } else {
-      return Row(
-        children: [
-          Spacer(),
-          Container(
-            padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
-            decoration: BoxDecoration(
-              color: Color(0xFF57B3FC),
+              color: Colors.red,
               borderRadius: BorderRadius.circular(5.0),
             ),
             alignment: Alignment.center,
             child: const Text(
               "심사 반려",
+              style: TextStyle(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Row(
+        children: [
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(5.0),
+            ),
+            alignment: Alignment.center,
+            child: const Text(
+              "알수 없음",
               style: TextStyle(
                 color: Colors.red,
               ),

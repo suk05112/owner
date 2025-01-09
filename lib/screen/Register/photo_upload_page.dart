@@ -3,12 +3,8 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_exif_rotation/flutter_exif_rotation.dart';
-// import 'package:flutter_reorderable_grid_view/widgets/reorderable_grid_view.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
-import 'package:owner/main.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:http/http.dart' as http;
@@ -68,52 +64,39 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     //   selectedImages.add(await getImageFileFromUrl(url, idx));
     // });
 
-    await Future.wait(widget.savedImageUrl.asMap().entries.map((e) async {
-      var idx = e.key;
-      var url = e.value;
+    // await Future.wait(widget.savedImageUrl.asMap().entries.map((e) async {
+    // var idx = e.key;
+    // var url = e.value;
 
-      var imageFile = await getImageFileFromUrl(url, idx);
-      var resizedImage = await resizeImage(imageFile, 800, 800);
-      selectedImages.add(resizedImage);
-      setState(() {}); // UI 업데이트
+    // var imageFile = await getImageFileFromUrl(url, idx);
+    // var resizedImage = await resizeImage(imageFile, 500, 500);
+    // selectedImages.add(resizedImage);
+    // selectedImages = selectedImages;
+    // setState(() {}); // UI 업데이트
 
-      // selectedImages.add(await getImageFileFromUrl(url, idx));
+    selectedImages = await Future.wait(
+      widget.savedImageUrl.asMap().entries.map((e) async {
+        var idx = e.key;
+        var url = e.value;
+        var imageFile = await getImageFileFromUrl(url, idx);
+        return await resizeImage(imageFile, 500, 500);
+      }),
+    );
 
-      // setState(() async {
+    setState(() {}); // 최종 UI 갱신
 
-      // });
-    }));
-
-    // widget.savedImageUrl.asMap().entries.map((e) async {
-    //   var idx = e.key;
-    //   var url = e.value;
-    //   selectedImages.add(await getImageFileFromUrl(url, idx));
+    // selectedImages.add(await getImageFileFromUrl(url, idx));
+    // setState(() async {
     // });
-
-// final List<User> = await Future.wait(querySnapshot.documents.map((doc) async {
-//   final snapshot = await doc['user'].get();
-//   return User(id: snapshot["id"], name: snapshot["mail"]);
-// }));
-
-    // for (String url in widget.savedImageUrl) {
-    //   selectedImages.add(await getImageFileFromUrl(url));
     // }
+    // )
+    // );
 
     print("photo upload page:: init state 실행");
     print(selectedImages);
   }
 
   Future<List<File>> _loadImages() async {
-    List<File> images = [];
-    await Future.wait(widget.savedImageUrl.asMap().entries.map((e) async {
-      var idx = e.key;
-      var url = e.value;
-      images.add(await getImageFileFromUrl(url, idx));
-    }));
-    return images;
-  }
-
-  Future<List<File>> _loadImages2() async {
     List<File> images = [];
     await Future.wait(widget.savedImageUrl.asMap().entries.map((e) async {
       var idx = e.key;
@@ -140,7 +123,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     });
 
     final pickedFile = await picker.pickMultiImage(
-      imageQuality: 70, // To set quality of images
+      imageQuality: 50, // To set quality of images
       // maxHeight: 1000, // To set maxheight of images that you want in your app
       // maxWidth: 1000
     ); // To set maxheight of images that you want in your app
@@ -154,7 +137,6 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     if (xfilePick.isNotEmpty) {
       for (var i = 0; i < xfilePick.length; i++) {
         selectedImages.add(await fixExifRotation(xfilePick[i].path));
-
         // selectedImages.add(File(xfilePick[i].path));
       }
       setState(
@@ -199,9 +181,8 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     if (exifData.containsKey('Image Orientation')) {
       final orientation = exifData['Image Orientation']!.printable;
       print("Image Orientation: $orientation");
-    } else {
-      print("key 없음");
     }
+
     if (height < width) {
       print('Rotating image necessary');
       // rotate
@@ -220,7 +201,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     // or jpg with some compression
     // I choose jpg with 100% quality
     final fixedFile =
-        await originalFile.writeAsBytes(img.encodeJpg(fixedImage));
+        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 50));
 
     return fixedFile;
   }
@@ -250,6 +231,8 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
             File(path.path),
             key: ValueKey(path),
             fit: BoxFit.cover,
+            cacheWidth: 100,
+            cacheHeight: 150,
           ),
           Positioned(
             top: 0,
@@ -277,7 +260,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
           title: const Text("매장사진 업로드"),
         ),
         body: Container(
-          margin: EdgeInsets.fromLTRB(10, 5, 10, 20),
+          margin: const EdgeInsets.fromLTRB(10, 5, 10, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -296,12 +279,25 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                   } else {
                     isInit = true;
                     // 데이터 로딩이 완료된 경우 화면을 그립니다.
-                    selectedImages =
-                        isInit == false ? snapshot.data ?? [] : selectedImages;
-                    print("build:: ${selectedImages}");
+                    // selectedImages =
+                    //     isInit == false ? snapshot.data ?? [] : selectedImages;
+                    // print("build:: ${selectedImages}");
 
+                    selectedImages = isInit == false
+                        ? (snapshot.data ?? [])
+                            .map((file) => file.path)
+                            .toSet()
+                            .map((path) => File(path))
+                            .toList()
+                        : selectedImages
+                            .map((file) => file.path)
+                            .toSet()
+                            .map((path) => File(path))
+                            .toList();
+
+                    print(
+                        "build:: ${selectedImages.map((file) => file.path).toList()}");
                     return Expanded(
-                      // height: 800,
                       child: ReorderableGridView.count(
                         crossAxisSpacing: 10,
                         mainAxisSpacing: 10,
@@ -313,13 +309,18 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                             },
                             child: const Image(
                               image: AssetImage('assets/camera.jpeg'),
-                              width: 1500,
+                              width: 150,
                               height: 100,
                             ),
                           )
                         ],
 
-                        children: selectedImages.asMap().entries.map((entry) {
+                        children: selectedImages
+                            .toSet()
+                            .toList()
+                            .asMap()
+                            .entries
+                            .map((entry) {
                           final index = entry.key;
                           final image = entry.value;
                           return selectedImg(image, index);
@@ -340,7 +341,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                   }
                 },
               ),
-              Spacer(),
+              const Spacer(),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   foregroundColor: Colors.white,

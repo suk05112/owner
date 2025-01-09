@@ -105,7 +105,9 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         },
         child: Scaffold(
           appBar: AppBar(
-            title: _isRegister ? const Text("매장 등록하기") : const Text("매장 수정하기"),
+            title: _isRegister
+                ? const Text("매장정보 입력하기(3/3)")
+                : const Text("매장 수정하기"),
             elevation: 0,
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
@@ -140,10 +142,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                               return null;
                             },
                           ),
-                          SizedBox(height: 15),
+                          const SizedBox(height: 15),
 
                           //매장 설명
-                          Text(
+                          const Text(
                             "매장 설명",
                             style: TextAssset.header2,
                           ),
@@ -159,7 +161,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                               ),
                               isDense: true,
                               contentPadding:
-                                  EdgeInsets.fromLTRB(21, 10, 21, 10),
+                                  const EdgeInsets.fromLTRB(21, 10, 21, 10),
                               // contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
                               // contentPadding: EdgeInsets.symmetric(vertical: 5), // <-- SEE HERE
                               // contentPadding:
@@ -172,77 +174,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                               return null;
                             },
                           ),
-                          SizedBox(height: 15),
-
-/*
-                //주소
-                _isRegister
-                    ? Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                            Text(
-                              "주소",
-                              style: TextAssset.header2,
-                            ),
-                            Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Flexible(
-                                      flex: 3,
-                                      child: TextFormField(
-                                        style: TextAssset.placeholder2,
-                                        enabled: false,
-                                        controller: addrController,
-                                        keyboardType: TextInputType.text,
-                                        decoration: inputDecoration.copyWith(
-                                            hintText:
-                                                "Enter your Store Address"),
-                                        validator: (value) {
-                                          if (value == null || value.isEmpty) {
-                                            return 'Please enter Address';
-                                          }
-                                          return null;
-                                        },
-                                      )),
-                                  Container(
-                                    width: 5,
-                                  ),
-                                  Flexible(
-                                      flex: 1,
-                                      child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Color.fromARGB(
-                                              255, 151, 125, 253),
-                                          minimumSize:
-                                              const Size.fromHeight(50), // NEW
-                                        ),
-                                        onPressed: () async {
-                                          _addressAPI();
-                                        },
-                                        child: Text('주소 검색'),
-                                      ))
-                                ]),
-                            SizedBox(
-                              height: 5,
-                            ),
-                            //상세주소
-                            TextFormField(
-                              controller: detailAddrController,
-                              keyboardType: TextInputType.text,
-                              decoration:
-                                  inputDecoration.copyWith(hintText: "상세주소 입력"),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter TelePhone';
-                                }
-                                return null;
-                              },
-                            ),
-                            SizedBox(height: 15),
-                          ])
-                    : SizedBox(height: 0),
-*/
-                          SizedBox(height: 15),
+                          const SizedBox(height: 15),
 
                           //매장 로고 업로드
                           _isRegister
@@ -269,7 +201,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                                                     width: 100,
                                                     height: 100,
                                                   ))),
-                                          SizedBox(
+                                          const SizedBox(
                                             width: 10,
                                           ),
                                           _logoImage != null
@@ -283,20 +215,20 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                                                     width: 100,
                                                     height: 100,
                                                   ))
-                                              : Text(''),
+                                              : const Text(''),
                                         ],
                                       )
                                     ])
-                              : SizedBox(height: 0),
+                              : const SizedBox(height: 0),
 
                           //가게 대표 사진
-                          Text(
+                          const Text(
                             "가게 대표 사진",
                             style: TextAssset.header2,
                           ),
                           StoreImagesGridview(),
 
-                          SizedBox(height: 15),
+                          const SizedBox(height: 15),
                         ],
                       ),
                     ),
@@ -308,7 +240,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _isRegister
-                            ? SizedBox()
+                            ? const SizedBox()
                             : const Text(
                                 "매장 이름/주소/사업자 등록번호/로고 수정은 문의로만 변경 가능합니다."),
                         ElevatedButton(
@@ -327,19 +259,20 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                             setState(() {
                               // _profileImageURL = downloadURL;
                             });
+                            if (_formKey.currentState!.validate()) {
+                              if (_isRegister) {
+                                registerStore();
 
-                            if (_isRegister) {
-                              registerStore();
-
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SettingOpeningDatePage()));
-                            } else {
-                              if (_store != null) {
-                                await updateStore().then(
-                                    (value) => Navigator.pop(context, _store));
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SettingOpeningDatePage()));
+                              } else {
+                                if (_store != null) {
+                                  await updateStore().then((value) =>
+                                      Navigator.pop(context, _store));
+                                }
                               }
                             }
                           },
@@ -593,11 +526,15 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
           return Container(
               width: 100,
               height: 100,
-              margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+              margin: const EdgeInsets.fromLTRB(0, 2, 2, 0),
               child: ClipRRect(
                   borderRadius: BorderRadius.circular(5.0),
                   child: Image.network(item,
-                      width: 90, height: 90, fit: BoxFit.fill,
+                      width: 90,
+                      height: 90,
+                      cacheWidth: 100,
+                      cacheHeight: 100,
+                      fit: BoxFit.fill,
                       errorBuilder: (context, error, stackTrace) {
                     return const Image(
                         image: AssetImage('assets/logo.jpeg'),
@@ -620,6 +557,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 File(item.path),
                 width: 90,
                 height: 90,
+                cacheWidth: 100,
+                cacheHeight: 100,
                 fit: BoxFit.fill,
               )),
         );
@@ -633,7 +572,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         Container(
             height: 100,
             width: 100,
-            margin: EdgeInsets.fromLTRB(0, 0, 2, 0),
+            margin: const EdgeInsets.fromLTRB(0, 0, 2, 0),
             child: GestureDetector(
               onTap: () async {
                 print("Image clicked");
@@ -647,10 +586,14 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 );
 
                 setState(() {
-                  _storeImage = result;
-                  isClickedPhotoUploadPage = true;
+                  if (result.isEmpty) {
+                    // _storeImage = savedStoreImage;
+                  } else {
+                    _storeImage = result;
+                    isClickedPhotoUploadPage = true;
+                    _store?.store_photo_cnt = _storeImage.length;
+                  }
                   print("su2>>${_storeImage}");
-                  _store?.store_photo_cnt = _storeImage.length;
 
                   // savedStoreImage = result; // 수정 시 기존 저장된 이미지도 갱신
                 });

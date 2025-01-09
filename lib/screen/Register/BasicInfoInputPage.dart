@@ -313,14 +313,7 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         ]);
   }
 
-  final inputDecoration = InputDecoration(border: UnderlineInputBorder()
-      // border: OutlineInputBorder(
-      //     borderRadius: BorderRadius.circular(8.0),
-      //     borderSide: const BorderSide(
-      //       color: Colors.redAccent,
-      //       width: 2,
-      //     ))
-      );
+  final inputDecoration = InputDecoration(border: UnderlineInputBorder());
 }
 
 final inputDecoration = InputDecoration(
@@ -383,7 +376,7 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               const SizedBox(height: 10.0),
-              Text(
+              const Text(
                 "이메일",
                 style: TextAssset.header2,
               ),

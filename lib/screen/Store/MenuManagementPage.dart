@@ -2,13 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
-// import 'package:owner/common/DatabaseService.dart';
-// import 'package:owner/common/model/Menu.dart';
-
-import 'package:owner/screen/Store/AddMenuPage.dart';
 import 'package:owner/screen/Store/EditMenuPage.dart';
-import 'package:reorderable_grid_view/reorderable_grid_view.dart';
-
 import '../../common/api/response/menu.dart';
 
 class MenuManagementPage extends StatefulWidget {
@@ -37,11 +31,10 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   }
 
   Future<void> _initRetrieval() async {
-    var menuList =
-        await Api().client.getMenuList(_storeId).then((value) => setState(() {
-              menu = value.menuList;
-              menuLength = value;
-            }));
+    await Api().client.getMenuList(_storeId).then((value) => setState(() {
+          menu = value.menuList;
+          menuLength = value;
+        }));
   }
 
   Widget buildItem(String text) {
@@ -56,9 +49,13 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Row(
+        title: const Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [Spacer(), Text("메뉴 관리"), Spacer(), PopupMenu()],
+          children: [
+            Spacer(),
+            Text("메뉴 관리"),
+            Spacer(), /*PopupMenu()*/
+          ],
         ),
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
@@ -74,13 +71,19 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                   itemBuilder: (context, index) {
                     if (index == menu!.length) {
                       return TextButton(
-                        onPressed: () {
-                          Navigator.push(
+                        onPressed: () async {
+                          final result = await Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) => EditMenuPage(
                                         storeId: widget.storeId,
                                       )));
+
+                          if (result.runtimeType == Menu) {
+                            setState(() {
+                              menu!.add(result);
+                            });
+                          }
                         },
                         child: Text("메뉴 추가"),
                       );
@@ -169,7 +172,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
     print("MenuItem: ${menu.menu_image_url}");
 
     return Container(
-        margin: const EdgeInsets.fromLTRB(0, 1, 0, 1),
+        margin: const EdgeInsets.fromLTRB(0, 3, 0, 3),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -194,7 +197,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text(menu.name), Text("${menu.price}")],
+              children: [Text(menu.name), Text("${menu.price}원")],
             )
           ],
         ));

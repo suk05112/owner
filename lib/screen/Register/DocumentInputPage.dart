@@ -7,6 +7,7 @@ import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/screen/Register/SingUpCompletePage.dart';
+import 'package:owner/screen/Register/account_register_page.dart';
 import 'package:owner/screen/Register/register_store_page.dart';
 import 'package:provider/provider.dart';
 import 'package:remedi_kopo/remedi_kopo.dart';
@@ -59,221 +60,251 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          title: const Text("매장 등록하기"),
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-        ),
-        backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-            child: Form(
-                key: _formKey,
-                child: Container(
-                    margin: EdgeInsets.fromLTRB(27, 0, 27, 21),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          //대표자명
-                          Text(
-                            "대표자명",
-                            style: TextAssset.header2,
-                          ),
-                          SizedBox(height: 5),
-                          TextFormField(
-                            controller: nameController,
-                            keyboardType: TextInputType.text,
-                            decoration:
-                                inputDecoration.copyWith(hintText: "이름 입력"),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Name';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 15),
-
-                          //가게 이름
-                          Text(
-                            "가게이름",
-                            style: TextAssset.header2,
-                          ),
-                          SizedBox(height: 5),
-                          TextFormField(
-                            controller: storenNameController,
-                            keyboardType: TextInputType.text,
-                            decoration:
-                                inputDecoration.copyWith(hintText: "매장 이름 입력"),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter Name';
-                              }
-                              return null;
-                            },
-                          ),
-                          SizedBox(height: 5),
-
-                          // 가게 주소
-                          Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "주소",
-                                  style: TextAssset.header2,
-                                ),
-                                Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Flexible(
-                                          flex: 2,
-                                          child: TextFormField(
-                                            style: TextAssset.placeholder2,
-                                            enabled: false,
-                                            controller: addrController,
-                                            keyboardType: TextInputType.text,
-                                            decoration: inputDecoration.copyWith(
-                                                hintText:
-                                                    "Enter your Store Address"),
-                                            validator: (value) {
-                                              if (value == null ||
-                                                  value.isEmpty) {
-                                                return 'Please enter Address';
-                                              }
-                                              return null;
-                                            },
-                                          )),
-                                      Container(
-                                        width: 5,
-                                      ),
-                                      Flexible(
-                                          flex: 1,
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(5.0),
-                                              ),
-                                              backgroundColor: Colors.white,
-                                              minimumSize:
-                                                  const Size.fromHeight(
-                                                      50), // NEW
-                                            ),
-                                            onPressed: () async {
-                                              _addressAPI();
-                                            },
-                                            child: const Text(
-                                              '주소 검색',
-                                              style: TextStyle(
-                                                  color: Colors.black),
-                                            ),
-                                          ))
-                                    ]),
-                                const SizedBox(
-                                  height: 5,
-                                ),
-                                //상세주소
-                                TextFormField(
-                                  controller: detailAddrController,
-                                  keyboardType: TextInputType.text,
-                                  decoration: inputDecoration.copyWith(
-                                      hintText: "상세주소 입력"),
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter TelePhone';
-                                    }
-                                    return null;
-                                  },
-                                ),
-                                SizedBox(height: 5),
-                              ]),
-
-                          InputInfoWidget(
-                            title: "사업자 등록번호",
-                            hintText: "사업자 등록번호 입력",
-                            validator: validateName,
-                          ),
-
-                          const SizedBox(height: 5),
-
-                          DocumentUploadWidget(
-                            title: "사업자 등록증",
-                            validator: validateBR,
-                          ),
-                          DocumentUploadWidget(
-                            title: "통장 사본",
-                            validator: validatebankBook,
-                          ),
-
-                          const ExpansionTile(
-                              iconColor: Colors.black,
-                              collapsedIconColor: Colors.black,
-                              title: Text(
-                                "개인정보 수집 및 이용 동의",
-                                style: TextStyle(
-                                  // fontSize: 18,
-                                  // fontWeight: FontWeight.bold,
-                                  color: Colors.black,
-                                ),
-                              ),
-                              children: [
-                                Text(
-                                    "수집 목적: 입점 신청자 연락 및 상담\n수집 항목: 성명, 휴대폰 번호, 제출서류(사업자등록증, 영업신고증 등)에 포함된 개인정보\n보유 및 이용기간: 6개월\n개인정보 수집 및 이용 동의를 거부할 권리가 있으며, 거부할 경우 입점신청이 불가합니다.")
-                              ]),
-                          Row(
+    return GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: Scaffold(
+            appBar: AppBar(
+              elevation: 0,
+              title: const Text("사업자 정보 입력하기(1/3)"),
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+            ),
+            backgroundColor: Colors.white,
+            body: SingleChildScrollView(
+                child: Form(
+                    key: _formKey,
+                    child: Container(
+                        margin: const EdgeInsets.fromLTRB(27, 0, 27, 21),
+                        child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Checkbox(
-                                  value: _isChecked,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _isChecked = !_isChecked;
-                                    });
-                                  }),
-                              Text("[필수] 개인정보 수집 및 이용 동의합니다")
-                            ],
-                          ),
-                          Container(
-                            width: double.infinity,
-                            height: 50,
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: ColorAssset.mainColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(5.0),
-                                ),
-                                // minimumSize: const Size.fromHeight(50), // NEW
+                              //대표자명
+                              const Text(
+                                "대표자명",
+                                style: TextAssset.header2,
                               ),
-                              onPressed: () {
-                                if (!_isChecked) {
-                                  showToast();
-                                  return;
-                                }
-                                _store.store_name = storenNameController.text;
-                                _store.store_address =
-                                    "${addrController.text} ${detailAddrController.text}";
+                              const SizedBox(height: 5),
+                              TextFormField(
+                                controller: nameController,
+                                keyboardType: TextInputType.text,
+                                decoration:
+                                    inputDecoration.copyWith(hintText: "이름 입력"),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return '이름을 입력해주세요.';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 15),
 
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => RegisterStorePage(
-                                              isRegister: true,
-                                              store: _store,
-                                            )));
-                              },
-                              child: const Text(
-                                '다음',
-                                style: TextStyle(color: Colors.white),
+                              //가게 이름
+                              const Text(
+                                "가게이름",
+                                style: TextAssset.header2,
                               ),
-                            ),
-                          ),
-                        ])))));
+                              const SizedBox(height: 5),
+                              TextFormField(
+                                controller: storenNameController,
+                                keyboardType: TextInputType.text,
+                                decoration: inputDecoration.copyWith(
+                                    hintText: "매장 이름 입력"),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return '매장명을 입력해주세요';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 5),
+
+                              // 가게 주소
+                              Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      "주소",
+                                      style: TextAssset.header2,
+                                    ),
+                                    Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.end,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.end,
+                                        children: [
+                                          Flexible(
+                                              flex: 2,
+                                              child: TextFormField(
+                                                style: TextAssset.placeholder2,
+                                                enabled: false,
+                                                controller: addrController,
+                                                keyboardType:
+                                                    TextInputType.text,
+                                                decoration:
+                                                    inputDecoration.copyWith(
+                                                        hintText:
+                                                            "주소를 검색해주세요."),
+                                                validator: (value) {
+                                                  if (value == null ||
+                                                      value.isEmpty) {
+                                                    return '주소를 검색해주세요';
+                                                  }
+                                                  return null;
+                                                },
+                                              )),
+                                          Container(
+                                            width: 5,
+                                          ),
+                                          Flexible(
+                                              flex: 1,
+                                              child: ElevatedButton(
+                                                style: ElevatedButton.styleFrom(
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            5.0),
+                                                  ),
+                                                  backgroundColor: Colors.white,
+                                                  minimumSize:
+                                                      const Size.fromHeight(
+                                                          50), // NEW
+                                                ),
+                                                onPressed: () async {
+                                                  _addressAPI();
+                                                },
+                                                child: const Text(
+                                                  '주소 검색',
+                                                  style: TextStyle(
+                                                      color: Colors.black),
+                                                ),
+                                              ))
+                                        ]),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    //상세주소
+                                    TextFormField(
+                                      controller: detailAddrController,
+                                      keyboardType: TextInputType.text,
+                                      decoration: inputDecoration.copyWith(
+                                          hintText: "상세주소 입력"),
+                                      // validator: (value) {
+                                      //   if (value == null || value.isEmpty) {
+                                      //     return '상세주소를 입력해주세요.';
+                                      //   }
+                                      //   return null;
+                                      // },
+                                    ),
+                                    const SizedBox(height: 5),
+                                  ]),
+
+                              InputInfoWidget(
+                                title: "사업자 등록번호",
+                                hintText: "사업자 등록번호 입력(-제외)",
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "사업자 등록번호를 입력해주세요";
+                                  }
+                                  return null;
+                                },
+                              ),
+
+                              const SizedBox(height: 5),
+
+                              DocumentUploadWidget(
+                                title: "사업자 등록증",
+                                validator: validateBR,
+                              ),
+                              DocumentUploadWidget(
+                                title: "통장 사본",
+                                validator: validatebankBook,
+                              ),
+
+                              const ExpansionTile(
+                                  iconColor: Colors.black,
+                                  collapsedIconColor: Colors.black,
+                                  title: Text(
+                                    "개인정보 수집 및 이용 동의",
+                                    style: TextStyle(
+                                      // fontSize: 18,
+                                      // fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  children: [
+                                    Text(
+                                      "수집 목적: 입점 신청자 연락 및 상담\n수집 항목: 성명, 휴대폰 번호, 제출서류(사업자등록증, 통장사본 등)에 포함된 개인정보\n보유 및 이용기간: 탈퇴 후 6개월\n개인정보 수집 및 이용 동의를 거부할 권리가 있으며, 거부할 경우 입점신청이 불가합니다.",
+                                      style: TextStyle(fontSize: 12),
+                                    )
+                                  ]),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                      value: _isChecked,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _isChecked = !_isChecked;
+                                        });
+                                      }),
+                                  const Text("[필수] 개인정보 수집 및 이용 동의합니다")
+                                ],
+                              ),
+                              SizedBox(
+                                width: double.infinity,
+                                height: 50,
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: ColorAssset.mainColor,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(5.0),
+                                    ),
+                                    // minimumSize: const Size.fromHeight(50), // NEW
+                                  ),
+                                  onPressed: () {
+                                    if (!_isChecked) {
+                                      showToast("개인정보 수집 이용에 동의해주세요.");
+                                      return;
+                                    }
+
+                                    if (_store.business_registration == null) {
+                                      showToast("사업자 등록증을 업로드해주세요.");
+                                      return;
+                                    }
+
+                                    if (_store.bank_book == null) {
+                                      showToast("통장사본을 업로드해주세요.");
+                                      return;
+                                    }
+
+                                    if (_formKey.currentState!.validate()) {
+                                      _store.store_name =
+                                          storenNameController.text;
+                                      _store.store_address =
+                                          "${addrController.text} ${detailAddrController.text}";
+
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  AccountRegisterPage(
+                                                    store: _store,
+                                                  )));
+                                    }
+                                  },
+                                  child: const Text(
+                                    '다음',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                ),
+                              ),
+                            ]))))));
   }
 
-  void showToast() {
+  void showToast(msg) {
     Fluttertoast.showToast(
-        msg: "개인정보 수집 이용에 동의해주세요.",
+        msg: msg,
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 2,
@@ -292,7 +323,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   // validate businessRegistration
   String? validateBR(File? value) {
     if (value == null) {
-      return "빈 문자열";
+      return "사업자등록증을 업로드해주세요";
     }
     _store.business_registration = value;
     return null;
@@ -301,8 +332,9 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   // validate bankBook
   String? validatebankBook(File? value) {
     if (value == null) {
-      return "빈 문자열";
+      return "통장사본을 업로드해주세요";
     }
+    _store.bank_book = value;
     return null;
   }
 
@@ -358,7 +390,7 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                 widget.title,
                 style: TextAssset.header2,
               ),
-              Container(
+              SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
@@ -374,6 +406,9 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                               source: ImageSource.gallery);
                           if (pickedImage != null) {
                             widget.validator(File(pickedImage.path));
+                            File file = File(pickedImage.path);
+                            String? result = widget.validator(file);
+
                             setState(() {
                               uploadedFilename = pickedImage.name;
                             });
@@ -389,6 +424,9 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                           style: TextStyle(color: Colors.black)),
                 ),
               ),
+              const SizedBox(
+                height: 1,
+              ),
               Visibility(
                 visible: uploadedFilename != null,
                 child: Container(
@@ -397,27 +435,30 @@ class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
                       borderRadius: BorderRadius.circular(5)),
                   child: Row(
                     children: [
-                      Container(
-                        width: 300,
-                        height: 50,
+                      Flexible(
+                        flex: 12,
                         child: Text(
                           uploadedFilename ?? "업로드 된 파일 이름",
-                          overflow: TextOverflow.fade,
+                          style: const TextStyle(fontSize: 13),
+                          // overflow: TextOverflow.fade,
                         ),
                       ),
-                      IconButton(
-                        icon: Image.asset(
-                          'assets/X_button.png',
-                          width: 10,
-                          height: 10,
+                      Flexible(
+                        flex: 1,
+                        child: IconButton(
+                          icon: Image.asset(
+                            'assets/X_button.png',
+                            width: 10,
+                            height: 10,
+                          ),
+                          // iconSize: 10,
+                          onPressed: () {
+                            setState(() {
+                              uploadedFilename = null;
+                            });
+                          },
                         ),
-                        // iconSize: 10,
-                        onPressed: () {
-                          setState(() {
-                            uploadedFilename = null;
-                          });
-                        },
-                      ),
+                      )
                     ],
                   ),
                 ),

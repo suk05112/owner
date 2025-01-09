@@ -24,6 +24,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // await Firebase.initializeApp();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // debugInvertOversizedImages = true;
+
   runApp(const MyApp());
 }
 

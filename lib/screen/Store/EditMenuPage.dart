@@ -1,7 +1,9 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
@@ -9,6 +11,9 @@ import 'package:owner/common/widget/CommonDialog.dart';
 import '../../common/api/response/menu.dart';
 
 import 'package:http/http.dart' as http;
+import 'package:image/image.dart' as img;
+import 'package:exif/exif.dart';
+
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -29,6 +34,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
   TextEditingController menuDescInputController = TextEditingController();
   TextEditingController menuPriceInputController = TextEditingController();
   File? _image;
+  bool _isMenuImageLoading = false;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -72,7 +78,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
         child: Scaffold(
             appBar: AppBar(
               elevation: 0,
-              title: Text("메뉴 관리"),
+              title: const Text("메뉴 관리"),
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
             ),
@@ -123,8 +129,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                             BorderRadius.circular(5.0),
                                       ),
                                       isDense: true,
-                                      contentPadding:
-                                          EdgeInsets.fromLTRB(21, 14, 21, 18),
+                                      contentPadding: const EdgeInsets.fromLTRB(
+                                          21, 14, 21, 18),
                                     ),
                                     textAlign: TextAlign.end,
                                     validator: (value) {
@@ -139,7 +145,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                     height: 10,
                                   ),
                                   //설명
-                                  Text("설명"),
+                                  const Text("설명"),
                                   TextFormField(
                                     controller: menuDescInputController,
                                     keyboardType: TextInputType.text,
@@ -182,7 +188,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(5.0),
                 ),
-                textStyle: TextStyle(fontWeight: FontWeight.w600)
+                textStyle: const TextStyle(fontWeight: FontWeight.w600)
 
                 // minimumSize: const Size.fromHeight(50), // NEW
                 ),
@@ -239,7 +245,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                 }
               }
             },
-            child: Text('확인'),
+            child: const Text('확인'),
           ),
         ),
         const SizedBox(width: double.infinity, height: 5),
@@ -272,7 +278,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                               {Navigator.pop(context, widget.menu!.menu_id)});
                     });
               },
-              child: Text('메뉴 삭제'),
+              child: const Text('메뉴 삭제'),
             ),
           )
       ],
@@ -280,6 +286,8 @@ class _EditMenuPageState extends State<EditMenuPage> {
   }
 
   Widget menuImage() {
+    bool isUpdated = widget.menuId != null;
+
     return GestureDetector(
         onTap: () async {
           pickMenuImage();
@@ -296,21 +304,28 @@ class _EditMenuPageState extends State<EditMenuPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    _image == null
-                        ? Image.asset(
-                            'assets/americano.jpeg',
-                            width: 200,
-                            height: 200,
-                          )
-                        : Image.network(widget.menu?.menu_image_url ?? "",
+                    if (_image == null)
+                      if (isUpdated)
+                        Image.network(widget.menu?.menu_image_url ?? "",
                             width: 200, height: 200, fit: BoxFit.fill,
                             errorBuilder: (context, error, stackTrace) {
-                            return const Image(
-                                image: AssetImage('assets/americano.jpeg'),
-                                width: 200,
-                                height: 200,
-                                fit: BoxFit.fill);
-                          }),
+                          print("su>> Image load error: $error");
+                          return Image.asset('assets/americano.jpeg',
+                              width: 200, height: 200, fit: BoxFit.fill);
+                        })
+                      else
+                        Image.asset(
+                          'assets/americano.jpeg',
+                          width: 200,
+                          height: 200,
+                        )
+                    else
+                      Image.file(
+                        _image!,
+                        fit: BoxFit.fill,
+                        width: 200,
+                        height: 200,
+                      ),
                     const Text("이미지를 터치해 선택하세요.")
                   ]),
             ],
@@ -323,8 +338,14 @@ class _EditMenuPageState extends State<EditMenuPage> {
     final pickedImage = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedImage != null) {
+      print("pick image is not null");
       setState(() {
-        _image = File(pickedImage.path);
+        _isMenuImageLoading = true; // 로딩 상태 시작
+      });
+      final fixedImage = await fixExifRotation(pickedImage.path);
+      setState(() {
+        _image = fixedImage;
+        _isMenuImageLoading = false; // 로딩 상태 종료
       });
     } else {
       print("pick image is null");
@@ -369,5 +390,57 @@ class _EditMenuPageState extends State<EditMenuPage> {
     file.writeAsBytesSync(response.bodyBytes);
 
     return file;
+  }
+
+  Future<File> fixExifRotation(String imagePath) async {
+    final originalFile = File(imagePath);
+    List<int> imageBytes = await originalFile.readAsBytes();
+
+    final originalImage = img.decodeImage(Uint8List.fromList(imageBytes));
+
+    final height = originalImage!.height;
+    final width = originalImage.width;
+
+    // Let's check for the image size
+    // This will be true also for upside-down photos but it's ok for me
+    if (height >= width) {
+      // I'm interested in portrait photos so
+      // I'll just return here
+      return originalFile;
+    }
+
+    // We'll use the exif package to read exif data
+    // This is map of several exif properties
+    // Let's check 'Image Orientation'
+    final exifData = await readExifFromBytes(imageBytes);
+
+    img.Image fixedImage = img.copyRotate(originalImage, angle: 0);
+
+    if (exifData.containsKey('Image Orientation')) {
+      final orientation = exifData['Image Orientation']!.printable;
+      print("Image Orientation: $orientation");
+    }
+
+    if (height < width) {
+      print('Rotating image necessary');
+      // rotate
+      if (exifData['Image Orientation']!.printable.contains('Horizontal')) {
+        // fixedImage = img.copyRotate(originalImage, angle: 90);
+      } else if (exifData['Image Orientation']!.printable.contains('180')) {
+        // fixedImage = img.copyRotate(originalImage, angle: -90);
+      } else if (exifData['Image Orientation']!.printable.contains('CW')) {
+        fixedImage = img.copyRotate(originalImage, angle: -90);
+      } else {
+        fixedImage = img.copyRotate(originalImage, angle: 0);
+      }
+    }
+
+    // Here you can select whether you'd like to save it as png
+    // or jpg with some compression
+    // I choose jpg with 100% quality
+    final fixedFile =
+        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 50));
+
+    return fixedFile;
   }
 }

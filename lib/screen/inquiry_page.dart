@@ -3,6 +3,7 @@ import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/inquiry.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/screen/inquiry_detail_page.dart';
 import 'package:provider/provider.dart';
 import '../../common/Style/CommonSection.dart';
@@ -19,15 +20,24 @@ class _InquiryPageState extends State<InquiryPage>
   final scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
 
+  TextEditingController titleController = TextEditingController();
+  TextEditingController contentController = TextEditingController();
+
   late Future<InquiryListResponse?> futureInquiryList;
+  Set<int> expandedItems = {};
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    User? user = Provider.of<UserProvider>(context, listen: false).user;
+    fetchInquiry();
+  }
 
-    futureInquiryList = Api().client.getInquiry(user?.owner_id ?? 0);
+  void fetchInquiry() {
+    User? user = Provider.of<UserProvider>(context, listen: false).user;
+    setState(() {
+      futureInquiryList = Api().client.getInquiry(user?.owner_id ?? 0);
+    });
   }
 
   @override
@@ -38,24 +48,28 @@ class _InquiryPageState extends State<InquiryPage>
           centerTitle: true,
         ),
         body: SafeArea(
-            child: Container(
-                margin: EdgeInsets.fromLTRB(10, 5, 10, 10),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment
-                        .start, // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        height: kToolbarHeight - 8.0,
-                        child: getTabBarWidget(),
-                      ),
-                      Expanded(
-                        child: TabBarView(
-                          controller: _tabController,
-                          physics: NeverScrollableScrollPhysics(),
-                          children: <Widget>[InquiryForm(), InquiryList()],
-                        ),
-                      )
-                    ]))));
+            child: GestureDetector(
+                onTap: () {
+                  FocusScope.of(context).unfocus();
+                },
+                child: Container(
+                    margin: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment
+                            .start, // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            height: kToolbarHeight - 8.0,
+                            child: getTabBarWidget(),
+                          ),
+                          Expanded(
+                            child: TabBarView(
+                              controller: _tabController,
+                              physics: NeverScrollableScrollPhysics(),
+                              children: <Widget>[InquiryForm(), InquiryList()],
+                            ),
+                          )
+                        ])))));
   }
 
   Widget getTabBarWidget() {
@@ -86,9 +100,6 @@ class _InquiryPageState extends State<InquiryPage>
   Widget InquiryForm() {
     User? user = Provider.of<UserProvider>(context, listen: false).user;
 
-    TextEditingController titleController = TextEditingController();
-    TextEditingController contentController = TextEditingController();
-
     return Scaffold(
         body: Column(
       children: [
@@ -116,7 +127,7 @@ class _InquiryPageState extends State<InquiryPage>
             return null;
           },
         ),
-        SizedBox(
+        const SizedBox(
           height: 10,
         ),
         Expanded(
@@ -148,8 +159,18 @@ class _InquiryPageState extends State<InquiryPage>
             var inquiry = Inquiry(
                 title: titleController.text, content: contentController.text);
             Api().client.subjectInquiry(user?.owner_id ?? 0, inquiry);
+            CommonDialog.show(
+                context: context,
+                title: "등록완료",
+                content: "문의하기 등록이 완료되었습니다.",
+                buttonText: "확인",
+                onPressed: () {
+                  titleController.text = "";
+                  contentController.text = "";
+                });
+            fetchInquiry();
           },
-          child: Text('문의하기 제출'),
+          child: const Text('문의하기 제출'),
         )
       ],
     ));
@@ -162,7 +183,12 @@ class _InquiryPageState extends State<InquiryPage>
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               // 데이터 로딩 중일 때 로딩 인디케이터 표시
-              return CircularProgressIndicator();
+              return const Center(
+                  child: SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(),
+              ));
             } else if (snapshot.hasError) {
               // 에러가 발생한 경우
               return Text("Error: ${snapshot.error}");
@@ -170,44 +196,91 @@ class _InquiryPageState extends State<InquiryPage>
               // 데이터가 정상적으로 로드되었을 때
               List<InquiryResponse> inquiryList =
                   snapshot.data!.inquiryResponse;
-              return ListView.separated(
-                itemCount: inquiryList.length,
-                itemBuilder: (context, index) {
-                  return GestureDetector(
-                      onTap: () {
-                        if (inquiryList[index].response != null) {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => InquiryDetailPage(
-                                      inquiryResponse: inquiryList[index])));
-                        }
-                      },
-                      child: Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Text("${inquiryList[index].inquiry_created}"),
-                              Text(inquiryList[index].title),
-                              Text(inquiryList[index].content)
-                            ],
-                          ),
-                          Spacer(),
-                          inquiryList[index].status == "pending"
-                              ? Text("답변대기")
-                              : Text("답변완료"),
-                        ],
-                      ));
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return const Divider();
-                },
-              );
+              return RefreshIndicator(
+                  onRefresh: () async {
+                    setState(() {
+                      fetchInquiry();
+                    });
+                  },
+                  child: ListView.separated(
+                    itemCount: inquiryList.length,
+                    itemBuilder: (context, index) {
+                      // bool isExpanded = expandedItems.contains(index);
+
+                      return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (expandedItems.contains(index)) {
+                                expandedItems.remove(index);
+                              } else {
+                                expandedItems.add(index);
+                              }
+                            });
+                          },
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Row(children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Text(
+                                          "${inquiryList[index].inquiry_created}"),
+                                      Text(inquiryList[index].title),
+                                      Text(inquiryList[index].content)
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  inquiryList[index].status == "pending"
+                                      ? const Text("답변대기")
+                                      : const Text("답변완료"),
+                                  Image(
+                                    image: AssetImage(
+                                      expandedItems.contains(index)
+                                          ? 'assets/chevron-up.png'
+                                          : 'assets/chevron-down.png',
+                                    ),
+                                  ),
+                                ]),
+                                if (expandedItems.contains(index))
+                                  Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey[200],
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        inquiryList[index]
+                                                    .response
+                                                    ?.isNotEmpty ==
+                                                true
+                                            ? inquiryList[index].response!
+                                            : "답변 대기 중입니다",
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                  ),
+                              ]));
+                    },
+                    separatorBuilder: (BuildContext context, int index) {
+                      return const Divider();
+                    },
+                  ));
             } else {
-              return Text("문의내역 읽어오기 실패");
+              return const Text("문의내역 읽어오기 실패");
             }
           }),
     );
+  }
+
+  Widget showContents(content) {
+    if (content == null || content == "") {
+      return const Text("답변 대기 중입니다");
+    }
+    return Text(content);
   }
 }

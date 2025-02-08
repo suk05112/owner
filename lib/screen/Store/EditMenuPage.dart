@@ -307,7 +307,11 @@ class _EditMenuPageState extends State<EditMenuPage> {
                     if (_image == null)
                       if (isUpdated)
                         Image.network(widget.menu?.menu_image_url ?? "",
-                            width: 200, height: 200, fit: BoxFit.fill,
+                            width: 200,
+                            height: 200,
+                            cacheWidth: 200,
+                            cacheHeight: 200,
+                            fit: BoxFit.fill,
                             errorBuilder: (context, error, stackTrace) {
                           print("su>> Image load error: $error");
                           return Image.asset('assets/americano.jpeg',

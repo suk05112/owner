@@ -31,9 +31,7 @@ class StoreProvider extends ChangeNotifier {
 
   Future<List<Store>> getStoreList() async {
     print("store_provider::getStoreList:: fetch 호출");
-    Api().client.getStoreList(2).then((response) => {
-          for (var res in response.store) {print(res.toString())}
-        });
+    Api().client.getStoreList(2).then((response) => {});
     var response = await Api().client.getStoreList(2);
     notifyListeners();
 

@@ -9,11 +9,11 @@ part of 'GifticonResponse.dart';
 GifticonPatchResponse _$GifticonPatchResponseFromJson(
         Map<String, dynamic> json) =>
     GifticonPatchResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
+      result: (json['result'] as num).toInt(),
     );
 
 Map<String, dynamic> _$GifticonPatchResponseToJson(
         GifticonPatchResponse instance) =>
     <String, dynamic>{
-      'statusCode': instance.statusCode,
+      'result': instance.result,
     };

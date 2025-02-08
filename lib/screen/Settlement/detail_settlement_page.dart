@@ -4,9 +4,11 @@ import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/Settlement.dart';
 
 class DetailSettlementPage extends StatefulWidget {
-  const DetailSettlementPage({Key? key, required this.settlement_id})
+  const DetailSettlementPage(
+      {Key? key, required this.settlement_id, required this.settlement_date})
       : super(key: key);
   final int settlement_id;
+  final DateTime settlement_date;
 
   @override
   State<DetailSettlementPage> createState() => _DetailSettlementPageState();
@@ -36,7 +38,12 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               // 데이터 로딩 중일 때 로딩 인디케이터 표시
-              return CircularProgressIndicator();
+              return const Center(
+                  child: SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(),
+              ));
             } else if (snapshot.hasError) {
               // 에러가 발생한 경우
               return Text("Error: ${snapshot.error}");
@@ -45,9 +52,13 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
               List<DetailSettlement> settlements =
                   snapshot.data!.detailSettlements;
               return Container(
-                  margin: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                  margin: const EdgeInsets.fromLTRB(10, 5, 10, 10),
                   child: Column(
                     children: [
+                      Text(
+                        "${widget.settlement_date}의 정산 내역이에요",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       Expanded(
                           child: ListView.separated(
                         itemCount: settlements.length,
@@ -59,7 +70,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                                 const Spacer(),
                               ]),
                               Row(children: [
-                                Text("${settlements[index].menu_name}"),
+                                Text(settlements[index].menu_name),
                                 const Spacer(),
                               ]),
                               Row(
@@ -84,8 +95,8 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                                   const Spacer(),
                                   Text(
                                     formatCurrency(settlements[index].deposit),
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.w700),
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w700),
                                   ),
                                 ],
                               )
@@ -99,7 +110,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                     ],
                   ));
             } else {
-              return Text("정산내역 읽어오기 실패. 잠시 후 다시 시도해주세요.");
+              return const Text("정산내역 읽어오기 실패. 잠시 후 다시 시도해주세요.");
             }
           }),
     );

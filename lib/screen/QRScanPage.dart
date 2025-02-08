@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:owner/common/api/API.dart';
+import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/gifticon_provider.dart';
+import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class QRCheckScreen extends StatefulWidget {
   static const String ROUTE_NAME = '/qr_check_screen';
 
-  final String eventKeyword; //건져올 특정 키워드
+  final String eventKeyword; // 특정 키워드
 
   QRCheckScreen({required this.eventKeyword});
 
@@ -16,53 +21,98 @@ class QRCheckScreen extends StatefulWidget {
 class _QRCheckScreenState extends State<QRCheckScreen> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
+  bool _isProcessing = false; // ✅ 중복 실행 방지
+  User? user;
+
+  @override
+  void initState() {
+    user = Provider.of<UserProvider>(context, listen: false).user;
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     return Scaffold(
-        appBar: AppBar(
-          title: Text('QR스캐너'),
-        ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Container(
-                child: QRView(
-                  key: qrKey,
-                  onQRViewCreated: this._onQRViewCreated,
-                  formatsAllowed: [BarcodeFormat.qrcode],
-                  overlay: QrScannerOverlayShape(
-                    borderRadius: 10,
-                    borderColor: Colors.blue,
-                    borderLength: 30,
-                    borderWidth: 5,
-                    cutOutSize: screenSize.width / 1.4,
-                  ),
-                ),
+      appBar: AppBar(
+        title: const Text('QR 스캐너'),
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: QRView(
+              key: qrKey,
+              onQRViewCreated: _onQRViewCreated,
+              formatsAllowed: [BarcodeFormat.qrcode],
+              overlay: QrScannerOverlayShape(
+                borderRadius: 10,
+                borderColor: Colors.blue,
+                borderLength: 30,
+                borderWidth: 5,
+                cutOutSize: screenSize.width / 1.4,
               ),
-            )
-          ],
-        ));
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onQRViewCreated(QRViewController controller) {
-    this.controller = controller;
-    controller.scannedDataStream.listen((event) {
+    setState(() {
+      this.controller = controller;
+    });
+
+    controller.scannedDataStream.listen((event) async {
+      if (_isProcessing) return; // ✅ 중복 실행 방지
+      if (event.code == null) return;
+
       print('QRCheckScreen_onQRViewCreated.listen : result=${event.code}');
 
-      if (event.code != null) {
-        //스캔된 QR코드에 특정 키워드가 들어있다면
-        //QR스캔을 정지하고 이 화면을 닫으면서 QR결과값을 보내주도록한다.
-        // if (event.code!.contains(widget.eventKeyword)) {
-        this.controller!.dispose();
-        GifticonProvider().useGifticon(int.tryParse(event.code ?? "0") ?? 0);
-        Navigator.pop(context, event.code);
-      } else {
-        print("여기 타버림ㅜ");
+      _isProcessing = true; // ✅ 처리 시작
+      controller.pauseCamera(); // ✅ QR 스캔 멈추기
+
+      try {
+        final scannedCode = event.code!;
+        List<String> scannedData = scannedCode.split(',');
+        int scannedStoreId = int.tryParse(scannedData[0]) ?? -1;
+        String gifticon_id = scannedData[1];
+
+        // 🔹 API 호출하여 store 목록 가져오기
+        var response =
+            await Api().client.getOwnerStoreList(user?.owner_id ?? -1);
+
+        // 🔹 store_id 리스트 생성
+        List<int> storeIdList =
+            response.ownerStoreList.map((store) => store.store_id).toList();
+
+        print("list: ${storeIdList}, scannedStoreId: ${scannedStoreId}");
+        // 🔹 store_id 검사
+        if (storeIdList.contains(scannedStoreId)) {
+          print("eventcode: ${event.code}, keyword: ${widget.eventKeyword}");
+
+          final response =
+              await Api().client.useGifticon(int.tryParse(gifticon_id) ?? 0);
+
+          if (mounted) {
+            Navigator.pop(context, response.result);
+          }
+        } else {
+          if (mounted) {
+            Navigator.pop(context, -1);
+          }
+        }
+      } catch (e) {
+        print("QR 처리 중 오류 발생: $e");
+      } finally {
+        _isProcessing = false;
       }
-      // }
     });
   }
 }

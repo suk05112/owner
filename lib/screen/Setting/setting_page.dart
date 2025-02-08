@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:owner/screen/Setting/faq_page.dart';
+import 'package:owner/screen/Setting/notice_page.dart';
 import 'package:owner/screen/Setting/user_info_page.dart';
 import 'package:owner/screen/Settlement/settlement_page.dart';
 import 'package:owner/screen/inquiry_page.dart';
@@ -52,7 +54,7 @@ class _SettingPageState extends State<SettingPage> {
       "문의하기",
       "정산계좌 관리",
       "자주묻는 질문",
-      "알림",
+      // "알림",
       "버전",
       "라이선스"
     ];
@@ -62,16 +64,15 @@ class _SettingPageState extends State<SettingPage> {
   List getSelectedPage() {
     // var items = List.generate(5, (i) => "Item $i");
     var items = [
-      UserInfoPage(),
-      MenuManagementPage(
-        storeId: _storeId,
-      ),
-      InquiryPage(),
-      const OperatingHoursSettingPage(),
-      OperatingHoursSettingPage(),
-      MenuManagementPage(
-        storeId: _storeId,
-      ),
+      const UserInfoPage(),
+      const NoticePage(),
+      const InquiryPage(),
+      const FAQPage(),
+      // const OperatingHoursSettingPage(),
+      // OperatingHoursSettingPage(),
+      // MenuManagementPage(
+      //   storeId: _storeId,
+      // ),
       const LicensePage(),
       const LicensePage()
     ];

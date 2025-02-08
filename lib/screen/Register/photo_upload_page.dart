@@ -273,7 +273,12 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                   if ((snapshot.connectionState == ConnectionState.waiting &&
                           isInit == false) ||
                       (isLoading == true)) {
-                    return const CircularProgressIndicator(); // 데이터 로딩 중일 때 표시할 위젯
+                    return const Center(
+                        child: SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(),
+                    )); // 데이터 로딩 중일 때 표시할 위젯
                   } else if (snapshot.hasError) {
                     return Text('Error: ${snapshot.error}');
                   } else {

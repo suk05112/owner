@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'app.dart';
+
 import 'package:flutter/material.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/model/cafeInfo.dart';
@@ -20,12 +24,11 @@ import 'screen/Register/DocumentGuidePage.dart';
 
 import 'package:owner/common/api/API.dart';
 
-void main() async {
+FutureOr<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // await Firebase.initializeApp();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   // debugInvertOversizedImages = true;
-
   runApp(const MyApp());
 }
 
@@ -36,37 +39,38 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // User? user = Provider.of<UserProvider>(context).user;
+    return PopScope(
+        canPop: false,
+        child: MultiProvider(
+          providers: [
+            ChangeNotifierProvider(create: (context) => StoreProvider()),
+            ChangeNotifierProvider(create: (context) => GifticonProvider()),
+            ChangeNotifierProvider(create: (context) => UserProvider()),
+          ],
 
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => StoreProvider()),
-        ChangeNotifierProvider(create: (context) => GifticonProvider()),
-        ChangeNotifierProvider(create: (context) => UserProvider()),
-      ],
+          child: Consumer<UserProvider>(
+            builder: (context, userProvider, child) {
+              User? user = userProvider.user;
 
-      child: Consumer<UserProvider>(
-        builder: (context, userProvider, child) {
-          User? user = userProvider.user;
-
-          return MaterialApp(
-            title: 'Flutter Demo',
-            theme: ThemeData(
-              primarySwatch: Colors.blue,
-            ),
-            home: user == null ? const LoginScreen() : const Home(),
-          );
-        },
-      ),
-      // routes: {
-      //   '/': (context) => const LoginScreen(),
-      //   // '/': (context) => const MyHomePage(
-      //   //       title: 'my page',
-      //   //     ),
-      //   '/add': (context) => const CafeList(),
-      //   '/edit': (context) => const DocumentGuidePage(),
-      // },
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
+              return MaterialApp(
+                title: 'Flutter Demo',
+                theme: ThemeData(
+                  primarySwatch: Colors.blue,
+                ),
+                home: user == null ? const LoginScreen() : const Home(),
+              );
+            },
+          ),
+          // routes: {
+          //   '/': (context) => const LoginScreen(),
+          //   // '/': (context) => const MyHomePage(
+          //   //       title: 'my page',
+          //   //     ),
+          //   '/add': (context) => const CafeList(),
+          //   '/edit': (context) => const DocumentGuidePage(),
+          // },
+          // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+        ));
   }
 }
 
@@ -88,24 +92,6 @@ class _MyHomePageState extends State<MyHomePage> {
       _counter++;
     });
   }
-
-  // getData() async {
-  //   var result = await firestore.collection('cafe').get();
-  //   List<CafeInfo> cafeInfo = [];
-  //   for (var snapShot in result.docs) {
-  //     CafeInfo info = CafeInfo.fromQuerySnapshot(snapShot);
-  //     print("sujin1" + info.toString());
-
-  //     print(info.logo);
-  //     // print(info.open_yn);
-  //     print(info.store_name);
-  //     print(info.store_telephone);
-
-  //     cafeInfo.add(info);
-  //   }
-  //   print("sujin2" + cafeInfo.toString());
-  //   print("sujin3" + result.toString());
-  // }
 
   @override
   Widget build(BuildContext context) {

@@ -51,9 +51,6 @@ class GifticonProvider extends ChangeNotifier {
   }
 
   useGifticon(int gifticon_id) async {
-    var response = await Api().client.useGifticon(gifticon_id);
-    if (response.statusCode != 200) {
-      print("기프티콘 사용 실패");
-    }
+    return await Api().client.useGifticon(gifticon_id);
   }
 }

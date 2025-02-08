@@ -3,6 +3,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/request/store/store.dart';
+import 'package:owner/common/model/Account.dart';
+import 'package:owner/common/model/Settlement.dart';
 import 'package:owner/screen/Register/register_store_page.dart';
 
 class AccountRegisterPage extends StatefulWidget {
@@ -16,6 +18,7 @@ class AccountRegisterPage extends StatefulWidget {
 class _AccountRegisterPageState extends State<AccountRegisterPage> {
   late Store _store;
   String selectedBank = "은행선택";
+  late Account account;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController accountController = TextEditingController();
@@ -110,6 +113,10 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                                 print("선택된 은행 ${value!['name']}");
                                 setState(() {
                                   selectedBank = value['name']!;
+                                  account = Account(
+                                    bank: value['name'],
+                                    code: value['code'],
+                                  );
                                 });
                               });
                             },
@@ -143,7 +150,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                             width: double.infinity,
                             child: TextFormField(
                               controller: accountController,
-                              keyboardType: TextInputType.text,
+                              keyboardType: TextInputType.number,
                               decoration: inputDecoration.copyWith(
                                   hintText: "계좌번호 입력(-없이 입력)"),
                               validator: (value) {
@@ -178,6 +185,8 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                                     return;
                                   }
                                   if (_formKey.currentState!.validate()) {
+                                    account.account = accountController.text;
+                                    account.name = nameController.text;
                                     Navigator.push(
                                         context,
                                         MaterialPageRoute(
@@ -185,6 +194,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                                                 RegisterStorePage(
                                                   isRegister: true,
                                                   store: _store,
+                                                  account: account,
                                                 )));
                                   }
                                 },

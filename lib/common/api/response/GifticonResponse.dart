@@ -8,9 +8,9 @@ part 'GifticonResponse.g.dart';
 
 @JsonSerializable()
 class GifticonPatchResponse {
-  int statusCode;
+  int result;
 
-  GifticonPatchResponse({required this.statusCode});
+  GifticonPatchResponse({required this.result});
 
   factory GifticonPatchResponse.fromJson(Map<String, dynamic> json) =>
       _$GifticonPatchResponseFromJson(json);

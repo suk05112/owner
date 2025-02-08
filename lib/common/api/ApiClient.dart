@@ -4,16 +4,20 @@ import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/api/response/store/store_post_response.dart';
+import 'package:owner/common/model/Account.dart';
 import 'package:owner/common/model/Settlement.dart';
+import 'package:owner/common/model/UsedGifticon.dart';
 import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/common/api/response/GifticonResponse.dart';
 import 'package:owner/common/model/inquiry.dart';
+import 'package:owner/config.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:dio/dio.dart';
 
 part 'ApiClient.g.dart';
 
-@RestApi(baseUrl: "http://18.221.2.135")
+// @RestApi(baseUrl: AppConfig.baseUrl)
+@RestApi()
 abstract class ApiClient {
   factory ApiClient(Dio dio, {String baseUrl}) = _ApiClient;
 
@@ -105,5 +109,21 @@ abstract class ApiClient {
   @GET("/settlement/detail/{settlement_id}")
   Future<DetailSettlementList> getDetailSettlements(
     @Path('settlement_id') int settlement_id,
+  );
+
+  @POST("/settlement/register/{store_id}")
+  Future<String> registerAccount(
+    @Path('store_id') int store_id,
+    @Body() Account account,
+  );
+
+  @GET("/gifticon/used/{store_id}")
+  Future<UsedGifticonList> getUsedGifticon(
+    @Path('store_id') int store_id,
+  );
+
+  @GET("/store/owner/list/{owner_id}")
+  Future<OwnerStoreList> getOwnerStoreList(
+    @Path('owner_id') int owner_id,
   );
 }

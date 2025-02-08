@@ -12,6 +12,8 @@ import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/APIDioClient.dart';
 import 'package:owner/common/api/request/store/store.dart';
+import 'package:owner/common/model/Account.dart';
+import 'package:owner/common/model/Settlement.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/register.dart';
@@ -19,7 +21,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:owner/screen/Register/photo_upload_page.dart';
 import 'package:path_provider/path_provider.dart';
 
-// import '../../common/DatabaseService.dart';
 import '../../common/Style/TextAsset.dart';
 import 'operating_hours_setting_Page.dart';
 import 'SettingOpeningDatePage.dart';
@@ -36,9 +37,10 @@ import 'dart:async';
 
 class RegisterStorePage extends StatefulWidget {
   const RegisterStorePage(
-      {Key? key, required this.isRegister, required this.store});
+      {Key? key, required this.isRegister, required this.store, this.account});
   final bool isRegister;
   final Store? store;
+  final Account? account;
 
   @override
   State<RegisterStorePage> createState() => _RegisterStorePageState();
@@ -321,7 +323,23 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       uploadStoreImages(store_photo_urls);
       uploadBusinessImage(bankBook_put_url, business_put_url);
 
-      print("등록성공" + storeId.toString());
+      if (widget.account != null) {
+        print("Account ${widget.account}");
+        await Api()
+            .client
+            .registerAccount(storeId, widget.account!)
+            .then((response) async {
+          print("계좌 등록성공" + storeId.toString());
+        }).onError((error, stackTrace) {
+          DioException dioError = error as DioException;
+          print("계좌 등록 실패 ${error}");
+          if (dioError.response?.statusCode == 404) {
+            // showToastMsg(Strings.error_network);
+          } else {
+            // showToastMsg("Error : [${dioError.message}]");
+          }
+        });
+      }
 
       // ApiServiceImpl().uploadImage();
     }).onError((error, stackTrace) {
@@ -431,25 +449,22 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       http.Response response = await http.put(
         Uri.parse(bankBook_put_url),
         body: await _store?.bank_book?.readAsBytes(),
-        headers: {
-          // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
-        },
       );
 
       http.Response response2 = await http.put(
         Uri.parse(business_put_url),
         body: await _store?.business_registration?.readAsBytes(),
-        headers: {
-          // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
-        },
       );
 
       if (response.statusCode == 200 && response2.statusCode == 200) {
         // 이미지 업로드 성공
-        print('Image uploaded successfully.');
+        print('BusinessImage upload successfully.');
       } else {
         // 이미지 업로드 실패
-        print('Image upload failed. Status code: ${response.statusCode}');
+        print(
+            'bankBook:: Image upload failed. Status code: ${response.statusCode}');
+        print(
+            'business:: Image upload failed. Status code: ${response2.statusCode}');
       }
     } catch (e) {
       print('Error: $e');

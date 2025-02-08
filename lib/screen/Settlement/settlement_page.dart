@@ -27,7 +27,7 @@ class _SettlementPageState extends State<SettlementPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("정산내역"),
+        title: const Text("정산내역"),
         backgroundColor: Colors.white,
       ),
       backgroundColor: Colors.white,
@@ -36,71 +36,91 @@ class _SettlementPageState extends State<SettlementPage> {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               // 데이터 로딩 중일 때 로딩 인디케이터 표시
-              return CircularProgressIndicator();
+              return const Center(
+                  child: SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(),
+              ));
             } else if (snapshot.hasError) {
               // 에러가 발생한 경우
               return Text("Error: ${snapshot.error}");
             } else if (snapshot.hasData) {
               // 데이터가 정상적으로 로드되었을 때
               List<Settlement> settlements = snapshot.data!.settlements;
-              return Container(
-                  margin: EdgeInsets.fromLTRB(10, 5, 10, 10),
-                  child: Column(
-                    children: [
-                      settlementHeader(settlements[0]),
-                      Expanded(
-                          child: ListView.separated(
-                        itemCount: settlements.length,
-                        itemBuilder: (context, index) {
-                          return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            DetailSettlementPage(
+              if (settlements.isNotEmpty) {
+                return Container(
+                    margin: const EdgeInsets.fromLTRB(10, 5, 10, 10),
+                    child: Column(
+                      children: [
+                        if (settlements.isNotEmpty)
+                          settlementHeader(settlements[0]),
+                        Expanded(
+                            child: ListView.separated(
+                          itemCount: settlements.length,
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) =>
+                                              DetailSettlementPage(
                                                 settlement_id:
                                                     settlements[index]
-                                                        .settlement_id)));
-                              },
-                              child: Column(
-                                children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(formatSettlementPeriod(
-                                          settlements[index].settlement_date,
-                                          settlements[index]
-                                              .settlement_period)),
-                                      Spacer(),
-                                      settlementStatus(
-                                          settlements[index].status)
-                                    ],
-                                  ),
-                                  Row(
+                                                        .settlement_id,
+                                                settlement_date:
+                                                    settlements[index]
+                                                        .settlement_date,
+                                              )));
+                                },
+                                child: Column(
+                                  children: [
+                                    Row(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: <Widget>[
-                                        Spacer(),
-                                        Text(
-                                          formatCurrency(
-                                              settlements[index].total_price),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 25,
+                                        Text(formatSettlementPeriod(
+                                            settlements[index].settlement_date,
+                                            settlements[index]
+                                                .settlement_period)),
+                                        const Spacer(),
+                                        settlementStatus(
+                                            settlements[index].status)
+                                      ],
+                                    ),
+                                    Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          const Spacer(),
+                                          Text(
+                                            formatCurrency(
+                                                settlements[index].total_price),
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 25,
+                                            ),
                                           ),
-                                        ),
-                                      ])
-                                ],
-                              ));
-                        },
-                        separatorBuilder: (BuildContext context, int index) {
-                          return const Divider();
-                        },
-                      ))
-                    ],
-                  ));
+                                        ])
+                                  ],
+                                ));
+                          },
+                          separatorBuilder: (BuildContext context, int index) {
+                            return const Divider();
+                          },
+                        ))
+                      ],
+                    ));
+              } else {
+                return Container(
+                    width: double.infinity,
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [Text('정산 내역이 없습니다')],
+                    ));
+              }
             } else {
               return const Text("정산내역 읽어오기 실패. 잠시 후 다시 시도해주세요.");
             }
@@ -120,7 +140,7 @@ class _SettlementPageState extends State<SettlementPage> {
           const Text("정산 예정금액"),
           Text(
             formatCurrency(settlement.total_price),
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.w800,
               fontSize: 30,
             ),
@@ -142,14 +162,13 @@ class _SettlementPageState extends State<SettlementPage> {
       return Container(
         margin: const EdgeInsets.all(1),
         decoration: BoxDecoration(
-          color: Color(0xFF57B3FC),
+          color: const Color(0xFF57B3FC),
           borderRadius: BorderRadius.circular(5.0),
         ),
         alignment: Alignment.center,
-        child: Text(
+        child: const Text(
           "입금 예정",
           style: TextStyle(
-            // fontSize: 38,
             color: Colors.white,
           ),
         ),
@@ -158,15 +177,14 @@ class _SettlementPageState extends State<SettlementPage> {
       return Container(
         margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
         decoration: BoxDecoration(
-          color: Color(0xFF57B3FC),
+          color: const Color(0xFF57B3FC),
           borderRadius: BorderRadius.circular(5.0),
         ),
         alignment: Alignment.center,
         child: const Text(
           "입금 완료",
           style: TextStyle(
-            fontSize: 38,
-            color: Colors.white,
+            color: Colors.lightGreen,
           ),
         ),
       );
@@ -174,14 +192,13 @@ class _SettlementPageState extends State<SettlementPage> {
       return Container(
         margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
         decoration: BoxDecoration(
-          color: Color(0xFF57B3FC),
+          color: Colors.red,
           borderRadius: BorderRadius.circular(5.0),
         ),
         alignment: Alignment.center,
         child: const Text(
           "입금 실패",
           style: TextStyle(
-            fontSize: 38,
             color: Colors.white,
           ),
         ),
@@ -190,7 +207,7 @@ class _SettlementPageState extends State<SettlementPage> {
     return Container(
       margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
       decoration: BoxDecoration(
-        color: Color(0xFF57B3FC),
+        color: const Color(0xFF57B3FC),
         borderRadius: BorderRadius.circular(5.0),
       ),
       alignment: Alignment.center,

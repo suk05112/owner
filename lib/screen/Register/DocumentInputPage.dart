@@ -10,7 +10,7 @@ import 'package:owner/screen/Register/SingUpCompletePage.dart';
 import 'package:owner/screen/Register/account_register_page.dart';
 import 'package:owner/screen/Register/register_store_page.dart';
 import 'package:provider/provider.dart';
-import 'package:remedi_kopo/remedi_kopo.dart';
+// import 'package:remedi_kopo/remedi_kopo.dart';
 import 'dart:io';
 
 import '../../common/Style/TextAsset.dart';

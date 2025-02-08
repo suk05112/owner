@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonWidget.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/screen/Register/SingUpCompletePage.dart';
+import 'package:owner/screen/Setting/setting_page.dart';
 
 import '../../common/api/request/store/store.dart';
 import '../../common/model/CafeBasicInfo.dart';
@@ -31,12 +33,11 @@ class _CafeListState extends State<CafeList> {
 
   Future<List<CafeBasicInfo>>? cafeList;
   List<Store>? storeList;
-
+  my_app.User? user;
   @override
   void initState() {
     super.initState();
-    my_app.User? user = Provider.of<UserProvider>(context, listen: false).user;
-    print("여기 호출됨? ${user?.owner_id}");
+    user = Provider.of<UserProvider>(context, listen: false).user;
 
     Provider.of<StoreProvider>(context, listen: false)
         .fetchStoreList(user?.owner_id ?? 0);
@@ -50,79 +51,70 @@ class _CafeListState extends State<CafeList> {
       appBar: AppBar(
         title: const Text("내 매장관리"),
         centerTitle: true,
+        backgroundColor: Colors.white,
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SettingPage(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.settings))
+        ],
       ),
+      backgroundColor: Colors.white,
       body: Consumer<StoreProvider>(
         builder: (context, storeProvider, child) {
           List<Store> storeList = storeProvider.storeCards ?? [];
-          return Column(
-            children: <Widget>[
-              Expanded(
-                child: ListView.builder(
-                  itemCount: storeList.length + 1,
-                  itemBuilder: (context, index) {
-                    if (index == storeList.length) {
-                      return Column(
-                        children: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const DocumentInputPage(),
-                                ),
-                              );
-                            },
-                            child: const Text("매장 추가"),
-                          ),
-                        ],
-                      );
-                    } else {
-                      return storeCard(storeList[index]);
-                    }
-                  },
-                ),
-              ),
-            ],
-          );
+          return RefreshIndicator(
+              onRefresh: () async {
+                setState(() {
+                  Provider.of<StoreProvider>(context, listen: false)
+                      .fetchStoreList(user?.owner_id ?? 0);
+                });
+              },
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: storeList.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index == storeList.length) {
+                          return Column(
+                            children: <Widget>[
+                              TextButton(
+                                onPressed: () {
+                                  // Navigator.push(
+                                  //     context,
+                                  //     MaterialPageRoute(
+                                  //         builder: (context) =>
+                                  //             const SignUpCompletePage()));
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const DocumentInputPage(),
+                                    ),
+                                  );
+                                },
+                                child: const Text("매장 추가"),
+                              ),
+                            ],
+                          );
+                        } else {
+                          return storeCard(storeList[index]);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ));
         },
       ),
     );
-  }
-
-  Align buildStoreCardList() {
-    return Align(
-        alignment: Alignment.center,
-        child:
-            Consumer<StoreProvider>(builder: (context, storeProvider, child) {
-          return Scaffold(
-              body: Column(children: [
-            Expanded(
-                child: ListView.builder(
-              itemCount: storeProvider.storeCards?.length ?? 5,
-              itemBuilder: (context, index) {
-                // return Text("card list");
-                if (index == storeList!.length - 1) {
-                  return Column(children: <Widget>[
-                    storeCard(storeProvider.storeCards?[index]),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const DocumentInputPage()));
-                      },
-                      child: const Text("매장 추가"),
-                    ),
-                  ]);
-                } else {
-                  return storeCard(storeProvider.storeCards?[index]);
-                }
-              },
-            )),
-          ]));
-        }));
   }
 
   void getStoreList(BuildContext context) async {
@@ -180,7 +172,11 @@ class _CafeListState extends State<CafeList> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Image.network(store!.store_logo,
-                            width: 90, height: 90, fit: BoxFit.fill,
+                            width: 90,
+                            height: 90,
+                            cacheWidth: 100,
+                            cacheHeight: 100,
+                            fit: BoxFit.fill,
                             errorBuilder: (context, error, stackTrace) {
                           return const Image(
                               image: AssetImage('assets/logo.jpeg'),

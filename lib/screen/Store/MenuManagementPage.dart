@@ -49,22 +49,45 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Spacer(),
-            Text("메뉴 관리"),
-            Spacer(), /*PopupMenu()*/
-          ],
-        ),
+        title: const Text("메뉴 관리"),
+        centerTitle: true,
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
       ),
       backgroundColor: Colors.white,
       body: menu == null
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(),
+            ))
           : menu!.isEmpty
-              ? Center(child: Text("등록된 메뉴가 없습니다. 메뉴를 추가해주세요."))
+              ? Container(
+                  width: double.infinity,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        onPressed: () async {
+                          final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => EditMenuPage(
+                                        storeId: widget.storeId,
+                                      )));
+
+                          if (result.runtimeType == Menu) {
+                            setState(() {
+                              menu!.add(result);
+                            });
+                          }
+                        },
+                        child: const Text("메뉴 추가"),
+                      )
+                    ],
+                  ))
               : ListView.builder(
                   padding: const EdgeInsets.all(8),
                   itemCount: menu!.length + 1,
@@ -182,6 +205,8 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                 },
                 width: 90,
                 height: 90,
+                cacheWidth: 100,
+                cacheHeight: 100,
                 fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
               print("Image load failed: $error");
 
@@ -292,8 +317,11 @@ class _ReorderableExampleState extends State<ReorderableExample> {
                   );
                 } else {
                   return const Center(
+                      child: SizedBox(
+                    width: 30,
+                    height: 30,
                     child: CircularProgressIndicator(),
-                  );
+                  ));
                 }
               }),
         ),

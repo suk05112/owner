@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:owner/common/api/ApiClient.dart';
+import 'package:owner/config.dart';
 import 'package:retrofit/dio.dart';
 
 class Api {
@@ -10,13 +11,15 @@ class Api {
   factory Api() => _singleton;
 
   Dio dio = Dio(_options)..interceptors.add(CustomLogInterceptor());
-  var client = ApiClient(Dio()..interceptors.add(CustomLogInterceptor()));
+  var client =
+      ApiClient(Dio(_options)..interceptors.add(CustomLogInterceptor()));
 
   static const String STAGING_URL = "http://18.221.2.135";
   static const String STAGING_URL_V2 = "http://18.221.2.135";
   static const String BASE_URL = "http://18.221.2.135";
+
   static final _options = BaseOptions(
-      baseUrl: STAGING_URL_V2,
+      baseUrl: AppConfig.baseUrl,
       headers: _headers,
       connectTimeout: Duration(seconds: 5),
       receiveTimeout: Duration(seconds: 5));

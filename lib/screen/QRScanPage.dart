@@ -110,6 +110,14 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
         }
       } catch (e) {
         print("QR 처리 중 오류 발생: $e");
+        CommonDialog.show(
+            context: context,
+            title: "QR코드 스캔 실패",
+            content: "처리 중 오류가 발생했습니다. 다시 스캔해주세요.",
+            buttonText: "확인",
+            onPressed: () {
+              Navigator.pop(context);
+            });
       } finally {
         _isProcessing = false;
       }

@@ -221,7 +221,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
 
   List dataSource() {
     // var items = List.generate(5, (i) => "Item $i");
-    var items = ["매장 정보 수정", /*"영업시간 수정",*/ "메뉴관리", "주문내역 관리", "정산내역"];
+    var items = ["매장 정보 수정", /*"영업시간 수정",*/ "메뉴관리", /* "주문내역 관리",*/ "정산내역"];
     return items;
   }
 
@@ -235,10 +235,10 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
       MenuManagementPage(
         storeId: widget.storeId,
       ),
-      RegisterStorePage(
-        isRegister: false,
-        store: store,
-      ),
+      // RegisterStorePage(
+      //   isRegister: false,
+      //   store: store,
+      // ),
       SettlementPage(
         storeId: _storeId,
       ),

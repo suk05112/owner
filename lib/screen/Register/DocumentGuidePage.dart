@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/main.dart';
+import 'package:owner/screen/Register/DocumentInputPage.dart';
 
 import 'BasicInfoInputPage.dart';
 
@@ -31,15 +32,15 @@ class DocumentGuidePage extends StatelessWidget {
                     // mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text(
+                      const Text(
                         "가입 전 준비해 주세요",
                         style: TextStyle(
                             fontWeight: FontWeight.bold, fontSize: 30),
                       ),
                       SizedBox(height: 20),
                       Container(
-                        child: Text(
-                            "사업자 등록증 \n 영업 신고증\n 통장사본 \n 사업자 등록증에 있는 사업자와 동일해야 합니다."),
+                        child: const Text(
+                            "사업자 등록증 \n 통장사본 \n 사업자 등록증에 있는 사업자와 동일해야 합니다."),
                       ),
                     ])),
             ElevatedButton(
@@ -55,7 +56,7 @@ class DocumentGuidePage extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => BasicInfoInputPage()));
+                        builder: (context) => const DocumentInputPage()));
               },
               child: Text('가입하기'),
             ),

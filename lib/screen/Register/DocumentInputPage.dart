@@ -203,6 +203,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                               InputInfoWidget(
                                 title: "사업자 등록번호",
                                 hintText: "사업자 등록번호 입력(-제외)",
+                                isNumber: true,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return "사업자 등록번호를 입력해주세요";

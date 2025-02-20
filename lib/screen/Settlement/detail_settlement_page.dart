@@ -5,10 +5,14 @@ import 'package:owner/common/model/Settlement.dart';
 
 class DetailSettlementPage extends StatefulWidget {
   const DetailSettlementPage(
-      {Key? key, required this.settlement_id, required this.settlement_date})
+      {Key? key,
+      required this.settlement_id,
+      required this.settlement_date,
+      required this.settlement_period})
       : super(key: key);
   final int settlement_id;
   final DateTime settlement_date;
+  final int settlement_period;
 
   @override
   State<DetailSettlementPage> createState() => _DetailSettlementPageState();
@@ -56,7 +60,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                   child: Column(
                     children: [
                       Text(
-                        "${widget.settlement_date}의 정산 내역이에요",
+                        "${formatSettlementPeriod(widget.settlement_date, widget.settlement_period)}의 정산 내역이에요",
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Expanded(
@@ -114,6 +118,39 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
             }
           }),
     );
+  }
+
+  String formatSettlementPeriod(DateTime settlementDate, int settlementPeriod) {
+    // Parse settlementDate
+    // final date = DateTime.parse(settlementDate);
+
+    if (settlementPeriod == 0) {
+      // 같은 달의 1~15일
+      final year = settlementDate.year;
+      final month = settlementDate.month;
+      return "$year년 $month월 1일~$month월 15일";
+    } else if (settlementPeriod == 1) {
+      // 이전 달의 16~말일
+      final previousMonth =
+          DateTime(settlementDate.year, settlementDate.month - 1, 16);
+      final year = previousMonth.year;
+      final month = previousMonth.month;
+      final lastDay = DateTime(settlementDate.year, settlementDate.month, 0)
+          .day; // 이전 달 말일 계산
+      return "$year년 $month월 16일~$month월 $lastDay일";
+    }
+
+    return "Invalid settlement period";
+  }
+
+  String formatDateTimeToKorean(DateTime dateTime) {
+    // 년, 월, 일을 추출
+    final year = dateTime.year;
+    final month = dateTime.month.toString().padLeft(2, '0'); // 두 자리로 보장
+    final day = dateTime.day.toString().padLeft(2, '0'); // 두 자리로 보장
+
+    // 한국어 형식으로 반환
+    return "$year년 $month월 $day일";
   }
 
   String formatCurrency(int price) {

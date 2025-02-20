@@ -68,7 +68,7 @@ class _FAQPageState extends State<FAQPage> {
         },
       )
       ..loadRequest(Uri.parse(
-          'https://jewel-bathtub-e52.notion.site/e26467ba19bb41eea7223075b323188e?pvs=4'));
+          'https://imminent-carob-33e.notion.site/FAQ-198b720032c380a4a3e1c291da1622fe?pvs=4'));
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
@@ -82,6 +82,14 @@ class _FAQPageState extends State<FAQPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("FAQ"),
+        centerTitle: true,
+        foregroundColor: Colors.black,
+        elevation: 0.0,
+        backgroundColor: Colors.white,
+      ),
+      backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
         child: WebViewWidget(controller: _controller),

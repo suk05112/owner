@@ -69,7 +69,7 @@ class _NoticePageState extends State<NoticePage> {
         },
       )
       ..loadRequest(Uri.parse(
-          'https://jewel-bathtub-e52.notion.site/e26467ba19bb41eea7223075b323188e?pvs=4'));
+          'https://imminent-carob-33e.notion.site/198b720032c38086a019ca66325ecedb?pvs=4'));
 
     if (controller.platform is AndroidWebViewController) {
       AndroidWebViewController.enableDebugging(true);
@@ -83,6 +83,14 @@ class _NoticePageState extends State<NoticePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("공지사항"),
+        centerTitle: true,
+        foregroundColor: Colors.black,
+        elevation: 0.0,
+        backgroundColor: Colors.white,
+      ),
+      backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,
         child: WebViewWidget(controller: _controller),

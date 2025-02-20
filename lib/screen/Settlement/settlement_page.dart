@@ -72,39 +72,59 @@ class _SettlementPageState extends State<SettlementPage> {
                                                 settlement_date:
                                                     settlements[index]
                                                         .settlement_date,
+                                                settlement_period:
+                                                    settlements[index]
+                                                        .settlement_period,
                                               )));
                                 },
-                                child: Column(
-                                  children: [
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: <Widget>[
-                                        Text(formatSettlementPeriod(
-                                            settlements[index].settlement_date,
-                                            settlements[index]
-                                                .settlement_period)),
-                                        const Spacer(),
-                                        settlementStatus(
-                                            settlements[index].status)
-                                      ],
-                                    ),
-                                    Row(
+                                child: Container(
+                                    width: double.infinity,
+                                    child: Row(
                                         crossAxisAlignment:
-                                            CrossAxisAlignment.start,
+                                            CrossAxisAlignment.center,
                                         children: <Widget>[
-                                          const Spacer(),
-                                          Text(
-                                            formatCurrency(
-                                                settlements[index].total_price),
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w600,
-                                              fontSize: 25,
+                                          Expanded(
+                                            child: Column(
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: <Widget>[
+                                                    Text(formatSettlementPeriod(
+                                                        settlements[index]
+                                                            .settlement_date,
+                                                        settlements[index]
+                                                            .settlement_period)),
+                                                    const Spacer(),
+                                                    settlementStatus(
+                                                        settlements[index]
+                                                            .status)
+                                                  ],
+                                                ),
+                                                Row(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment.end,
+                                                    children: <Widget>[
+                                                      const Spacer(),
+                                                      Text(
+                                                        formatCurrency(
+                                                            settlements[index]
+                                                                .total_price),
+                                                        style: const TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.w600,
+                                                          fontSize: 25,
+                                                        ),
+                                                      ),
+                                                    ])
+                                              ],
                                             ),
                                           ),
-                                        ])
-                                  ],
-                                ));
+                                          const Image(
+                                            image: AssetImage(
+                                                'assets/chevron-right.png'),
+                                          )
+                                        ])));
                           },
                           separatorBuilder: (BuildContext context, int index) {
                             return const Divider();
@@ -177,14 +197,14 @@ class _SettlementPageState extends State<SettlementPage> {
       return Container(
         margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
         decoration: BoxDecoration(
-          color: const Color(0xFF57B3FC),
+          color: Colors.lightGreen,
           borderRadius: BorderRadius.circular(5.0),
         ),
         alignment: Alignment.center,
         child: const Text(
           "입금 완료",
           style: TextStyle(
-            color: Colors.lightGreen,
+            color: Colors.white,
           ),
         ),
       );

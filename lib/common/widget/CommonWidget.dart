@@ -7,11 +7,16 @@ import 'dart:async'; // Import for Timer
 
 class InputInfoWidget extends StatefulWidget {
   InputInfoWidget(
-      {required this.title, required this.hintText, required this.validator});
+      {super.key,
+      required this.title,
+      required this.hintText,
+      required this.validator,
+      this.isNumber = false});
 
   final String title;
   String hintText;
   Function(String?) validator;
+  bool isNumber;
 
   @override
   State<InputInfoWidget> createState() => _InputInfoWidgetState();
@@ -33,7 +38,8 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
           ),
           TextFormField(
             controller: inputController,
-            keyboardType: TextInputType.text,
+            keyboardType:
+                widget.isNumber ? TextInputType.number : TextInputType.text,
             decoration: inputDecoration.copyWith(hintText: widget.hintText),
             validator: (value) {
               return widget.validator(value);
@@ -378,13 +384,12 @@ class _PhoneNumberVerificationWidgetState
                             ? Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: <Widget>[
-                                    Text("남은시간"),
+                                    Text(
+                                      "남은시간",
+                                    ),
                                     Text(
                                       "$minutes: $seconds",
-                                      style: const TextStyle(
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 20),
+                                      style: const TextStyle(color: Colors.red),
                                     ),
                                   ])
                             : Text(smsVerifyState

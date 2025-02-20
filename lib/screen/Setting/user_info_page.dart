@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/screen/LoginPage.dart';
 import 'package:provider/provider.dart';
 
 class UserInfoPage extends StatefulWidget {
@@ -65,6 +66,13 @@ class _UserInfoPageState extends State<UserInfoPage> {
                               ),
                               Text("${user?.phone_number ?? "phone"}")
                             ]),
+                            Row(children: [
+                              SizedBox(
+                                width: 100,
+                                child: Text("관리번호"),
+                              ),
+                              Text("OWN-${user?.owner_id ?? "-1"}")
+                            ])
                           ]),
                     ),
                     SizedBox(
@@ -77,10 +85,12 @@ class _UserInfoPageState extends State<UserInfoPage> {
                             Provider.of<UserProvider>(context, listen: false)
                                 .clearUser();
 
-                            // Navigator.of(context).pushAndRemoveUntil(
-                            //     MaterialPageRoute(
-                            //         builder: (context) => TabPage()),
-                            //     (route) => false);
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => LoginScreen()),
+                              (route) => false, // 모든 기존 경로 제거
+                            );
                           },
                           child: Text('로그아웃')),
                       Spacer()

@@ -8,7 +8,10 @@ import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/model/request/OwnerPost.dart';
+import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:provider/provider.dart';
+import 'package:owner/common/model/user.dart' as my_app;
 
 import '../../common/widget/CommonWidget.dart';
 import 'DocumentInputPage.dart';
@@ -21,10 +24,10 @@ class BasicInfoInputPage extends StatefulWidget {
   State<BasicInfoInputPage> createState() => _BasicInfoInputPageState();
 }
 
-class _BasicInfoInputPageState extends State<BasicInfoInputPage> {
+class _BasicInfoInputPageState extends State<BasicInfoInputPage>
+    with TickerProviderStateMixin {
   TextEditingController idController = TextEditingController();
   TextEditingController pwController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +60,9 @@ class BasicInfoFormWidget extends StatefulWidget {
 class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   TextEditingController idController = TextEditingController();
   TextEditingController pwController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
+  final formKey2 = GlobalKey<FormState>();
+
   String? name;
   String? email; // 이메일 값을 저장
   String? phone_number;
@@ -67,7 +72,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   @override
   Widget build(BuildContext context) {
     return Form(
-        key: _formKey,
+        key: formKey,
         child: Padding(
             padding: const EdgeInsets.all(16.0),
             child:
@@ -92,6 +97,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                 }
               }), //전화번호
               IDVerificationWidget(
+                formKey: formKey2,
                 onEmailChanged: (newEmail) {
                   setState(() {
                     email = newEmail; // 이메일 값 업데이트
@@ -101,7 +107,13 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
               InputInfoWidget(
                 title: "비밀번호",
                 hintText: "Enter your email",
-                validator: validatePhoneNumber,
+                hidePassword: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "비밀번호를 입력해주세요";
+                  }
+                  return null;
+                },
                 onChanged: (newPassword) {
                   setState(() {
                     password = newPassword;
@@ -111,7 +123,13 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
               InputInfoWidget(
                 title: "비밀번호 확인",
                 hintText: "Enter your email",
-                validator: validatePhoneNumber,
+                hidePassword: true,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "비밀번호를 입력해주세요";
+                  }
+                  return null;
+                },
                 onChanged: (newConfirmPassword) {
                   setState(() {
                     confirmPassword = newConfirmPassword;
@@ -142,13 +160,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                               // minimumSize: const Size.fromHeight(50), // NEW
                             ),
                             onPressed: () {
-                              // Navigator.pop(context);
-                              CommonDialog.show(
-                                  context: context,
-                                  title: "인증 실패",
-                                  content: "다시 확인",
-                                  buttonText: "확인",
-                                  onPressed: () {});
+                              Navigator.pop(context);
                             },
                             child: Text('이전'),
                           ),
@@ -172,72 +184,120 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                               backgroundColor: ColorAssset.mainColor,
                             ),
                             onPressed: () async {
-                              AggregateQuerySnapshot _myDocCnt =
-                                  await FirebaseFirestore.instance
-                                      .collection('user')
-                                      .count()
-                                      .get();
-                              debugPrint(
-                                  'The number of users: ${_myDocCnt.count}');
-                              _formKey.currentState?.validate();
-                              print("pw");
-                              print(pwController.text);
-                              try {
-                                UserCredential userCredential =
-                                    await FirebaseAuth.instance
-                                        .createUserWithEmailAndPassword(
-                                            email: email ?? "",
-                                            password: password ?? "")
-                                        .then((value) async {
-                                  if (value.user!.email != null) {
-                                    FirebaseAuth.instance.currentUser!
-                                        .updateDisplayName("displayName");
-
-                                    OwnerRegisterPost owner = OwnerRegisterPost(
-                                        uid: value.user!.uid,
-                                        phone_number: phone_number ?? "",
-                                        name: name ?? "",
-                                        email: email ?? "");
-
-                                    Api().client.registerOwner(owner);
-                                  } else {
-                                    print("여기 걸림"); // Navigator.pop(context);
-                                  }
-                                  return value;
-                                });
-                                FirebaseAuth.instance.currentUser
-                                    ?.sendEmailVerification();
-                              } on FirebaseAuthException catch (e) {
-                                if (e.code == 'weak-password') {
-                                  print('the password provided is too weak');
-                                  CommonDialog.show(
+                              if (formKey2.currentState!.validate()) {
+                                print("id validator");
+                              } else {
+                                return;
+                              }
+                              if (formKey.currentState!.validate()) {
+                                try {
+                                  if (password != confirmPassword) {
+                                    CommonDialog.show(
                                       context: context,
                                       title: "비밀번호 확인",
-                                      content: "취약한 비밀번호입니다. 다른 비밀번호를 사용해주세요.",
+                                      content: "비밀번호가 일치하지 않습니다.",
                                       buttonText: "확인",
-                                      onPressed: () {});
-                                } else if (e.code == 'email-already-in-use') {
-                                  print(
-                                      'The account already exists for that email.');
-                                  CommonDialog.show(
+                                      onPressed: () {},
+                                    );
+                                    return;
+                                  }
+
+                                  if (phone_number == null) {
+                                    CommonDialog.show(
                                       context: context,
-                                      title: "아이디 확인",
-                                      content:
-                                          "이미 사용중인 아이디입니다. 다른 아이디를 사용해주세요.",
+                                      title: "전화번호를 확인할 수 없습니다.",
+                                      content: "전화번호 인증을 완료해주세요.",
                                       buttonText: "확인",
-                                      onPressed: () {});
-                                } else {
-                                  print(e.code);
-                                }
-                              } catch (e) {}
+                                      onPressed: () {},
+                                    );
+                                    return;
+                                  }
 
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SignUpCompletePage()));
+                                  UserCredential userCredential =
+                                      await FirebaseAuth
+                                          .instance
+                                          .createUserWithEmailAndPassword(
+                                              email: email ?? "",
+                                              password: password ?? "")
+                                          .then((value) async {
+                                    if (value.user!.email != null) {
+                                      FirebaseAuth.instance.currentUser!
+                                          .updateDisplayName("displayName");
+                                      OwnerRegisterPost owner =
+                                          OwnerRegisterPost(
+                                              uid: value.user!.uid,
+                                              phone_number: phone_number ?? "",
+                                              name: name ?? "",
+                                              email: email ?? "");
 
-                              // prov.postRequest(body);
+                                      Api()
+                                          .client
+                                          .registerOwner(owner)
+                                          .then((value) {
+                                        if (value.owner_id == null) {
+                                          CommonDialog.show(
+                                            context: context,
+                                            title: "회원가입 실패",
+                                            content: "서버오류:: 잠시 후 다시 시도해주세요.",
+                                            buttonText: "확인",
+                                            onPressed: () {},
+                                          );
+                                        }
+                                        my_app.User user = my_app.User(
+                                            owner_id: value.owner_id ?? -1,
+                                            name: name ?? "",
+                                            email: email ?? "",
+                                            phone_number: phone_number ?? "");
+
+                                        Provider.of<UserProvider>(context,
+                                                listen: false)
+                                            .setUser(user);
+                                      });
+
+                                      Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const SignUpCompletePage()));
+                                    } else {
+                                      CommonDialog.show(
+                                        context: context,
+                                        title: "회원가입을 완료할 수 없습니다.",
+                                        content: "잠시 후 다시 시도해주세요.",
+                                        buttonText: "확인",
+                                        onPressed: () {},
+                                      );
+                                    }
+                                    return value;
+                                  });
+                                  // FirebaseAuth.instance.currentUser
+                                  //     ?.sendEmailVerification();
+                                } on FirebaseAuthException catch (e) {
+                                  if (e.code == 'weak-password') {
+                                    print('the password provided is too weak');
+                                    CommonDialog.show(
+                                        context: context,
+                                        title: "비밀번호 확인",
+                                        content:
+                                            "취약한 비밀번호입니다. 다른 비밀번호를 사용해주세요.",
+                                        buttonText: "확인",
+                                        onPressed: () {});
+                                  } else if (e.code == 'email-already-in-use') {
+                                    print(
+                                        'The account already exists for that email.');
+                                    CommonDialog.show(
+                                        context: context,
+                                        title: "아이디 확인",
+                                        content:
+                                            "이미 사용중인 아이디입니다. 다른 아이디를 사용해주세요.",
+                                        buttonText: "확인",
+                                        onPressed: () {});
+                                  } else {
+                                    print(e.code);
+                                  }
+                                } catch (e) {}
+                              }
+
                               // Navigator.push(
                               //     context,
                               //     MaterialPageRoute(
@@ -255,7 +315,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
 
   String? validateName(String? value) {
     if (value == null || value.isEmpty) {
-      return "빈 문자열";
+      return "이름을 입력해주세요.";
     }
     return null;
   }
@@ -269,17 +329,18 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
 }
 
 class InputInfoWidget extends StatefulWidget {
-  InputInfoWidget({
-    required this.title,
-    required this.hintText,
-    required this.validator,
-    required this.onChanged,
-  });
+  InputInfoWidget(
+      {required this.title,
+      required this.hintText,
+      required this.validator,
+      required this.onChanged,
+      this.hidePassword});
 
   final String title;
   String hintText;
   Function(String?) validator;
   final Function(String) onChanged;
+  bool? hidePassword;
 
   @override
   State<InputInfoWidget> createState() => _InputInfoWidgetState();
@@ -287,6 +348,15 @@ class InputInfoWidget extends StatefulWidget {
 
 class _InputInfoWidgetState extends State<InputInfoWidget> {
   TextEditingController inputController = TextEditingController();
+  bool? _hidePassword;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.hidePassword != null) {
+      _hidePassword = widget.hidePassword!;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -301,8 +371,23 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
           ),
           TextFormField(
             controller: inputController,
+            obscureText: _hidePassword == null ? false : _hidePassword!,
             keyboardType: TextInputType.text,
-            decoration: inputDecoration.copyWith(hintText: widget.hintText),
+            decoration: InputDecoration(
+                    border: UnderlineInputBorder(),
+                    suffixIcon: _hidePassword == null
+                        ? null
+                        : IconButton(
+                            icon: _hidePassword!
+                                ? const Icon(Icons.visibility_off)
+                                : const Icon(Icons.visibility),
+                            onPressed: () {
+                              setState(() {
+                                _hidePassword = !_hidePassword!;
+                              });
+                            },
+                          ))
+                .copyWith(hintText: widget.hintText),
             validator: (value) {
               return widget.validator(value);
             },
@@ -356,8 +441,8 @@ void signUpWithEmail(String email, String password) async {
 
 class IDVerificationWidget extends StatefulWidget {
   final Function(String) onEmailChanged; // 이메일 변경 시 호출되는 콜백
-
-  IDVerificationWidget({required this.onEmailChanged});
+  final GlobalKey<FormState> formKey;
+  IDVerificationWidget({required this.onEmailChanged, required this.formKey});
 
   @override
   State<IDVerificationWidget> createState() => _IDVerificationWidgetState();
@@ -365,12 +450,12 @@ class IDVerificationWidget extends StatefulWidget {
 
 class _IDVerificationWidgetState extends State<IDVerificationWidget> {
   TextEditingController idController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  // final _formKey = GlobalKey<FormState>();
   var hasRecipe = false;
   @override
   Widget build(BuildContext context) {
     return Form(
-        key: _formKey,
+        key: widget.formKey,
         child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -397,61 +482,32 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
                       },
                       // validator: (_) => (hasRecipe) ? "Exists" : null,
                       validator: (value) {
+                        print("id validator 호출");
                         if (value == null || value.isEmpty) {
-                          return "잘못된 이메일입니다. 다시 입력하세요";
+                          return "이메일을 입력해주세요.";
                         }
 
-                        if (hasRecipe == false) {
-                          return "중복된 이메일 입니다. 다른 이메일을 입력해주세요.";
-                        }
+                        // if (hasRecipe == false) {
+                        //   return "중복된 이메일 입니다. 다른 이메일을 입력해주세요.";
+                        // }
 
-                        validateId(value);
+                        if (isValidEmail(value) == false) {
+                          return "이메일 형식이 올바르지 않습니다. 올바른 이메일을 입력해주세요.\n Ex) example123@naver.com";
+                        }
 
                         return null;
                       },
                     ),
                   ),
-                  // SizedBox(
-                  //   width: 10,
-                  // ),
-                  // Expanded(
-                  //   flex: 1,
-                  //   child: ElevatedButton(
-                  //     style: ElevatedButton.styleFrom(
-                  //       backgroundColor: Color.fromARGB(255, 151, 125, 253),
-                  //       minimumSize: const Size.fromHeight(50), // NEW
-                  //     ),
-                  //     onPressed: () {
-                  //       _formKey.currentState?.validate();
-                  //     },
-                  //     child: Text('중복 확인'),
-                  //   ),
-                  // ),
                 ],
               )
             ]));
   }
 
-  Future<String?> validateId(String? value) async {
-    final FirebaseFirestore _db = FirebaseFirestore.instance;
-
-    String pattern =
-        r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
-    RegExp regExp = new RegExp(pattern);
-    if (value == null || value.isEmpty) {
-      return "빈 문자열";
-    }
-
-    bool? check;
-
-    var value1 = await checkEmail(value);
-
-    if (value1 == false) {
-      print("값 걸림");
-    } else {
-      print("안걸림");
-    }
-    return null;
+  bool isValidEmail(String email) {
+    const pattern = r'^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-za-z0-9\-]+';
+    final regex = RegExp(pattern);
+    return regex.hasMatch(email);
   }
 
   Future<bool> checkEmail(String email) async {

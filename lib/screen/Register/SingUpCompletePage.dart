@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/main.dart';
 
 import '../Store/cafe_list_page.dart';
@@ -36,8 +37,7 @@ class SignUpCompletePage extends StatelessWidget {
                   Container(
                     // decoration: BoxDecoration(
                     // border: Border.all(color: Colors.blueAccent)),
-                    child: const Text(
-                        "승인까지  최대 3일이 소요될 수 있습니다. \n승인 후 문자메시지로 알려드립니다.\n매장 등록 및 메뉴 등록을 함께 하면 \n빠른 심사가 가능합니다."),
+                    child: const Text("승인되기 전에도 매장과 메뉴를 등록할 수 있습니다."),
                   ),
                 ])),
             Container(
@@ -48,8 +48,9 @@ class SignUpCompletePage extends StatelessWidget {
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 151, 125, 253),
-                      // minimumSize: const Size.fromHeight(50), // NEW
+                      backgroundColor: ColorAssset.mainColor,
+                      foregroundColor: Colors
+                          .white, // minimumSize: const Size.fromHeight(50), // NEW
                     ),
                     onPressed: () {
                       Navigator.push(context,
@@ -64,7 +65,8 @@ class SignUpCompletePage extends StatelessWidget {
                   // height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 151, 125, 253),
+                      backgroundColor: ColorAssset.mainColor,
+                      foregroundColor: Colors.white,
                       minimumSize: const Size.fromHeight(50), // NEW
                     ),
                     onPressed: () {

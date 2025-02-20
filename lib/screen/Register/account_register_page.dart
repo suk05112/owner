@@ -47,6 +47,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
             appBar: AppBar(
               elevation: 0,
               title: const Text("계좌 등록하기(2/3)"),
+              centerTitle: true,
               backgroundColor: Colors.white,
               foregroundColor: Colors.black,
             ),

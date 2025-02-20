@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
@@ -19,6 +20,8 @@ import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/register.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:owner/screen/Register/photo_upload_page.dart';
+import 'package:owner/screen/Store/cafe_list_page.dart';
+import 'package:owner/screen/home.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../common/Style/TextAsset.dart';
@@ -134,7 +137,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
                           TextFormField(
                             controller: telePhoneController,
-                            keyboardType: TextInputType.text,
+                            keyboardType: TextInputType.number,
                             decoration: inputDecoration.copyWith(
                                 hintText: "매장 전화번호 입력"),
                             validator: (value) {
@@ -171,7 +174,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                             ).copyWith(hintText: "매장 소개 입력(200자 이내)"),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter store description';
+                                return '매장 소개를 입력해주세요.';
                               }
                               return null;
                             },
@@ -262,14 +265,31 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                               // _profileImageURL = downloadURL;
                             });
                             if (_formKey.currentState!.validate()) {
+                              if (introController.text.trim().isEmpty) {
+                                showToast("매장 설명을 입력해주세요.");
+                              }
                               if (_isRegister) {
+                                if (_logoImage == null) {
+                                  showToast("매장 로고를 업로드 해주세요.");
+                                  return;
+                                }
+                                if (_storeImage.length == 0) {
+                                  showToast("매장 사진을 최소 1장 이상 업로드 해주세요.");
+                                  return;
+                                }
                                 registerStore();
 
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SettingOpeningDatePage()));
+                                Navigator.pushAndRemoveUntil(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Home()),
+                                  (route) => false, // 모든 기존 경로 제거
+                                );
+                                // Navigator.push(
+                                //     context,
+                                //     MaterialPageRoute(
+                                //         builder: (context) =>
+                                //             const SettingOpeningDatePage()));
                               } else {
                                 if (_store != null) {
                                   await updateStore().then((value) =>
@@ -287,6 +307,17 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 )
               ])),
         ));
+  }
+
+  void showToast(msg) {
+    Fluttertoast.showToast(
+        msg: msg,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.grey,
+        textColor: Colors.white,
+        fontSize: 16.0);
   }
 
   Future<void> _saveAssetImageAsFile() async {
@@ -330,6 +361,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
             .registerAccount(storeId, widget.account!)
             .then((response) async {
           print("계좌 등록성공" + storeId.toString());
+          showToast("매장 등록이 완료되었습니다.");
         }).onError((error, stackTrace) {
           DioException dioError = error as DioException;
           print("계좌 등록 실패 ${error}");
@@ -608,9 +640,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                     isClickedPhotoUploadPage = true;
                     _store?.store_photo_cnt = _storeImage.length;
                   }
-                  print("su2>>${_storeImage}");
-
-                  // savedStoreImage = result; // 수정 시 기존 저장된 이미지도 갱신
                 });
               },
               child: ClipRRect(
@@ -621,7 +650,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                     height: 100,
                   )),
             )));
-    print("StoreImagesGridview:: return ");
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,

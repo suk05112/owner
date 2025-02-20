@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonWidget.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/screen/Register/DocumentGuidePage.dart';
 import 'package:owner/screen/Register/SingUpCompletePage.dart';
 import 'package:owner/screen/Setting/setting_page.dart';
 
@@ -87,16 +88,11 @@ class _CafeListState extends State<CafeList> {
                             children: <Widget>[
                               TextButton(
                                 onPressed: () {
-                                  // Navigator.push(
-                                  //     context,
-                                  //     MaterialPageRoute(
-                                  //         builder: (context) =>
-                                  //             const SignUpCompletePage()));
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) =>
-                                          const DocumentInputPage(),
+                                          const DocumentGuidePage(),
                                     ),
                                   );
                                 },
@@ -189,7 +185,11 @@ class _CafeListState extends State<CafeList> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(store.store_name),
+                              Text(
+                                store.store_name,
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
                               Text(store.store_address)
                             ],
                           ),
@@ -275,7 +275,7 @@ class _CafeListState extends State<CafeList> {
             child: const Text(
               "알수 없음",
               style: TextStyle(
-                color: Colors.red,
+                color: Colors.white,
               ),
             ),
           ),

@@ -187,7 +187,7 @@ class _CafeListState extends State<CafeList> {
                             children: [
                               Text(
                                 store.store_name,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 15, fontWeight: FontWeight.bold),
                               ),
                               Text(store.store_address)

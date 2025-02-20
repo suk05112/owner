@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'dart:io';
@@ -52,6 +56,10 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
               TextFormField(
                 controller: inputPhoneNumbfController,
                 keyboardType: TextInputType.text,
+                inputFormatters: [
+                  NumberFormatter(), // 자동하이픈
+                  LengthLimitingTextInputFormatter(13)
+                ],
                 decoration: inputDecoration.copyWith(hintText: "전화번호"),
               ),
               const Spacer(),
@@ -68,6 +76,9 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
                         inputIDController.text, inputPhoneNumbfController.text);
 
                     if (emailExists) {
+                      await firebaseAuth.sendPasswordResetEmail(
+                          email: inputIDController.text);
+
                       Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -88,15 +99,48 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   }
 
   Future<bool> checkEmailExists(String email, String phone_number) async {
-    final response = await Api().client.findOwnerPw(
-          OwnerFindPw(email: email, phone_number: phone_number),
-        );
+    try {
+      final response = await Api().client.findOwnerPw(
+            OwnerFindPw(email: email, phone_number: phone_number),
+          );
+      final Map<String, dynamic> data = jsonDecode(response);
+      if (data['msg'] == "success") {
+        return true;
+      } else {
+        return false;
+      }
+    } on DioException catch (e) {
+      String errorMsg = "";
+      if (e.response != null) {
+        // 서버에서 받은 상태 코드에 따른 처리
+        if (e.response!.statusCode == 401) {
+          // 인증 실패
+          print("인증 실패: ${e.response!.data}");
+          errorMsg = "[401]인증에 실패했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
+        } else if (e.response!.statusCode == 500) {
+          // 서버 오류
+          print("서버 오류: ${e.response!.data}");
+          errorMsg =
+              "[500]서버에 오류가 발행했습니다.잠시 후 다시 실행해주세요.\n ${e.response!.data}";
+        } else {
+          // 기타 오류
+          print("기타 오류: ${e.response!.data}");
+          errorMsg = "오류가 발생했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
+        }
+      } else {
+        // 네트워크 연결 실패 등
+        print("네트워크 오류: ${e.message}");
+        errorMsg = "네트워크 오류가 발생했습니다. 잠시 후 다시 실행해주세요.\n ${e.message}";
+      }
 
-    if (response == "success") {
-      return true;
-    } else {
-      return false;
+      CommonDialog.show(
+          context: context,
+          title: "아이디 찾기 실패",
+          content: errorMsg,
+          buttonText: "확인",
+          onPressed: () {});
     }
+    return false;
   }
 //   Future<void> checkEmailExists(String emailAddress) async {
 //     try {

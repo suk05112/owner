@@ -281,7 +281,7 @@ class _LoginFormWidgetState extends State<LoginFormWidget> {
                 keyboardType: TextInputType.text,
                 obscureText: hidePassword,
                 decoration: InputDecoration(
-                  hintText: "Enter your password",
+                  hintText: "비밀번호를 입력하세요.",
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.0),
                       borderSide: const BorderSide(

@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:299419302046:android:6329efd59877c18c31a38f",
+        "mobilesdk_app_id": "1:299419302046:android:ae4a2de8e5ba27a231a38f",
         "android_client_info": {
-          "package_name": "com.example.owner"
+          "package_name": "com.company.owner"
         }
       },
       "oauth_client": [
@@ -43,9 +43,9 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:299419302046:android:38babb1e8d5a7d4731a38f",
+        "mobilesdk_app_id": "1:299419302046:android:3abea9ff4e45917131a38f",
         "android_client_info": {
-          "package_name": "com.example.owner.dev"
+          "package_name": "com.company.owner.dev"
         }
       },
       "oauth_client": [

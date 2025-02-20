@@ -157,13 +157,13 @@ flavorizr:
       app:
         name: "502 사장님 Dev"
       android:
-        applicationId: "com.example.owner.dev"
+        applicationId: "com.company.owner.dev"
       ios:
-        bundleId: "com.example.owner.dev"
+        bundleId: "com.company.owner.dev"
     prod:
       app:
         name: "502 사장님"
       android:
-        applicationId: "com.example.owner"
+        applicationId: "com.company.owner"
       ios:
-        bundleId: "com.example.owner"
+        bundleId: "com.company.owner"

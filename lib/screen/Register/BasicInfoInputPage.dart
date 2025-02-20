@@ -79,7 +79,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               InputInfoWidget(
                 title: "이름",
-                hintText: "Enter your name",
+                hintText: "이름을 입력해주세요",
                 validator: validateName,
                 onChanged: (newName) {
                   setState(() {
@@ -106,7 +106,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
               ), //아이디
               InputInfoWidget(
                 title: "비밀번호",
-                hintText: "Enter your email",
+                hintText: "비밀번호를 입력해주세요",
                 hidePassword: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -122,7 +122,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
               ),
               InputInfoWidget(
                 title: "비밀번호 확인",
-                hintText: "Enter your email",
+                hintText: "비밀번호를 입력해주세요",
                 hidePassword: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -137,8 +137,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                 },
               ),
 
-              Container(
-                // margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
+              SizedBox(
                 width: double.infinity,
                 height: 100,
                 child: Row(

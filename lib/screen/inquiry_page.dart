@@ -33,7 +33,7 @@ class _InquiryPageState extends State<InquiryPage>
     fetchInquiry();
   }
 
-  void fetchInquiry() {
+  Future<void> fetchInquiry() async {
     User? user = Provider.of<UserProvider>(context, listen: false).user;
     setState(() {
       futureInquiryList = Api().client.getInquiry(user?.owner_id ?? 0);
@@ -44,7 +44,7 @@ class _InquiryPageState extends State<InquiryPage>
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("문의하기"),
+          title: const Text("문의하기"),
           centerTitle: true,
         ),
         body: SafeArea(
@@ -164,11 +164,11 @@ class _InquiryPageState extends State<InquiryPage>
                 title: "등록완료",
                 content: "문의하기 등록이 완료되었습니다.",
                 buttonText: "확인",
-                onPressed: () {
+                onPressed: () async {
                   titleController.text = "";
                   contentController.text = "";
+                  await fetchInquiry();
                 });
-            fetchInquiry();
           },
           child: const Text('문의하기 제출'),
         )
@@ -198,8 +198,8 @@ class _InquiryPageState extends State<InquiryPage>
                   snapshot.data!.inquiryResponse;
               return RefreshIndicator(
                   onRefresh: () async {
-                    setState(() {
-                      fetchInquiry();
+                    setState(() async {
+                      await fetchInquiry();
                     });
                   },
                   child: ListView.separated(
@@ -227,7 +227,11 @@ class _InquiryPageState extends State<InquiryPage>
                                     children: <Widget>[
                                       Text(
                                           "${inquiryList[index].inquiry_created}"),
-                                      Text(inquiryList[index].title),
+                                      Text(
+                                        inquiryList[index].title,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold),
+                                      ),
                                       Text(inquiryList[index].content)
                                     ],
                                   ),

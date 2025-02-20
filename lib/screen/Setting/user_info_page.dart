@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/screen/LoginPage.dart';
 import 'package:provider/provider.dart';
 
@@ -100,7 +102,14 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       TextButton(
                           onPressed: () {
                             print("눌림");
-                            _showWithdrawalDialog();
+                            CommonDialog.show(
+                                context: context,
+                                title: "탈퇴하기",
+                                content:
+                                    "구메된 기프티콘을 처리하기 위해 문의를 통해 탈퇴하기가 가능합니다.\n 매장관리>설정>문의하기 를 통해 문의해주세요.",
+                                buttonText: "확인",
+                                onPressed: () {});
+                            // _showWithdrawalDialog();
                           },
                           child: Text('회원탈퇴'))
                     ]),
@@ -151,11 +160,11 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   Row(
                     children: [
                       Container(
-                        width: 100,
+                        width: 120,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                          ),
+                              backgroundColor: ColorAssset.mainColor,
+                              foregroundColor: Colors.white),
                           child: Text('탈퇴하기'),
 
                           // 클릭 이벤트
@@ -174,12 +183,17 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       ),
                       Spacer(),
                       Container(
-                        width: 100,
+                        width: 120,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: Colors.white,
+                            side: const BorderSide(
+                              width: 1.0,
+                              color: ColorAssset.mainColor,
+                            ),
                           ),
-                          child: Text('취소'),
+
+                          child: const Text('취소'),
 
                           // 클릭 이벤트
                           onPressed: () async {

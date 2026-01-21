@@ -14,6 +14,7 @@ class CommonDialog {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
+          backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
@@ -33,7 +34,10 @@ class CommonDialog {
             if (cancel)
               WithCancelBtn(context, onPressed)
             else
-              OKBtn(context, onPressed)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                child: OKBtn(context, onPressed),
+              )
           ],
         );
       },
@@ -41,12 +45,15 @@ class CommonDialog {
   }
 
   static Widget OKBtn(context, onPressed) {
-    return TextButton(
-      child: Text('확인'),
-      onPressed: () {
-        onPressed();
-        Navigator.pop(context);
-      },
+    return SizedBox(
+      width: double.infinity,
+      child: TextButton(
+        child: Text('확인'),
+        onPressed: () {
+          onPressed();
+          Navigator.pop(context);
+        },
+      ),
     );
   }
 

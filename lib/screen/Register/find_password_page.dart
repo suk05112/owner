@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/utils/phone_utils.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
@@ -72,12 +73,17 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
                     backgroundColor: ColorAssset.mainColor,
                   ),
                   onPressed: () async {
+                    // 이메일에 @gifnut.com 추가
+                    String formattedEmail = PhoneUtils.formatEmailForServer(inputIDController.text);
+                    // 전화번호를 서버 형식으로 변환
+                    String formattedPhone = PhoneUtils.formatForServer(inputPhoneNumbfController.text);
+                    
                     bool emailExists = await checkEmailExists(
-                        inputIDController.text, inputPhoneNumbfController.text);
+                        formattedEmail, formattedPhone);
 
                     if (emailExists) {
                       await firebaseAuth.sendPasswordResetEmail(
-                          email: inputIDController.text);
+                          email: formattedEmail);
 
                       Navigator.push(
                           context,

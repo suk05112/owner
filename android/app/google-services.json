@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:299419302046:android:ae4a2de8e5ba27a231a38f",
         "android_client_info": {
-          "package_name": "com.company.owner"
+          "package_name": "com.gifnut.owner"
         }
       },
       "oauth_client": [
@@ -34,7 +34,7 @@
               "client_id": "299419302046-048r5pcbf61n9vjvvlrug4j1nbrahkn9.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.owner"
+                "bundle_id": "com.gifnut.owner"
               }
             }
           ]
@@ -45,7 +45,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:299419302046:android:3abea9ff4e45917131a38f",
         "android_client_info": {
-          "package_name": "com.company.owner.dev"
+          "package_name": "com.gifnut.owner.dev"
         }
       },
       "oauth_client": [
@@ -70,7 +70,7 @@
               "client_id": "299419302046-048r5pcbf61n9vjvvlrug4j1nbrahkn9.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.owner"
+                "bundle_id": "com.gifnut.owner"
               }
             }
           ]

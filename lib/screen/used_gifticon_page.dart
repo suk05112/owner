@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
-import 'package:intl/intl.dart';
 import 'package:owner/common/model/UsedGifticon.dart';
 import 'package:owner/common/model/user.dart' as my_app;
 import 'package:owner/common/provier/user_provider.dart';
@@ -16,7 +15,6 @@ class UsedGifticonPage extends StatefulWidget {
 }
 
 class _UsedGifticonPagetate extends State<UsedGifticonPage> {
-  late int _storeId;
   Future<UsedGifticonList> futureUsedGifticonList =
       Future.value(UsedGifticonList(gifticonList: []));
 
@@ -26,20 +24,29 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
   @override
   void initState() {
     super.initState();
-    _storeId = widget.storeId;
     my_app.User? user = Provider.of<UserProvider>(context, listen: false).user;
 
-    Api().client.getOwnerStoreList(user?.owner_id ?? 0).then((value) => {
+    // 로그인된 사용자가 있을 때만 API 호출
+    if (user?.owner_id != null && user!.owner_id! > 0) {
+      final ownerId = user!.owner_id!;
+      Api().client.getOwnerStoreList(ownerId).then((value) => {
           setState(() {
             _stores = value.ownerStoreList;
-            _selectedStore = _stores[0].store_name;
-
+            
+            // 빈 배열 체크 후 처리
             if (_stores.isNotEmpty) {
+              _selectedStore = _stores[0].store_name;
               futureUsedGifticonList =
                   Api().client.getUsedGifticon(_stores[0].store_id);
+            } else {
+              _selectedStore = '';
+              // 빈 리스트인 경우 빈 데이터로 설정
+              futureUsedGifticonList =
+                  Future.value(UsedGifticonList(gifticonList: []));
             }
           })
         });
+    }
   }
 
   @override
@@ -57,33 +64,39 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
               children: [
                 Row(
                   children: [
-                    DropdownButton(
-                      value: _selectedStore,
-                      items: _stores
-                          .map((OwnerStore store) => DropdownMenuItem(
-                                value: store
-                                    .store_name, // 선택 시 onChanged 를 통해 반환할 value
-                                child: Text(store.store_name),
-                              ))
-                          .toList(),
-                      onChanged: (value) {
-                        // items 의 DropdownMenuItem 의 value 반환
-                        setState(() {
-                          _selectedStore = value! as String;
-                          print("selectedStore ${_selectedStore}");
+                    _stores.isEmpty
+                        ? const Padding(
+                            padding: EdgeInsets.all(16.0),
+                            child: Text("등록된 매장이 없습니다."),
+                          )
+                        : DropdownButton<String>(
+                            value: _selectedStore.isEmpty ? null : _selectedStore,
+                            items: _stores
+                                .map((OwnerStore store) => DropdownMenuItem<String>(
+                                      value: store.store_name,
+                                      child: Text(store.store_name),
+                                    ))
+                                .toList(),
+                            onChanged: (value) {
+                              // items 의 DropdownMenuItem 의 value 반환
+                              if (value == null) return;
+                              
+                              setState(() {
+                                _selectedStore = value;
+                                print("selectedStore ${_selectedStore}");
 
-                          // 선택된 store의 store_id 찾기
-                          final selectedStore = _stores.firstWhere(
-                            (store) => store.store_name == _selectedStore,
-                          );
+                                // 선택된 store의 store_id 찾기
+                                final selectedStore = _stores.firstWhere(
+                                  (store) => store.store_name == _selectedStore,
+                                );
 
-                          // 새로운 store_id로 API 호출
-                          futureUsedGifticonList = Api()
-                              .client
-                              .getUsedGifticon(selectedStore.store_id);
-                        });
-                      },
-                    ),
+                                // 새로운 store_id로 API 호출
+                                futureUsedGifticonList = Api()
+                                    .client
+                                    .getUsedGifticon(selectedStore.store_id);
+                              });
+                            },
+                          ),
                   ],
                 ),
                 Expanded(
@@ -111,6 +124,8 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
                             if (usedGifticonList.isNotEmpty) {
                               return RefreshIndicator(
                                   onRefresh: () async {
+                                    if (_stores.isEmpty || _selectedStore.isEmpty) return;
+                                    
                                     setState(() {
                                       final selectedStore = _stores.firstWhere(
                                         (store) =>
@@ -165,6 +180,8 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
                                       ]));
                             } else {
                               return RefreshIndicator(onRefresh: () async {
+                                if (_stores.isEmpty || _selectedStore.isEmpty) return;
+                                
                                 setState(() {
                                   final selectedStore = _stores.firstWhere(
                                     (store) =>

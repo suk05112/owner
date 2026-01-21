@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:http/http.dart' as http;
@@ -224,145 +225,228 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
         });
       }
 
-      return Stack(
+      return ClipRRect(
         key: ValueKey(path),
-        children: [
-          Image.file(
-            File(path.path),
-            key: ValueKey(path),
-            fit: BoxFit.cover,
-            cacheWidth: 100,
-            cacheHeight: 150,
-          ),
-          Positioned(
-            top: 0,
-            right: 0,
-            child: GestureDetector(
-              onTap: () {
-                print("touch delete icon");
-                // 이미지 삭제 로직을 여기에 추가
-                _deleteImage(index);
-              },
-              child: Image(
-                key: ValueKey("${path}_1"),
-                image: AssetImage('assets/delete.png'),
-                width: 20,
-                height: 20,
-              ),
+        borderRadius: BorderRadius.circular(8),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.file(
+              File(path.path),
+              fit: BoxFit.cover,
+              cacheWidth: 200,
+              cacheHeight: 200,
             ),
-          )
-        ],
+            Positioned(
+              top: 4,
+              right: 4,
+              child: GestureDetector(
+                onTap: () {
+                  print("touch delete icon");
+                  _deleteImage(index);
+                },
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.6),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    size: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
       );
     }
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("매장사진 업로드"),
-        ),
-        body: Container(
-          margin: const EdgeInsets.fromLTRB(10, 5, 10, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              FutureBuilder<List<File>>(
-                future: _loadImages(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done) {
-                    print("connection done");
-                  }
-                  if ((snapshot.connectionState == ConnectionState.waiting &&
-                          isInit == false) ||
-                      (isLoading == true)) {
-                    return const Center(
-                        child: SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(),
-                    )); // 데이터 로딩 중일 때 표시할 위젯
-                  } else if (snapshot.hasError) {
-                    return Text('Error: ${snapshot.error}');
-                  } else {
-                    isInit = true;
-                    // 데이터 로딩이 완료된 경우 화면을 그립니다.
-                    // selectedImages =
-                    //     isInit == false ? snapshot.data ?? [] : selectedImages;
-                    // print("build:: ${selectedImages}");
-
-                    selectedImages = isInit == false
-                        ? (snapshot.data ?? [])
-                            .map((file) => file.path)
-                            .toSet()
-                            .map((path) => File(path))
-                            .toList()
-                        : selectedImages
-                            .map((file) => file.path)
-                            .toSet()
-                            .map((path) => File(path))
-                            .toList();
-
-                    print(
-                        "build:: ${selectedImages.map((file) => file.path).toList()}");
-                    return Expanded(
-                      child: ReorderableGridView.count(
-                        crossAxisSpacing: 10,
-                        mainAxisSpacing: 10,
-                        crossAxisCount: 3,
-                        header: [
-                          GestureDetector(
-                            onTap: () {
-                              getImage();
-                            },
-                            child: const Image(
-                              image: AssetImage('assets/camera.jpeg'),
-                              width: 150,
-                              height: 100,
-                            ),
-                          )
-                        ],
-
-                        children: selectedImages
-                            .toSet()
-                            .toList()
-                            .asMap()
-                            .entries
-                            .map((entry) {
-                          final index = entry.key;
-                          final image = entry.value;
-                          return selectedImg(image, index);
-                        }).toList(),
-                        // children:
-                        // selectedImages.map((e) => selectedImg(e)).toList(),
-                        // children: this.data.map((e) => buildItem("$e")).toList(),
-                        onReorder: (oldIndex, newIndex) {
-                          setState(() {
-                            // final element = data.removeAt(oldIndex);
-                            // data.insert(newIndex, element);
-                            final element = selectedImages.removeAt(oldIndex);
-                            selectedImages.insert(newIndex, element);
-                          });
-                        },
-                      ),
-                    );
-                  }
-                },
-              ),
-              const Spacer(),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: ColorAssset.mainColor,
+        appBar: const CommonAppBar(title: "매장사진 업로드"),
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  "매장 사진을 업로드해주세요",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
                 ),
-                onPressed: () async {
-                  print("pop될 이미지");
-                  print(selectedImages);
-                  final storageRef = FirebaseStorage.instance.ref();
-                  print("su1>>${selectedImages}");
+                const SizedBox(height: 8),
+                Text(
+                  "드래그하여 순서를 변경할 수 있습니다",
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Expanded(
+                  child: FutureBuilder<List<File>>(
+                    future: _loadImages(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.done) {
+                        print("connection done");
+                      }
+                      if ((snapshot.connectionState ==
+                                  ConnectionState.waiting &&
+                              isInit == false) ||
+                          (isLoading == true)) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const CircularProgressIndicator(
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                    ColorAssset.mainColor),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                "이미지를 불러오는 중...",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.error_outline,
+                                  size: 48, color: Colors.grey[400]),
+                              const SizedBox(height: 16),
+                              Text(
+                                '오류가 발생했습니다: ${snapshot.error}',
+                                style: TextStyle(color: Colors.grey[600]),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        );
+                      } else {
+                        isInit = true;
 
-                  Navigator.pop(context, selectedImages);
-                },
-                child: Text('확인'),
-              ),
-            ],
+                        selectedImages = isInit == false
+                            ? (snapshot.data ?? [])
+                                .map((file) => file.path)
+                                .toSet()
+                                .map((path) => File(path))
+                                .toList()
+                            : selectedImages
+                                .map((file) => file.path)
+                                .toSet()
+                                .map((path) => File(path))
+                                .toList();
+
+                        print(
+                            "build:: ${selectedImages.map((file) => file.path).toList()}");
+                        return ReorderableGridView.count(
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          crossAxisCount: 3,
+                          header: [
+                            GestureDetector(
+                              onTap: () {
+                                getImage();
+                              },
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: Colors.grey[300]!,
+                                    width: 1.5,
+                                    style: BorderStyle.solid,
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add_a_photo,
+                                      size: 32,
+                                      color: ColorAssset.mainColor,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      "사진 추가",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[700],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                          ],
+                          children: selectedImages
+                              .toSet()
+                              .toList()
+                              .asMap()
+                              .entries
+                              .map((entry) {
+                            final index = entry.key;
+                            final image = entry.value;
+                            return selectedImg(image, index);
+                          }).toList(),
+                          onReorder: (oldIndex, newIndex) {
+                            setState(() {
+                              final element = selectedImages.removeAt(oldIndex);
+                              selectedImages.insert(newIndex, element);
+                            });
+                          },
+                        );
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: ColorAssset.mainColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      elevation: 0,
+                    ),
+                    onPressed: () async {
+                      print("pop될 이미지");
+                      print(selectedImages);
+                      final storageRef = FirebaseStorage.instance.ref();
+                      print("su1>>${selectedImages}");
+
+                      Navigator.pop(context, selectedImages);
+                    },
+                    child: const Text(
+                      '확인',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ));
   }

@@ -16,6 +16,7 @@ import 'dart:io';
 import '../../common/Style/TextAsset.dart';
 import '../../common/api/request/store/store.dart';
 import '../../common/widget/CommonWidget.dart';
+import '../../common/widget/common_app_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class DocumentInputPage extends StatefulWidget {
@@ -65,12 +66,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-            appBar: AppBar(
-              elevation: 0,
-              title: const Text("사업자 정보 입력하기(1/3)"),
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-            ),
+            appBar: const CommonAppBar(title: "사업자 정보 입력하기(1/3)"),
             backgroundColor: Colors.white,
             body: SingleChildScrollView(
                 child: Form(

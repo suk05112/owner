@@ -3,7 +3,7 @@ import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/main.dart';
 import 'package:owner/screen/Register/DocumentInputPage.dart';
 
-import 'BasicInfoInputPage.dart';
+import 'sign_up_page.dart';
 
 class DocumentGuidePage extends StatelessWidget {
   const DocumentGuidePage({Key? key}) : super(key: key);

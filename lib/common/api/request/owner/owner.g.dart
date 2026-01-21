@@ -25,7 +25,7 @@ Map<String, dynamic> _$OwnerRegisterPostToJson(OwnerRegisterPost instance) =>
 OwnerRegisterResponse _$OwnerRegisterResponseFromJson(
         Map<String, dynamic> json) =>
     OwnerRegisterResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
+      statusCode: (json['statusCode'] as num?)?.toInt(),
       owner_id: (json['owner_id'] as num?)?.toInt(),
     );
 
@@ -59,7 +59,7 @@ Map<String, dynamic> _$OwnerFindPwToJson(OwnerFindPw instance) =>
 
 OwnerLoginResponse _$OwnerLoginResponseFromJson(Map<String, dynamic> json) =>
     OwnerLoginResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
+      statusCode: (json['statusCode'] as num?)?.toInt(),
       name: json['name'] as String,
       phone_number: json['phone_number'] as String,
     )
@@ -73,4 +73,28 @@ Map<String, dynamic> _$OwnerLoginResponseToJson(OwnerLoginResponse instance) =>
       'name': instance.name,
       'phone_number': instance.phone_number,
       'msg': instance.msg,
+    };
+
+OwnerPushTokenPost _$OwnerPushTokenPostFromJson(Map<String, dynamic> json) =>
+    OwnerPushTokenPost(
+      push_token: json['push_token'] as String,
+    );
+
+Map<String, dynamic> _$OwnerPushTokenPostToJson(OwnerPushTokenPost instance) =>
+    <String, dynamic>{
+      'push_token': instance.push_token,
+    };
+
+OwnerPushTokenResponse _$OwnerPushTokenResponseFromJson(
+        Map<String, dynamic> json) =>
+    OwnerPushTokenResponse(
+      message: json['message'] as String,
+      owner_id: (json['owner_id'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$OwnerPushTokenResponseToJson(
+        OwnerPushTokenResponse instance) =>
+    <String, dynamic>{
+      'message': instance.message,
+      'owner_id': instance.owner_id,
     };

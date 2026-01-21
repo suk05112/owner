@@ -8,6 +8,7 @@ import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import '../../common/api/response/menu.dart';
 
 import 'package:http/http.dart' as http;
@@ -76,12 +77,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-            appBar: AppBar(
-              elevation: 0,
-              title: const Text("메뉴 관리"),
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-            ),
+            appBar: const CommonAppBar(title: "메뉴 관리"),
             backgroundColor: Colors.white,
             body: Form(
               key: _formKey,
@@ -119,7 +115,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                   const Text("가격"),
                                   TextFormField(
                                     controller: menuPriceInputController,
-                                    keyboardType: TextInputType.text,
+                                    keyboardType: TextInputType.number,
                                     decoration: InputDecoration(
                                       hintStyle: TextAssset.placeholder,
                                       suffixText: '원',
@@ -136,6 +132,13 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                     validator: (value) {
                                       if (value == null || value.isEmpty) {
                                         return "메뉴금액을 입력해 주세요";
+                                      }
+                                      final price = int.tryParse(value);
+                                      if (price == null) {
+                                        return "숫자만 입력 가능합니다";
+                                      }
+                                      if (price > 50000) {
+                                        return "메뉴 금액은 50,000원 이하만 가능합니다";
                                       }
                                       return null;
                                     },

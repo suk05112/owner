@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
+import 'package:owner/common/utils/phone_utils.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/screen/Register/find_password_page.dart';
 import 'dart:io';
@@ -69,9 +70,11 @@ class _FindUserIDPageState extends State<FindUserIDPage> {
                     // minimumSize: const Size.fromHeight(50), // NEW
                   ),
                   onPressed: () async {
+                    // 전화번호를 서버 형식으로 변환
+                    String formattedPhone = PhoneUtils.formatForServer(inputPhoneNumbfController.text);
                     showRegisteredId(OwnerFind(
                         name: inputIDController.text,
-                        phone_number: inputPhoneNumbfController.text));
+                        phone_number: formattedPhone));
                   },
                   child: Text("확인"),
                 ),

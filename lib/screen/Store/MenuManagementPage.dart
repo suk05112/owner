@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/screen/Store/EditMenuPage.dart';
 import '../../common/api/response/menu.dart';
 
@@ -47,13 +49,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        title: const Text("메뉴 관리"),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-      ),
+      appBar: const CommonAppBar(title: "메뉴 관리"),
       backgroundColor: Colors.white,
       body: menu == null
           ? const Center(
@@ -69,7 +65,14 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      TextButton(
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorAssset.mainColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                         onPressed: () async {
                           final result = await Navigator.push(
                               context,
@@ -93,7 +96,14 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                   itemCount: menu!.length + 1,
                   itemBuilder: (context, index) {
                     if (index == menu!.length) {
-                      return TextButton(
+                      return ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: ColorAssset.mainColor,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                         onPressed: () async {
                           final result = await Navigator.push(
                               context,

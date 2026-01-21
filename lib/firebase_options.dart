@@ -67,8 +67,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '299419302046',
     projectId: 'cafe-owner',
     storageBucket: 'cafe-owner.appspot.com',
-    iosClientId: '299419302046-048r5pcbf61n9vjvvlrug4j1nbrahkn9.apps.googleusercontent.com',
-    iosBundleId: 'com.example.owner',
+    iosClientId:
+        '299419302046-048r5pcbf61n9vjvvlrug4j1nbrahkn9.apps.googleusercontent.com',
+    iosBundleId: 'com.gifnut.owner',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -77,7 +78,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '299419302046',
     projectId: 'cafe-owner',
     storageBucket: 'cafe-owner.appspot.com',
-    iosClientId: '299419302046-048r5pcbf61n9vjvvlrug4j1nbrahkn9.apps.googleusercontent.com',
-    iosBundleId: 'com.example.owner',
+    iosClientId:
+        '299419302046-048r5pcbf61n9vjvvlrug4j1nbrahkn9.apps.googleusercontent.com',
+    iosBundleId: 'com.gifnut.owner',
   );
 }

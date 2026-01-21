@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/utils/phone_utils.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/screen/LoginPage.dart';
 import 'package:provider/provider.dart';
@@ -66,7 +67,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                                 width: 100,
                                 child: Text("전화번호"),
                               ),
-                              Text("${user?.phone_number ?? "phone"}")
+                              Text("${user?.phone_number != null ? PhoneUtils.formatForDisplay(user!.phone_number) : "phone"}")
                             ]),
                             Row(children: [
                               SizedBox(

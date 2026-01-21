@@ -1,6 +1,3 @@
-import 'dart:ffi';
-import 'dart:io';
-
 import 'package:json_annotation/json_annotation.dart';
 
 part 'owner.g.dart';
@@ -25,10 +22,10 @@ class OwnerRegisterPost {
 
 @JsonSerializable()
 class OwnerRegisterResponse {
-  int statusCode;
+  int? statusCode;
   int? owner_id;
 
-  OwnerRegisterResponse({required this.statusCode, required this.owner_id});
+  OwnerRegisterResponse({this.statusCode, this.owner_id});
 
   factory OwnerRegisterResponse.fromJson(Map<String, dynamic> json) =>
       _$OwnerRegisterResponseFromJson(json);
@@ -61,18 +58,41 @@ class OwnerFindPw {
 
 @JsonSerializable()
 class OwnerLoginResponse {
-  int statusCode;
+  int? statusCode;
   int? owner_id;
   String name;
   String phone_number;
   String? msg;
 
   OwnerLoginResponse(
-      {required this.statusCode,
+      {this.statusCode,
       required this.name,
       required this.phone_number});
 
   factory OwnerLoginResponse.fromJson(Map<String, dynamic> json) =>
       _$OwnerLoginResponseFromJson(json);
   Map<String, dynamic> toJson() => _$OwnerLoginResponseToJson(this);
+}
+
+@JsonSerializable()
+class OwnerPushTokenPost {
+  String push_token;
+
+  OwnerPushTokenPost({required this.push_token});
+
+  factory OwnerPushTokenPost.fromJson(Map<String, dynamic> json) =>
+      _$OwnerPushTokenPostFromJson(json);
+  Map<String, dynamic> toJson() => _$OwnerPushTokenPostToJson(this);
+}
+
+@JsonSerializable()
+class OwnerPushTokenResponse {
+  String message;
+  int owner_id;
+
+  OwnerPushTokenResponse({required this.message, required this.owner_id});
+
+  factory OwnerPushTokenResponse.fromJson(Map<String, dynamic> json) =>
+      _$OwnerPushTokenResponseFromJson(json);
+  Map<String, dynamic> toJson() => _$OwnerPushTokenResponseToJson(this);
 }

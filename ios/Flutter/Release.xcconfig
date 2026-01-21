@@ -2,5 +2,5 @@
 #include "Generated.xcconfig"
 FLUTTER_TARGET=lib/main_prod.dart
 ASSET_PREFIX=prod
-BUNDLE_NAME=502 사장님
-BUNDLE_DISPLAY_NAME=502 사장님
+BUNDLE_NAME=Gifnut 사장님
+BUNDLE_DISPLAY_NAME=Gifnut 사장님

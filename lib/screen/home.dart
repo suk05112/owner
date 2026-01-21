@@ -1,6 +1,4 @@
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
-import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/screen/Setting/setting_page.dart';
@@ -34,22 +32,17 @@ class _HomeState extends State<Home> {
   }
 
   final PageStorageBucket bucket = PageStorageBucket();
-  Widget currentScreen = UsedGifticonPage(
-    storeId: 1,
-  );
+  late Widget currentScreen;
+
+  @override
+  void initState() {
+    super.initState();
+    // 로그인된 사용자가 있을 때만 UsedGifticonPage 생성
+    currentScreen = UsedGifticonPage(storeId: -1);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> screens = [
-      UsedGifticonPage(
-        storeId: 1,
-      ),
-      CafeList(),
-      CafeDetailScreen(
-        storeId: 1,
-      ),
-      SettingPage()
-    ];
     return PopScope(
         canPop: false, // 뒤로 가기 방지
         child: Scaffold(
@@ -133,9 +126,8 @@ class _HomeState extends State<Home> {
                         minWidth: 40,
                         onPressed: () {
                           setState(() {
-                            currentScreen = UsedGifticonPage(
-                              storeId: 1,
-                            );
+                            // 로그인된 사용자가 있을 때만 UsedGifticonPage 생성
+                            currentScreen = UsedGifticonPage(storeId: -1);
                             currentTab = 0;
                           });
                         },

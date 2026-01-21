@@ -1,8 +1,8 @@
 import 'package:owner/flavors.dart';
 
 class AppConfig {
-  static const String devBaseUrl = "http://18.221.2.135/dev";
-  static const String prodBaseUrl = "http://18.221.2.135";
+  static const String devBaseUrl = "https://www.502company.com/dev";
+  static const String prodBaseUrl = "https://www.502company.com/prod";
 
   static const String env = String.fromEnvironment('ENV', defaultValue: 'prod');
 

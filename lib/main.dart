@@ -1,33 +1,26 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'app.dart';
+import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:flutter/material.dart';
-// import 'package:owner/common/api/response/store/store.dart';
-import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/gifticon_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
-import 'package:owner/register.dart';
-import 'package:owner/screen/Register/register_store_page.dart';
-
-import 'package:owner/screen/Store/cafe_list_page.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:owner/screen/home.dart';
-import 'package:provider/provider.dart';
 import 'common/provier/store_provider.dart';
-import 'firebase_options.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'screen/LoginPage.dart';
-import 'screen/Register/DocumentGuidePage.dart';
-
 import 'package:owner/common/api/API.dart';
+import 'package:owner/config.dart';
 
 FutureOr<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await Firebase.initializeApp();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Firebase는 main_dev.dart 또는 main_prod.dart에서 이미 초기화됨
+  // 여기서는 API만 초기화
+
+  // API 초기화 - 환경에 맞는 baseUrl 설정
+  await Api().setBaseClient(AppConfig.baseUrl);
+
   // debugInvertOversizedImages = true;
   runApp(const MyApp());
 }
@@ -58,6 +51,7 @@ class MyApp extends StatelessWidget {
                   primarySwatch: Colors.blue,
                 ),
                 home: user == null ? const LoginScreen() : const Home(),
+                debugShowCheckedModeBanner: false,
               );
             },
           ),

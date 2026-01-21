@@ -115,9 +115,10 @@ class _CafeListState extends State<CafeList> {
 
   void getStoreList(BuildContext context) async {
     final currentContext = scaffoldKey.currentContext;
+    my_app.User? user = Provider.of<UserProvider>(context, listen: false).user;
 
     try {
-      final response = await Api().client.getStoreList(1);
+      final response = await Api().client.getStoreList(user?.owner_id ?? 0);
       currentContext?.read<StoreProvider>().setStoreCard(response.store);
       print(response);
     } catch (error) {

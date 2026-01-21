@@ -7,10 +7,8 @@ import 'package:owner/common/api/response/store/store_post_response.dart';
 import 'package:owner/common/model/Account.dart';
 import 'package:owner/common/model/Settlement.dart';
 import 'package:owner/common/model/UsedGifticon.dart';
-import 'package:owner/common/model/cafeInfo.dart';
 import 'package:owner/common/api/response/GifticonResponse.dart';
 import 'package:owner/common/model/inquiry.dart';
-import 'package:owner/config.dart';
 import 'package:retrofit/retrofit.dart';
 import 'package:dio/dio.dart';
 
@@ -29,6 +27,12 @@ abstract class ApiClient {
   @POST("/owner/register")
   Future<OwnerRegisterResponse> registerOwner(
     @Body() OwnerRegisterPost owner,
+  );
+
+  @POST("/owner/push-token/{owner_id}")
+  Future<OwnerPushTokenResponse> registerOwnerPushToken(
+    @Path('owner_id') int owner_id,
+    @Body() OwnerPushTokenPost pushToken,
   );
 
   @GET("/store/info/{store_Id}")

@@ -7,14 +7,14 @@ import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
-import 'package:owner/common/model/request/OwnerPost.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:owner/common/model/user.dart' as my_app;
 
 import '../../common/widget/CommonWidget.dart';
-import 'DocumentInputPage.dart';
+import '../../common/utils/phone_utils.dart';
 import 'SingUpCompletePage.dart';
 
 class BasicInfoInputPage extends StatefulWidget {
@@ -37,16 +37,10 @@ class _BasicInfoInputPageState extends State<BasicInfoInputPage>
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-            appBar: AppBar(
-              title: Text("가입하기"),
-              backgroundColor: Colors.white,
-            ),
-            backgroundColor: Colors.white,
-            body: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [BasicInfoFormWidget()]))));
+          appBar: const CommonAppBar(title: "가입하기"),
+          backgroundColor: Colors.white,
+          body: BasicInfoFormWidget(),
+        ));
   }
 }
 
@@ -68,248 +62,415 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   String? phone_number;
   String? password;
   String? confirmPassword; // 비밀번호 확인 값
+  PhoneAuthCredential? phoneAuthCredential; // 전화번호 인증 credential 저장
 
   @override
   Widget build(BuildContext context) {
     return Form(
         key: formKey,
-        child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              InputInfoWidget(
-                title: "이름",
-                hintText: "이름을 입력해주세요",
-                validator: validateName,
-                onChanged: (newName) {
-                  setState(() {
-                    name = newName;
-                  });
-                },
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    InputInfoWidget(
+                      title: "이름",
+                      hintText: "이름을 입력해주세요",
+                      validator: validateName,
+                      onChanged: (newName) {
+                        setState(() {
+                          name = newName;
+                        });
+                      },
+                    ),
+                    PhoneNumberVerificationWidget(
+                        successCallback: (phoneAuthResult) {
+                      // 여기서 phoneNumber 변수에 인증된 전화번호가 들어옵니다.
+                      if (phoneAuthResult != null) {
+                        print(
+                            "회원가입 전화번호 인증 성공: ${phoneAuthResult.phoneNumber}");
+                        phone_number = phoneAuthResult.phoneNumber;
+                        phoneAuthCredential =
+                            phoneAuthResult.credential; // credential 저장
+                      } else {
+                        print("전화번호 인증 실패");
+                        phoneAuthCredential = null;
+                      }
+                    }), //전화번호
+                    IDVerificationWidget(
+                      formKey: formKey2,
+                      onEmailChanged: (newEmail) {
+                        setState(() {
+                          email = newEmail; // 이메일 값 업데이트
+                        });
+                      },
+                    ), //아이디
+                    InputInfoWidget(
+                      title: "비밀번호",
+                      hintText: "비밀번호를 입력해주세요",
+                      hidePassword: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "비밀번호를 입력해주세요";
+                        }
+                        return null;
+                      },
+                      onChanged: (newPassword) {
+                        setState(() {
+                          password = newPassword;
+                        });
+                      },
+                    ),
+                    InputInfoWidget(
+                      title: "비밀번호 확인",
+                      hintText: "비밀번호를 입력해주세요",
+                      hidePassword: true,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return "비밀번호를 입력해주세요";
+                        }
+                        return null;
+                      },
+                      onChanged: (newConfirmPassword) {
+                        setState(() {
+                          confirmPassword = newConfirmPassword;
+                        });
+                      },
+                    ),
+                  ],
+                ),
               ),
-              PhoneNumberVerificationWidget(successCallback: (newPhoneNumber) {
-                // 여기서 phoneNumber 변수에 인증된 전화번호가 들어옵니다.
-                if (newPhoneNumber != null) {
-                  print("회원가입 전화번호 인증 성공: $newPhoneNumber");
-                  phone_number = newPhoneNumber;
-                } else {
-                  print("전화번호 인증 실패");
-                }
-              }), //전화번호
-              IDVerificationWidget(
-                formKey: formKey2,
-                onEmailChanged: (newEmail) {
-                  setState(() {
-                    email = newEmail; // 이메일 값 업데이트
-                  });
-                },
-              ), //아이디
-              InputInfoWidget(
-                title: "비밀번호",
-                hintText: "비밀번호를 입력해주세요",
-                hidePassword: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "비밀번호를 입력해주세요";
-                  }
-                  return null;
-                },
-                onChanged: (newPassword) {
-                  setState(() {
-                    password = newPassword;
-                  });
-                },
-              ),
-              InputInfoWidget(
-                title: "비밀번호 확인",
-                hintText: "비밀번호를 입력해주세요",
-                hidePassword: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "비밀번호를 입력해주세요";
-                  }
-                  return null;
-                },
-                onChanged: (newConfirmPassword) {
-                  setState(() {
-                    confirmPassword = newConfirmPassword;
-                  });
-                },
-              ),
-
-              SizedBox(
-                width: double.infinity,
-                height: 100,
-                child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Flexible(
-                        flex: 1,
-                        child: SizedBox(
-                          width: double.infinity, // <-- Your width
-                          height: 50,
-                          // width: 30,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5.0),
-                              ),
-                              backgroundColor: ColorAssset.mainColor,
-                              foregroundColor: Colors.white,
-                              // minimumSize: const Size.fromHeight(50), // NEW
-                            ),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text('이전'),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0),
                           ),
+                          backgroundColor: ColorAssset.mainColor,
+                          foregroundColor: Colors.white,
                         ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('이전'),
                       ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: Container(
-                          width: double.infinity, // <-- Your width
-                          height: 50,
-                          // width: 30,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(5.0),
-                              ),
-                              foregroundColor: Colors.white,
-                              backgroundColor: ColorAssset.mainColor,
-                            ),
-                            onPressed: () async {
-                              if (formKey2.currentState!.validate()) {
-                                print("id validator");
-                              } else {
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SizedBox(
+                      height: 50,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5.0),
+                          ),
+                          foregroundColor: Colors.white,
+                          backgroundColor: ColorAssset.mainColor,
+                        ),
+                        onPressed: () async {
+                          if (formKey2.currentState!.validate()) {
+                            print("id validator");
+                          } else {
+                            return;
+                          }
+                          if (formKey.currentState!.validate()) {
+                            try {
+                              if (password != confirmPassword) {
+                                CommonDialog.show(
+                                  context: context,
+                                  title: "비밀번호 확인",
+                                  content: "비밀번호가 일치하지 않습니다.",
+                                  buttonText: "확인",
+                                  onPressed: () {},
+                                );
                                 return;
                               }
-                              if (formKey.currentState!.validate()) {
-                                try {
-                                  if (password != confirmPassword) {
-                                    CommonDialog.show(
-                                      context: context,
-                                      title: "비밀번호 확인",
-                                      content: "비밀번호가 일치하지 않습니다.",
-                                      buttonText: "확인",
-                                      onPressed: () {},
-                                    );
-                                    return;
-                                  }
 
-                                  if (phone_number == null) {
-                                    CommonDialog.show(
-                                      context: context,
-                                      title: "전화번호를 확인할 수 없습니다.",
-                                      content: "전화번호 인증을 완료해주세요.",
-                                      buttonText: "확인",
-                                      onPressed: () {},
-                                    );
-                                    return;
-                                  }
-
-                                  UserCredential userCredential =
-                                      await FirebaseAuth
-                                          .instance
-                                          .createUserWithEmailAndPassword(
-                                              email: email ?? "",
-                                              password: password ?? "")
-                                          .then((value) async {
-                                    if (value.user!.email != null) {
-                                      FirebaseAuth.instance.currentUser!
-                                          .updateDisplayName("displayName");
-                                      OwnerRegisterPost owner =
-                                          OwnerRegisterPost(
-                                              uid: value.user!.uid,
-                                              phone_number: phone_number ?? "",
-                                              name: name ?? "",
-                                              email: email ?? "");
-
-                                      Api()
-                                          .client
-                                          .registerOwner(owner)
-                                          .then((value) {
-                                        if (value.owner_id == null) {
-                                          CommonDialog.show(
-                                            context: context,
-                                            title: "회원가입 실패",
-                                            content: "서버오류:: 잠시 후 다시 시도해주세요.",
-                                            buttonText: "확인",
-                                            onPressed: () {},
-                                          );
-                                        }
-                                        my_app.User user = my_app.User(
-                                            owner_id: value.owner_id ?? -1,
-                                            name: name ?? "",
-                                            email: email ?? "",
-                                            phone_number: phone_number ?? "");
-
-                                        Provider.of<UserProvider>(context,
-                                                listen: false)
-                                            .setUser(user);
-                                      });
-
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const SignUpCompletePage()));
-                                    } else {
-                                      CommonDialog.show(
-                                        context: context,
-                                        title: "회원가입을 완료할 수 없습니다.",
-                                        content: "잠시 후 다시 시도해주세요.",
-                                        buttonText: "확인",
-                                        onPressed: () {},
-                                      );
-                                    }
-                                    return value;
-                                  });
-                                  // FirebaseAuth.instance.currentUser
-                                  //     ?.sendEmailVerification();
-                                } on FirebaseAuthException catch (e) {
-                                  if (e.code == 'weak-password') {
-                                    print('the password provided is too weak');
-                                    CommonDialog.show(
-                                        context: context,
-                                        title: "비밀번호 확인",
-                                        content:
-                                            "취약한 비밀번호입니다. 다른 비밀번호를 사용해주세요.",
-                                        buttonText: "확인",
-                                        onPressed: () {});
-                                  } else if (e.code == 'email-already-in-use') {
-                                    print(
-                                        'The account already exists for that email.');
-                                    CommonDialog.show(
-                                        context: context,
-                                        title: "아이디 확인",
-                                        content:
-                                            "이미 사용중인 아이디입니다. 다른 아이디를 사용해주세요.",
-                                        buttonText: "확인",
-                                        onPressed: () {});
-                                  } else {
-                                    print(e.code);
-                                  }
-                                } catch (e) {}
+                              if (phone_number == null ||
+                                  phoneAuthCredential == null) {
+                                CommonDialog.show(
+                                  context: context,
+                                  title: "전화번호를 확인할 수 없습니다.",
+                                  content: "전화번호 인증을 완료해주세요.",
+                                  buttonText: "확인",
+                                  onPressed: () {},
+                                );
+                                return;
                               }
 
-                              // Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) =>
-                              //             DocumentInputPage()));
-                            },
-                            child: Text('확인'),
-                          ),
-                        ),
+                              UserCredential? userCredential;
+
+                              // 전화번호로 이미 계정이 생성되어 있는지 확인
+                              User? existingPhoneUser =
+                                  FirebaseAuth.instance.currentUser;
+                              bool isPhoneAccount = existingPhoneUser != null &&
+                                  existingPhoneUser.phoneNumber != null &&
+                                  existingPhoneUser.email == null;
+
+                              if (isPhoneAccount &&
+                                  phoneAuthCredential != null) {
+                                // 전화번호 계정이 이미 존재하는 경우, 이메일과 비밀번호를 링크
+                                print("전화번호 계정이 이미 존재합니다. 이메일을 링크합니다.");
+                                try {
+                                  // 이메일 credential 생성
+                                  final emailCredential =
+                                      EmailAuthProvider.credential(
+                                    email: PhoneUtils.formatEmailForServer(
+                                        email ?? ""),
+                                    password: password ?? "",
+                                  );
+
+                                  // 전화번호 계정에 이메일 credential 링크
+                                  userCredential = await existingPhoneUser
+                                      .linkWithCredential(emailCredential);
+                                  print("이메일이 전화번호 계정에 성공적으로 링크되었습니다.");
+                                } on FirebaseAuthException catch (e) {
+                                  print("이메일 링크 실패: ${e.code} - ${e.message}");
+                                  if (e.code == 'email-already-in-use') {
+                                    CommonDialog.show(
+                                      context: context,
+                                      title: "회원가입 오류",
+                                      content: "이미 사용 중인 이메일입니다.",
+                                      buttonText: "확인",
+                                      onPressed: () {},
+                                    );
+                                    return;
+                                  } else {
+                                    CommonDialog.show(
+                                      context: context,
+                                      title: "회원가입 오류",
+                                      content: e.message ?? "이메일 링크 중 오류 발생",
+                                      buttonText: "확인",
+                                      onPressed: () {},
+                                    );
+                                    return;
+                                  }
+                                } catch (e) {
+                                  print("이메일 링크 중 일반 오류: $e");
+                                  CommonDialog.show(
+                                    context: context,
+                                    title: "회원가입 오류",
+                                    content: e.toString(),
+                                    buttonText: "확인",
+                                    onPressed: () {},
+                                  );
+                                  return;
+                                }
+                              } else {
+                                // 전화번호 계정이 없거나, 이미 이메일이 있는 계정인 경우
+                                // 이메일 계정을 생성하고 전화번호를 링크
+                                print("새 이메일 계정을 생성하고 전화번호를 링크합니다.");
+                                userCredential = await FirebaseAuth.instance
+                                    .createUserWithEmailAndPassword(
+                                        email: PhoneUtils.formatEmailForServer(
+                                            email ?? ""),
+                                        password: password ?? "");
+
+                                if (userCredential.user?.email == null) {
+                                  CommonDialog.show(
+                                    context: context,
+                                    title: "회원가입을 완료할 수 없습니다.",
+                                    content: "잠시 후 다시 시도해주세요.",
+                                    buttonText: "확인",
+                                    onPressed: () {},
+                                  );
+                                  return;
+                                }
+
+                                try {
+                                  // Display name 설정
+                                  await userCredential.user!
+                                      .updateDisplayName("displayName");
+
+                                  // 전화번호 인증 credential을 이메일 계정에 링크
+                                  if (phoneAuthCredential != null) {
+                                    try {
+                                      await userCredential.user!
+                                          .linkWithCredential(
+                                              phoneAuthCredential!);
+                                      print("전화번호 인증이 이메일 계정에 성공적으로 링크되었습니다.");
+                                    } on FirebaseAuthException catch (linkError) {
+                                      // 이미 링크되어 있는 경우 무시
+                                      if (linkError.code ==
+                                              'credential-already-in-use' ||
+                                          linkError.code ==
+                                              'provider-already-linked') {
+                                        print("전화번호가 이미 링크되어 있습니다.");
+                                      } else {
+                                        print(
+                                            "전화번호 링크 실패: ${linkError.code} - ${linkError.message}");
+                                        // 링크 실패해도 회원가입은 계속 진행
+                                      }
+                                    } catch (e) {
+                                      print("전화번호 링크 중 오류: $e");
+                                      // 링크 실패해도 회원가입은 계속 진행
+                                    }
+                                  }
+                                } catch (e) {
+                                  print("Firebase 계정 업데이트/링크 중 오류: $e");
+                                  CommonDialog.show(
+                                    context: context,
+                                    title: "회원가입 오류",
+                                    content: e.toString(),
+                                    buttonText: "확인",
+                                    onPressed: () {},
+                                  );
+                                  return;
+                                }
+                              }
+
+                              // Firebase UserCredential이 최종적으로 설정되었는지 확인
+                              if (userCredential.user == null) {
+                                CommonDialog.show(
+                                  context: context,
+                                  title: "회원가입 오류",
+                                  content: "Firebase 계정 처리에 실패했습니다.",
+                                  buttonText: "확인",
+                                  onPressed: () {},
+                                );
+                                return;
+                              }
+
+                              // 전화번호를 서버 형식으로 변환 (+821012345678)
+                              String formattedPhone =
+                                  PhoneUtils.formatForServer(
+                                      phone_number ?? "");
+                              // 이메일에 @gifnut.com 추가
+                              String formattedEmail =
+                                  PhoneUtils.formatEmailForServer(email ?? "");
+
+                              OwnerRegisterPost owner = OwnerRegisterPost(
+                                  uid: userCredential.user!.uid,
+                                  phone_number: formattedPhone,
+                                  name: name ?? "",
+                                  email: formattedEmail);
+
+                              try {
+                                print("회원가입 API 호출 시작");
+                                OwnerRegisterResponse? response =
+                                    await Api().client.registerOwner(owner);
+                                print("회원가입 API 호출 성공: $response");
+                                print(
+                                    "response.owner_id: ${response?.owner_id}");
+
+                                // response가 null이거나 owner_id가 null인 경우 실패 처리
+                                if (response == null ||
+                                    response.owner_id == null) {
+                                  // API 호출은 성공했지만 owner_id가 null인 경우
+                                  // Firebase 계정 삭제
+                                  print(
+                                      "회원가입 실패: owner_id가 null - Firebase 계정 삭제 시작");
+                                  try {
+                                    await userCredential.user?.delete();
+                                    await FirebaseAuth.instance.signOut();
+                                    print("Firebase 계정 삭제 완료");
+                                  } catch (e) {
+                                    print("Firebase 계정 삭제 중 오류: $e");
+                                  }
+
+                                  CommonDialog.show(
+                                    context: context,
+                                    title: "회원가입 실패",
+                                    content: "서버오류: 잠시 후 다시 시도해주세요.",
+                                    buttonText: "확인",
+                                    onPressed: () {},
+                                  );
+                                  return;
+                                }
+
+                                // 회원가입 성공
+                                final ownerId = response.owner_id!;
+                                print("회원가입 성공: owner_id=$ownerId");
+                                my_app.User user = my_app.User(
+                                    owner_id: ownerId,
+                                    name: name ?? "",
+                                    email: email ?? "",
+                                    phone_number: phone_number ?? "");
+
+                                Provider.of<UserProvider>(context,
+                                        listen: false)
+                                    .setUser(user);
+
+                                // 성공 시에만 가입완료 페이지로 이동
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SignUpCompletePage()));
+                              } catch (e) {
+                                // 서버 회원가입 실패 시 Firebase 계정 삭제
+                                print("회원가입 API 일반 예외 발생: $e");
+                                try {
+                                  await userCredential.user?.delete();
+                                  await FirebaseAuth.instance.signOut();
+                                  print("Firebase 계정 삭제 완료 (일반 예외)");
+                                } catch (deleteError) {
+                                  print("Firebase 계정 삭제 중 오류: $deleteError");
+                                }
+
+                                CommonDialog.show(
+                                  context: context,
+                                  title: "회원가입 실패",
+                                  content:
+                                      "알 수 없는 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.",
+                                  buttonText: "확인",
+                                  onPressed: () {},
+                                );
+                              }
+                              // FirebaseAuth.instance.currentUser
+                              //     ?.sendEmailVerification();
+                            } on FirebaseAuthException catch (e) {
+                              if (e.code == 'weak-password') {
+                                print('the password provided is too weak');
+                                CommonDialog.show(
+                                    context: context,
+                                    title: "비밀번호 확인",
+                                    content: "취약한 비밀번호입니다. 다른 비밀번호를 사용해주세요.",
+                                    buttonText: "확인",
+                                    onPressed: () {});
+                              } else if (e.code == 'email-already-in-use') {
+                                print(
+                                    'The account already exists for that email.');
+                                CommonDialog.show(
+                                    context: context,
+                                    title: "아이디 확인",
+                                    content: "이미 사용중인 아이디입니다. 다른 아이디를 사용해주세요.",
+                                    buttonText: "확인",
+                                    onPressed: () {});
+                              } else {
+                                print(e.code);
+                              }
+                            } catch (e) {}
+                          }
+
+                          // Navigator.push(
+                          //     context,
+                          //     MaterialPageRoute(
+                          //         builder: (context) =>
+                          //             DocumentInputPage()));
+                        },
+                        child: const Text('확인'),
                       ),
-                    ]),
+                    ),
+                  ),
+                ],
               ),
-            ])));
+            ),
+          ],
+        ));
   }
 
   String? validateName(String? value) {
@@ -490,8 +651,9 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
                         //   return "중복된 이메일 입니다. 다른 이메일을 입력해주세요.";
                         // }
 
+                        // 내부적으로 @gifnut.com을 붙여서 검사
                         if (isValidEmail(value) == false) {
-                          return "이메일 형식이 올바르지 않습니다. 올바른 이메일을 입력해주세요.\n Ex) example123@naver.com";
+                          return "이메일 형식이 올바르지 않습니다. 올바른 이메일을 입력해주세요.";
                         }
 
                         return null;
@@ -504,14 +666,18 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
   }
 
   bool isValidEmail(String email) {
+    // 내부적으로 @gifnut.com을 붙여서 검사
+    String emailToCheck = email.contains('@') ? email : '$email@gifnut.com';
     const pattern = r'^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-za-z0-9\-]+';
     final regex = RegExp(pattern);
-    return regex.hasMatch(email);
+    return regex.hasMatch(emailToCheck);
   }
 
   Future<bool> checkEmail(String email) async {
+    // 내부적으로 @gifnut.com을 붙여서 중복 체크
+    String emailToCheck = email.contains('@') ? email : '$email@gifnut.com';
     final userDB = FirebaseFirestore.instance.collection('User');
-    final query = userDB.where('email', isEqualTo: email);
+    final query = userDB.where('email', isEqualTo: emailToCheck);
     // final query = userDB.where('email', isEqualTo: "id3");
 
     final querySnapshot = await query.get();

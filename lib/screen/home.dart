@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/screen/Setting/setting_page.dart';
+import 'package:owner/screen/dashboard_page.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
-import 'package:owner/screen/used_gifticon_page.dart';
 import 'package:provider/provider.dart';
 
 import 'QRScanPage.dart';
@@ -37,8 +37,14 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    // 로그인된 사용자가 있을 때만 UsedGifticonPage 생성
-    currentScreen = UsedGifticonPage(storeId: -1);
+    // 대시보드 페이지를 기본 화면으로 설정
+    currentScreen = DashboardPage(
+      onNavigateToStoreManagement: () {
+        setState(() {
+          currentScreen = const CafeList();
+        });
+      },
+    );
   }
 
   @override
@@ -48,7 +54,8 @@ class _HomeState extends State<Home> {
         child: Scaffold(
           body: PageStorage(bucket: bucket, child: currentScreen),
           floatingActionButton: FloatingActionButton(
-            child: const Icon(Icons.qr_code),
+            backgroundColor: const Color(0xFFF27213),
+            child: const Icon(Icons.qr_code, color: Colors.white),
             onPressed: () async {
               dynamic result = await Navigator.push(context,
                   MaterialPageRoute(builder: (context) {
@@ -112,75 +119,88 @@ class _HomeState extends State<Home> {
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
           bottomNavigationBar: BottomAppBar(
-            shape: CircularNotchedRectangle(),
+            color: Colors.white,
+            elevation: 0,
             notchMargin: 10,
+            shape: const CircularNotchedRectangle(),
             child: Container(
               height: 60,
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      MaterialButton(
-                        minWidth: 40,
-                        onPressed: () {
-                          setState(() {
-                            // 로그인된 사용자가 있을 때만 UsedGifticonPage 생성
-                            currentScreen = UsedGifticonPage(storeId: -1);
-                            currentTab = 0;
-                          });
-                        },
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.home,
-                                color:
-                                    currentTab == 0 ? Colors.blue : Colors.grey,
-                              ),
-                              Text(
-                                '홈',
-                                style: TextStyle(
-                                  color: currentTab == 0
-                                      ? Colors.blue
-                                      : Colors.grey,
-                                ),
-                              )
-                            ]),
+                  Expanded(
+                    child: MaterialButton(
+                      minWidth: 0,
+                      onPressed: () {
+                        setState(() {
+                          currentScreen = const DashboardPage(
+                            onNavigateToStoreManagement: null,
+                          );
+                          currentTab = 0;
+                        });
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.home,
+                            color: currentTab == 0
+                                ? const Color(0xFFF27213)
+                                : const Color(0xFF808080),
+                            size: 20,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '홈',
+                            style: TextStyle(
+                              color: currentTab == 0
+                                  ? const Color(0xFFF27213)
+                                  : const Color(0xFF808080),
+                              fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          )
+                        ],
                       ),
-                    ],
+                    ),
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      MaterialButton(
-                        minWidth: 40,
-                        onPressed: () {
-                          setState(() {
-                            currentScreen = CafeList();
-                            currentTab = 1;
-                          });
-                        },
-                        child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.list,
-                                color:
-                                    currentTab == 1 ? Colors.blue : Colors.grey,
-                              ),
-                              Text(
-                                '매장관리',
-                                style: TextStyle(
-                                  color: currentTab == 1
-                                      ? Colors.blue
-                                      : Colors.grey,
-                                ),
-                              )
-                            ]),
+                  const SizedBox(width: 0),
+                  Expanded(
+                    child: MaterialButton(
+                      minWidth: 0,
+                      onPressed: () {
+                        setState(() {
+                          currentScreen = const SettingPage();
+                          currentTab = 1;
+                        });
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.more_horiz,
+                            color: currentTab == 1
+                                ? const Color(0xFFF27213)
+                                : const Color(0xFF808080),
+                            size: 20,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '더보기',
+                            style: TextStyle(
+                              color: currentTab == 1
+                                  ? const Color(0xFFF27213)
+                                  : const Color(0xFF808080),
+                              fontSize: 12,
+                              fontFamily: 'Inter',
+                              fontWeight: FontWeight.w400,
+                            ),
+                          )
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                   /*
                   Row(

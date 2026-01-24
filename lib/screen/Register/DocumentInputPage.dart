@@ -1,27 +1,18 @@
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kpostal/kpostal.dart';
-import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/user_provider.dart';
-import 'package:owner/screen/Register/SingUpCompletePage.dart';
 import 'package:owner/screen/Register/account_register_page.dart';
-import 'package:owner/screen/Register/register_store_page.dart';
 import 'package:provider/provider.dart';
-// import 'package:remedi_kopo/remedi_kopo.dart';
 import 'dart:io';
 
-import '../../common/Style/TextAsset.dart';
 import '../../common/api/request/store/store.dart';
-import '../../common/widget/CommonWidget.dart';
 import '../../common/widget/common_app_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class DocumentInputPage extends StatefulWidget {
   const DocumentInputPage({Key? key}) : super(key: key);
-  // final Store? store;
 
   @override
   State<DocumentInputPage> createState() => _DocumentInputPageState();
@@ -34,436 +25,707 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   TextEditingController detailAddrController = TextEditingController();
   TextEditingController telePhoneController = TextEditingController();
   TextEditingController introController = TextEditingController();
+  TextEditingController businessNumberController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
   late Store _store;
-  late File? imageFile;
   bool _isChecked = false;
+  File? _logoImage;
+  List<File> _storeImages = [];
+  File? _businessRegistration;
+  String? uploadedBusinessRegistrationFilename;
 
-  var userImage;
+  final picker = ImagePicker();
 
-  final inputDecoration = const InputDecoration(
-    hintStyle: TextAssset.placeholder,
-    border: UnderlineInputBorder(
-        // borderRadius: BorderRadius.circular(5.0),
-        ),
-    isDense: true,
-    contentPadding: EdgeInsets.fromLTRB(0, 5, 21, 5),
+  final inputDecoration = InputDecoration(
+    hintStyle: const TextStyle(
+      fontSize: 14,
+      fontWeight: FontWeight.w400,
+      color: Color(0xFF808080),
+      fontFamily: 'Inter',
+    ),
+    filled: true,
+    fillColor: Colors.white,
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Colors.red, width: 1),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(12),
+      borderSide: const BorderSide(color: Colors.red, width: 1),
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
   );
 
+  @override
   void initState() {
     super.initState();
     User? user = Provider.of<UserProvider>(context, listen: false).user;
-
     _store = Store(owner_id: user?.owner_id ?? 0);
+  }
+
+  Widget _buildLabel(String text) {
+    return Text(
+      text,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: Color(0xFF101010),
+        fontFamily: 'Inter',
+      ),
+    );
+  }
+
+  Future<void> _pickMultipleImages() async {
+    try {
+      final List<XFile> pickedImages = await picker.pickMultiImage();
+      if (pickedImages.isNotEmpty) {
+        setState(() {
+          int remainingSlots = 5 - _storeImages.length;
+          if (remainingSlots > 0) {
+            int imagesToAdd = pickedImages.length > remainingSlots
+                ? remainingSlots
+                : pickedImages.length;
+            for (int i = 0; i < imagesToAdd; i++) {
+              _storeImages.add(File(pickedImages[i].path));
+            }
+            if (pickedImages.length > remainingSlots) {
+              showToast("최대 5장까지 업로드 가능합니다.");
+            }
+          } else {
+            showToast("최대 5장까지 업로드 가능합니다.");
+          }
+        });
+      }
+    } catch (e) {
+      // iOS 등에서 pickMultiImage가 지원되지 않는 경우
+      final XFile? pickedImage =
+          await picker.pickImage(source: ImageSource.gallery);
+      if (pickedImage != null && _storeImages.length < 5) {
+        setState(() {
+          _storeImages.add(File(pickedImage.path));
+        });
+      }
+    }
+  }
+
+  Future<void> _pickLogoImage() async {
+    final XFile? pickedImage =
+        await picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _logoImage = File(pickedImage.path);
+      });
+    }
+  }
+
+  Future<void> _pickBusinessRegistration() async {
+    final XFile? pickedImage =
+        await picker.pickImage(source: ImageSource.gallery);
+    if (pickedImage != null) {
+      setState(() {
+        _businessRegistration = File(pickedImage.path);
+        uploadedBusinessRegistrationFilename = pickedImage.name;
+        _store.business_registration = _businessRegistration;
+      });
+    }
+  }
+
+  void showToast(String msg) {
+    Fluttertoast.showToast(
+      msg: msg,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 2,
+      backgroundColor: Colors.grey,
+      textColor: Colors.white,
+      fontSize: 16.0,
+    );
+  }
+
+  _addressAPI() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => KpostalView(
+          kakaoKey: '16dd251b86287783606ea600a98c7131',
+          useLocalServer: false,
+          callback: (Kpostal result) {
+            setState(() {
+              final address = result.address;
+              final buildingName = result.buildingName;
+              addrController.text = "$address $buildingName";
+              if (result.latitude != null) {
+                _store.store_lat = result.latitude as double;
+              }
+              if (result.longitude != null) {
+                _store.store_lng = result.longitude as double;
+              }
+            });
+          },
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
-        child: Scaffold(
-            appBar: const CommonAppBar(title: "사업자 정보 입력하기(1/3)"),
-            backgroundColor: Colors.white,
-            body: SingleChildScrollView(
+      onTap: () {
+        FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        appBar: const CommonAppBar(title: "매장 정보 입력"),
+        backgroundColor: Colors.white,
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                 child: Form(
-                    key: _formKey,
-                    child: Container(
-                        margin: const EdgeInsets.fromLTRB(27, 0, 27, 21),
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              //대표자명
-                              const Text(
-                                "대표자명",
-                                style: TextAssset.header2,
-                              ),
-                              const SizedBox(height: 5),
-                              TextFormField(
-                                controller: nameController,
-                                keyboardType: TextInputType.text,
-                                decoration:
-                                    inputDecoration.copyWith(hintText: "이름 입력"),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return '이름을 입력해주세요.';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 15),
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 대표자명
+                      _buildLabel("대표자명"),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: nameController,
+                        keyboardType: TextInputType.text,
+                        decoration: inputDecoration.copyWith(
+                          hintText: "대표자명을 입력해주세요",
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF101010),
+                          fontFamily: 'Inter',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '대표자명을 입력해주세요';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
 
-                              //가게 이름
-                              const Text(
-                                "가게이름",
-                                style: TextAssset.header2,
-                              ),
-                              const SizedBox(height: 5),
-                              TextFormField(
-                                controller: storenNameController,
-                                keyboardType: TextInputType.text,
-                                decoration: inputDecoration.copyWith(
-                                    hintText: "매장 이름 입력"),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return '매장명을 입력해주세요';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 5),
+                      // 매장명
+                      _buildLabel("매장명"),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: storenNameController,
+                        keyboardType: TextInputType.text,
+                        decoration: inputDecoration.copyWith(
+                          hintText: "매장명을 입력해주세요",
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF101010),
+                          fontFamily: 'Inter',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '매장명을 입력해주세요';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
 
-                              // 가게 주소
-                              Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "주소",
-                                      style: TextAssset.header2,
-                                    ),
-                                    Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.end,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Flexible(
-                                              flex: 2,
-                                              child: TextFormField(
-                                                style: TextAssset.placeholder2,
-                                                enabled: false,
-                                                controller: addrController,
-                                                keyboardType:
-                                                    TextInputType.text,
-                                                decoration:
-                                                    inputDecoration.copyWith(
-                                                        hintText:
-                                                            "주소를 검색해주세요."),
-                                                validator: (value) {
-                                                  if (value == null ||
-                                                      value.isEmpty) {
-                                                    return '주소를 검색해주세요';
-                                                  }
-                                                  return null;
-                                                },
-                                              )),
-                                          Container(
-                                            width: 5,
-                                          ),
-                                          Flexible(
-                                              flex: 1,
-                                              child: ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  shape: RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                            5.0),
-                                                  ),
-                                                  backgroundColor: Colors.white,
-                                                  minimumSize:
-                                                      const Size.fromHeight(
-                                                          50), // NEW
-                                                ),
-                                                onPressed: () async {
-                                                  _addressAPI();
-                                                },
-                                                child: const Text(
-                                                  '주소 검색',
-                                                  style: TextStyle(
-                                                      color: Colors.black),
-                                                ),
-                                              ))
-                                        ]),
-                                    const SizedBox(
-                                      height: 5,
-                                    ),
-                                    //상세주소
-                                    TextFormField(
-                                      controller: detailAddrController,
-                                      keyboardType: TextInputType.text,
-                                      decoration: inputDecoration.copyWith(
-                                          hintText: "상세주소 입력"),
-                                      // validator: (value) {
-                                      //   if (value == null || value.isEmpty) {
-                                      //     return '상세주소를 입력해주세요.';
-                                      //   }
-                                      //   return null;
-                                      // },
-                                    ),
-                                    const SizedBox(height: 5),
-                                  ]),
-
-                              InputInfoWidget(
-                                title: "사업자 등록번호",
-                                hintText: "사업자 등록번호 입력(-제외)",
-                                isNumber: true,
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return "사업자 등록번호를 입력해주세요";
-                                  }
-                                  return null;
-                                },
-                              ),
-
-                              const SizedBox(height: 5),
-
-                              DocumentUploadWidget(
-                                title: "사업자 등록증",
-                                validator: validateBR,
-                              ),
-                              DocumentUploadWidget(
-                                title: "통장 사본",
-                                validator: validatebankBook,
-                              ),
-
-                              const ExpansionTile(
-                                  iconColor: Colors.black,
-                                  collapsedIconColor: Colors.black,
-                                  title: Text(
-                                    "개인정보 수집 및 이용 동의",
-                                    style: TextStyle(
-                                      // fontSize: 18,
-                                      // fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  children: [
-                                    Text(
-                                      "수집 목적: 입점 신청자 연락 및 상담\n수집 항목: 성명, 휴대폰 번호, 제출서류(사업자등록증, 통장사본 등)에 포함된 개인정보\n보유 및 이용기간: 탈퇴 후 6개월\n개인정보 수집 및 이용 동의를 거부할 권리가 있으며, 거부할 경우 입점신청이 불가합니다.",
-                                      style: TextStyle(fontSize: 12),
-                                    )
-                                  ]),
-                              Row(
-                                children: [
-                                  Checkbox(
-                                      value: _isChecked,
-                                      onChanged: (value) {
-                                        setState(() {
-                                          _isChecked = !_isChecked;
-                                        });
-                                      }),
-                                  const Text("[필수] 개인정보 수집 및 이용 동의합니다")
-                                ],
-                              ),
-                              SizedBox(
-                                width: double.infinity,
-                                height: 50,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: ColorAssset.mainColor,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(5.0),
-                                    ),
-                                    // minimumSize: const Size.fromHeight(50), // NEW
-                                  ),
-                                  onPressed: () {
-                                    if (!_isChecked) {
-                                      showToast("개인정보 수집 이용에 동의해주세요.");
-                                      return;
-                                    }
-
-                                    if (_store.business_registration == null) {
-                                      showToast("사업자 등록증을 업로드해주세요.");
-                                      return;
-                                    }
-
-                                    if (_store.bank_book == null) {
-                                      showToast("통장사본을 업로드해주세요.");
-                                      return;
-                                    }
-
-                                    if (_formKey.currentState!.validate()) {
-                                      _store.store_name =
-                                          storenNameController.text;
-                                      _store.store_address =
-                                          "${addrController.text} ${detailAddrController.text}";
-
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  AccountRegisterPage(
-                                                    store: _store,
-                                                  )));
-                                    }
-                                  },
-                                  child: const Text(
-                                    '다음',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
+                      // 주소
+                      _buildLabel("주소"),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: TextFormField(
+                              controller: addrController,
+                              enabled: false,
+                              decoration: inputDecoration.copyWith(
+                                hintText: "주소를 검색해주세요",
+                                disabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  borderSide: const BorderSide(
+                                      color: Color(0xFFE6E6E6), width: 1),
                                 ),
                               ),
-                            ]))))));
-  }
-
-  void showToast(msg) {
-    Fluttertoast.showToast(
-        msg: msg,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 2,
-        backgroundColor: Colors.grey,
-        textColor: Colors.white,
-        fontSize: 16.0);
-  }
-
-  String? validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return "빈 문자열";
-    }
-    return null;
-  }
-
-  // validate businessRegistration
-  String? validateBR(File? value) {
-    if (value == null) {
-      return "사업자등록증을 업로드해주세요";
-    }
-    _store.business_registration = value;
-    return null;
-  }
-
-  // validate bankBook
-  String? validatebankBook(File? value) {
-    if (value == null) {
-      return "통장사본을 업로드해주세요";
-    }
-    _store.bank_book = value;
-    return null;
-  }
-
-  _addressAPI() async {
-    Kpostal model = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => KpostalView(
-              kakaoKey: '16dd251b86287783606ea600a98c7131',
-              useLocalServer: false,
-              callback: (Kpostal result) {
-                setState(() {
-                  print("주소callback");
-                  print(result.postCode);
-                  addrController.text =
-                      result.address ?? "주소 없음" + result.buildingName ?? "";
-                  _store!.store_lat = result.latitude as double;
-                  _store!.store_lng = result.longitude as double;
-                });
-              }),
-        ));
-  }
-}
-
-//upload
-class DocumentUploadWidget extends StatefulWidget {
-  DocumentUploadWidget({required this.title, required this.validator});
-
-  final String title;
-  Function(File?) validator;
-
-  @override
-  State<DocumentUploadWidget> createState() => _DocumentUploadWidgetState();
-}
-
-class _DocumentUploadWidgetState extends State<DocumentUploadWidget> {
-  late File _image;
-  final picker = ImagePicker();
-  String? uploadedFilename;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        const SizedBox(height: 5.0),
-        Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Text(
-                widget.title,
-                style: TextAssset.header2,
-              ),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xffF2F2F2),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5.0),
-                    ),
-                  ),
-                  onPressed: uploadedFilename == null
-                      ? () async {
-                          final pickedImage = await picker.pickImage(
-                              source: ImageSource.gallery);
-                          if (pickedImage != null) {
-                            widget.validator(File(pickedImage.path));
-                            File file = File(pickedImage.path);
-                            String? result = widget.validator(file);
-
-                            setState(() {
-                              uploadedFilename = pickedImage.name;
-                            });
-                          }
-                        }
-                      : null,
-                  child: uploadedFilename == null
-                      ? const Text(
-                          '파일 업로드',
-                          style: TextStyle(color: Colors.black),
-                        )
-                      : const Text('업로드 완료',
-                          style: TextStyle(color: Colors.black)),
-                ),
-              ),
-              const SizedBox(
-                height: 1,
-              ),
-              Visibility(
-                visible: uploadedFilename != null,
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: Color(0xffD7DBE6),
-                      borderRadius: BorderRadius.circular(5)),
-                  child: Row(
-                    children: [
-                      Flexible(
-                        flex: 12,
-                        child: Text(
-                          uploadedFilename ?? "업로드 된 파일 이름",
-                          style: const TextStyle(fontSize: 13),
-                          // overflow: TextOverflow.fade,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFF808080),
+                                fontFamily: 'Inter',
+                              ),
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return '주소를 검색해주세요';
+                                }
+                                return null;
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SizedBox(
+                            width: 91,
+                            height: 44,
+                            child: ElevatedButton(
+                              onPressed: _addressAPI,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFF27213),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(91, 44),
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  '주소 검색',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: 'Inter',
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  overflow: TextOverflow.visible,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: detailAddrController,
+                        keyboardType: TextInputType.text,
+                        decoration: inputDecoration.copyWith(
+                          hintText: "상세주소를 입력해주세요",
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF101010),
+                          fontFamily: 'Inter',
                         ),
                       ),
-                      Flexible(
-                        flex: 1,
-                        child: IconButton(
-                          icon: Image.asset(
-                            'assets/X_button.png',
-                            width: 10,
-                            height: 10,
-                          ),
-                          // iconSize: 10,
-                          onPressed: () {
-                            setState(() {
-                              uploadedFilename = null;
-                            });
-                          },
+                      const SizedBox(height: 24),
+
+                      // 매장 전화번호
+                      _buildLabel("매장 전화번호"),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: telePhoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: inputDecoration.copyWith(
+                          hintText: "전화번호를 입력해주세요",
                         ),
-                      )
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF101010),
+                          fontFamily: 'Inter',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '전화번호를 입력해주세요';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 매장 설명
+                      _buildLabel("매장 설명"),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: introController,
+                        keyboardType: TextInputType.multiline,
+                        maxLines: 4,
+                        decoration: inputDecoration.copyWith(
+                          hintText: "매장 설명을 입력해주세요",
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 12),
+                        ),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF101010),
+                          fontFamily: 'Inter',
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 로고 이미지
+                      _buildLabel("로고 이미지"),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: _pickLogoImage,
+                        child: Container(
+                          width: 112,
+                          height: 112,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF7F7F7),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFE6E6E6),
+                              width: 1,
+                            ),
+                          ),
+                          child: _logoImage != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Image.file(
+                                    _logoImage!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(
+                                      Icons.add,
+                                      color: Color(0xFF808080),
+                                      size: 24,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    const Text(
+                                      "추가",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w400,
+                                        color: Color(0xFF808080),
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 사업자 등록번호
+                      _buildLabel("사업자 등록번호"),
+                      const SizedBox(height: 8),
+                      TextFormField(
+                        controller: businessNumberController,
+                        keyboardType: TextInputType.number,
+                        decoration: inputDecoration.copyWith(
+                          hintText: "사업자 등록번호를 입력해주세요",
+                        ),
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: Color(0xFF101010),
+                          fontFamily: 'Inter',
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return '사업자 등록번호를 입력해주세요';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 사업자 등록증
+                      _buildLabel("사업자 등록증"),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: _pickBusinessRegistration,
+                        child: Container(
+                          width: double.infinity,
+                          height: 56,
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF7F7F7),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFE6E6E6),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Icon(Icons.add,
+                                  color: Color(0xFF808080), size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  uploadedBusinessRegistrationFilename ??
+                                      "파일 추가",
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: Color(0xFF808080),
+                                    fontFamily: 'Inter',
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      // 매장 사진
+                      _buildLabel("매장 사진"),
+                      const SizedBox(height: 8),
+                      _buildStoreImagesGrid(),
+                      const SizedBox(height: 24),
+
+                      // 개인정보 수집 및 이용 동의
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _isChecked,
+                            onChanged: (value) {
+                              setState(() {
+                                _isChecked = value ?? false;
+                              });
+                            },
+                          ),
+                          const Expanded(
+                            child: Text(
+                              "개인정보 수집 및 이용에 동의합니다.",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFF101010),
+                                fontFamily: 'Inter',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 100),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(
-                height: 5.0,
+            ),
+            // 하단 버튼
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: const BoxDecoration(
+                color: Colors.white,
               ),
-            ])
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF27213),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: () {
+                    if (!_isChecked) {
+                      showToast("개인정보 수집 및 이용에 동의해주세요.");
+                      return;
+                    }
+
+                    if (_businessRegistration == null) {
+                      showToast("사업자 등록증을 업로드해주세요.");
+                      return;
+                    }
+
+                    if (_logoImage == null) {
+                      showToast("로고 이미지를 업로드해주세요.");
+                      return;
+                    }
+
+                    if (_storeImages.isEmpty) {
+                      showToast("매장 사진을 최소 1장 이상 업로드해주세요.");
+                      return;
+                    }
+
+                    if (_formKey.currentState!.validate()) {
+                      _store.store_name = storenNameController.text;
+                      _store.store_address =
+                          "${addrController.text} ${detailAddrController.text}";
+                      _store.store_telephone = telePhoneController.text;
+                      _store.store_description = introController.text;
+                      _store.business_registration = _businessRegistration;
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => AccountRegisterPage(
+                            store: _store,
+                            logoImage: _logoImage,
+                            storeImages: _storeImages,
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text(
+                    '다음',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStoreImagesGrid() {
+    List<Widget> itemWidgets = [];
+
+    // 사진 추가 버튼 (항상 첫 번째에 위치)
+    itemWidgets.add(
+      GestureDetector(
+        onTap: _storeImages.length < 5 ? _pickMultipleImages : null,
+        child: Container(
+          width: 96,
+          height: 96,
+          decoration: BoxDecoration(
+            color: _storeImages.length < 5
+                ? const Color(0xFFF7F7F7)
+                : const Color(0xFFE6E6E6),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFE6E6E6),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.add,
+                color: _storeImages.length < 5
+                    ? const Color(0xFF808080)
+                    : const Color(0xFFB0B0B0),
+                size: 24,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "추가",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: _storeImages.length < 5
+                      ? const Color(0xFF808080)
+                      : const Color(0xFFB0B0B0),
+                  fontFamily: 'Inter',
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
+    // 업로드된 이미지들
+    for (int i = 0; i < _storeImages.length; i++) {
+      itemWidgets.add(
+        Stack(
+          children: [
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: const Color(0xFFE6E6E6),
+                  width: 1,
+                ),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  _storeImages[i],
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Positioned(
+              top: 4,
+              right: 4,
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _storeImages.removeAt(i);
+                  });
+                },
+                child: Container(
+                  width: 20,
+                  height: 20,
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: itemWidgets
+                .map((widget) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: widget,
+                    ))
+                .toList(),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          "최대 5장까지 업로드 가능합니다.",
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF808080),
+            fontFamily: 'Inter',
+          ),
+        ),
       ],
     );
   }

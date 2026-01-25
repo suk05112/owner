@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
-import 'package:owner/common/model/UsedGifticon.dart';
 import 'package:owner/common/model/user.dart' as my_app;
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
@@ -22,7 +21,6 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   my_app.User? user;
-  List<OwnerStore> _stores = [];
   int _issuedCount = 0; // 발행된 교환권
   int _usedCount = 0; // 사용된 교환권
   int _unusedCount = 0; // 미사용 교환권
@@ -46,36 +44,29 @@ class _DashboardPageState extends State<DashboardPage> {
         final ownerId = user!.owner_id;
 
         // 매장 목록 가져오기
-        final storeListResponse = await Api().client.getOwnerStoreList(ownerId);
-        setState(() {
-          _stores = storeListResponse.ownerStoreList;
-        });
+        final storeListResponse = await Api().client.getStoreList(ownerId);
+        final stores = storeListResponse.store;
 
-        // 모든 매장의 기프티콘 통계 계산
+        // 모든 매장의 통계 합산
         int totalIssued = 0;
         int totalUsed = 0;
+        int totalUnused = 0;
 
-        for (var store in _stores) {
+        for (var store in stores) {
           try {
-            final usedGifticonList =
-                await Api().client.getUsedGifticon(store.store_id);
-            final listLength = usedGifticonList.gifticonList.length;
-            totalIssued = (totalIssued + listLength).toInt();
-
-            // used_time이 있는 기프티콘은 사용된 것으로 간주
-            // UsedGifticon의 used_time은 required이므로 항상 존재
-            // 모든 항목이 used_time을 가지고 있으므로 모두 사용된 것으로 간주
-            totalUsed = (totalUsed + listLength).toInt();
+            final statistics = await Api().client.getStoreStatistics(store.store_id);
+            totalIssued = totalIssued + statistics.total_issued as int;
+            totalUsed = totalUsed + statistics.total_used as int;
+            totalUnused = totalUnused + statistics.total_unused as int;
           } catch (e) {
-            print(
-                "Error loading used gifticons for store ${store.store_id}: $e");
+            print("Error loading statistics for store ${store.store_id}: $e");
           }
         }
 
         setState(() {
           _issuedCount = totalIssued;
           _usedCount = totalUsed;
-          _unusedCount = totalIssued - totalUsed;
+          _unusedCount = totalUnused;
           _isLoading = false;
         });
       } else {

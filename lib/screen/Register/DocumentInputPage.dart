@@ -9,6 +9,7 @@ import 'dart:io';
 
 import '../../common/api/request/store/store.dart';
 import '../../common/widget/common_app_bar.dart';
+import '../../common/utils/address_parser.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 class DocumentInputPage extends StatefulWidget {
@@ -174,6 +175,15 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
               if (result.longitude != null) {
                 _store.store_lng = result.longitude as double;
               }
+              
+              // 주소에서 district_code와 region_code 추출
+              final addressString = result.address;
+              final codes = parseAddressCodes(addressString);
+              _store.district_code = codes["district_code"];
+              _store.region_code = codes["region_code"];
+              
+              print("주소: $addressString");
+              print("district_code: ${_store.district_code}, region_code: ${_store.region_code}");
             });
           },
         ),

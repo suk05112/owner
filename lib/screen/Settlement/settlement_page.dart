@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/Settlement.dart';
 import 'package:owner/screen/Settlement/detail_settlement_page.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:intl/intl.dart';
 
 class SettlementPage extends StatefulWidget {
@@ -26,219 +27,287 @@ class _SettlementPageState extends State<SettlementPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("정산내역"),
-        backgroundColor: Colors.white,
-      ),
+      appBar: const CommonAppBar(title: "정산 내역"),
       backgroundColor: Colors.white,
       body: FutureBuilder<SettlementList>(
-          future: futureSettlements, // 비동기적으로 데이터를 가져오는 Future 객체
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // 데이터 로딩 중일 때 로딩 인디케이터 표시
-              return const Center(
-                  child: SizedBox(
+        future: futureSettlements,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: SizedBox(
                 width: 30,
                 height: 30,
                 child: CircularProgressIndicator(),
-              ));
-            } else if (snapshot.hasError) {
-              // 에러가 발생한 경우
-              return Text("Error: ${snapshot.error}");
-            } else if (snapshot.hasData) {
-              // 데이터가 정상적으로 로드되었을 때
-              List<Settlement> settlements = snapshot.data!.settlements;
-              if (settlements.isNotEmpty) {
-                return Container(
-                    margin: const EdgeInsets.fromLTRB(10, 5, 10, 10),
-                    child: Column(
-                      children: [
-                        if (settlements.isNotEmpty)
-                          settlementHeader(settlements[0]),
-                        Expanded(
-                            child: ListView.separated(
-                          itemCount: settlements.length,
-                          itemBuilder: (context, index) {
-                            return GestureDetector(
-                                onTap: () {
-                                  Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              DetailSettlementPage(
-                                                settlement_id:
-                                                    settlements[index]
-                                                        .settlement_id,
-                                                settlement_date:
-                                                    settlements[index]
-                                                        .settlement_date,
-                                                settlement_period:
-                                                    settlements[index]
-                                                        .settlement_period,
-                                              )));
-                                },
-                                child: Container(
-                                    width: double.infinity,
-                                    child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.center,
-                                        children: <Widget>[
-                                          Expanded(
-                                            child: Column(
-                                              children: [
-                                                Row(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: <Widget>[
-                                                    Text(formatSettlementPeriod(
-                                                        settlements[index]
-                                                            .settlement_date,
-                                                        settlements[index]
-                                                            .settlement_period)),
-                                                    const Spacer(),
-                                                    settlementStatus(
-                                                        settlements[index]
-                                                            .status)
-                                                  ],
-                                                ),
-                                                Row(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment.end,
-                                                    children: <Widget>[
-                                                      const Spacer(),
-                                                      Text(
-                                                        formatCurrency(
-                                                            settlements[index]
-                                                                .total_price),
-                                                        style: const TextStyle(
-                                                          fontWeight:
-                                                              FontWeight.w600,
-                                                          fontSize: 25,
-                                                        ),
-                                                      ),
-                                                    ])
-                                              ],
-                                            ),
-                                          ),
-                                          const Image(
-                                            image: AssetImage(
-                                                'assets/chevron-right.png'),
-                                          )
-                                        ])));
-                          },
-                          separatorBuilder: (BuildContext context, int index) {
-                            return const Divider();
-                          },
-                        ))
-                      ],
-                    ));
-              } else {
-                return Container(
-                    width: double.infinity,
-                    child: const Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [Text('정산 내역이 없습니다')],
-                    ));
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                "Error: ${snapshot.error}",
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF808080),
+                  fontFamily: 'Inter',
+                ),
+              ),
+            );
+          } else if (snapshot.hasData) {
+            List<Settlement> settlements = snapshot.data!.settlements;
+            if (settlements.isNotEmpty) {
+              // status == 0인 정산 예정 항목 찾기
+              Settlement? pendingSettlement;
+              List<Settlement> pastSettlements = [];
+
+              for (var settlement in settlements) {
+                if (settlement.status == 0 && pendingSettlement == null) {
+                  pendingSettlement = settlement;
+                } else {
+                  pastSettlements.add(settlement);
+                }
               }
+
+              return SingleChildScrollView(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 정산 예정 카드
+                    if (pendingSettlement != null)
+                      _buildPendingSettlementCard(pendingSettlement),
+                    if (pendingSettlement != null && pastSettlements.isNotEmpty)
+                      const SizedBox(height: 16),
+                    // 정산 내역 카드들
+                    ...pastSettlements.map((settlement) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _buildSettlementCard(settlement),
+                        )),
+                  ],
+                ),
+              );
             } else {
-              return const Text("정산내역 읽어오기 실패. 잠시 후 다시 시도해주세요.");
+              return const Center(
+                child: Text(
+                  '정산 내역이 없습니다',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF808080),
+                    fontFamily: 'Inter',
+                  ),
+                ),
+              );
             }
-          }),
+          } else {
+            return const Center(
+              child: Text(
+                "정산내역 읽어오기 실패. 잠시 후 다시 시도해주세요.",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Color(0xFF808080),
+                  fontFamily: 'Inter',
+                ),
+              ),
+            );
+          }
+        },
+      ),
     );
   }
 
-  Widget settlementHeader(Settlement settlement) {
-    if (settlement.status == 0) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildPendingSettlementCard(Settlement settlement) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFE6E6E6),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-              "${formatDateTimeToKorean(settlement.settlement_date)}에 정산 예정이에요!"),
-          const Text("정산 예정금액"),
+            "${formatDateTimeToKorean(settlement.settlement_date)}에 정산 예정이에요!",
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF101010),
+              fontFamily: 'Inter',
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            "정산 예정금액",
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF808080),
+              fontFamily: 'Inter',
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
             formatCurrency(settlement.total_price),
             style: const TextStyle(
-              fontWeight: FontWeight.w800,
               fontSize: 30,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFFF27213),
+              fontFamily: 'Inter',
             ),
           ),
-          Text(formatSettlementPeriod(
-              settlement.settlement_date, settlement.settlement_period)),
-          const Divider(),
+          const SizedBox(height: 8),
+          Text(
+            formatSettlementPeriod(
+              settlement.settlement_date,
+              settlement.settlement_period,
+            ),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF808080),
+              fontFamily: 'Inter',
+            ),
+          ),
         ],
-      );
-    } else {
-      return const SizedBox(
-        height: 0,
-      );
-    }
+      ),
+    );
   }
 
-  Widget settlementStatus(int status) {
-    if (status == 0) {
-      return Container(
-        margin: const EdgeInsets.all(1),
+  Widget _buildSettlementCard(Settlement settlement) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DetailSettlementPage(
+              settlement_id: settlement.settlement_id,
+              settlement_date: settlement.settlement_date,
+              settlement_period: settlement.settlement_period,
+              status: settlement.status,
+            ),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF57B3FC),
-          borderRadius: BorderRadius.circular(5.0),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(0),
+          border: Border.all(
+            color: const Color(0xFFE6E6E6),
+            width: 1,
+          ),
         ),
-        alignment: Alignment.center,
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          formatSettlementPeriod(
+                            settlement.settlement_date,
+                            settlement.settlement_period,
+                          ),
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Color(0xFF101010),
+                            fontFamily: 'Inter',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      _buildStatusBadge(settlement.status),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    formatCurrency(settlement.total_price),
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFF27213),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.chevron_right,
+              color: Color(0xFF101010),
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(int status) {
+    if (status == 0) {
+      // 입금 예정
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: const Color(0xFF57B3FC).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: const Text(
           "입금 예정",
           style: TextStyle(
-            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF57B3FC),
+            fontFamily: 'Inter',
           ),
         ),
       );
     } else if (status == 1) {
+      // 입금 완료
       return Container(
-        margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
-          color: Colors.lightGreen,
-          borderRadius: BorderRadius.circular(5.0),
+          color: const Color(0xFFF27213).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
         ),
-        alignment: Alignment.center,
         child: const Text(
-          "입금 완료",
+          "입금완료",
           style: TextStyle(
-            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFFF27213),
+            fontFamily: 'Inter',
           ),
         ),
       );
     } else if (status == 2) {
+      // 입금 실패
       return Container(
-        margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(5.0),
+          color: Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
         ),
-        alignment: Alignment.center,
         child: const Text(
           "입금 실패",
           style: TextStyle(
-            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Colors.red,
+            fontFamily: 'Inter',
           ),
         ),
       );
     }
-    return Container(
-      margin: const EdgeInsets.fromLTRB(3, 1, 3, 1),
-      decoration: BoxDecoration(
-        color: const Color(0xFF57B3FC),
-        borderRadius: BorderRadius.circular(5.0),
-      ),
-      alignment: Alignment.center,
-      child: const Text(
-        "입금 상태",
-        style: TextStyle(
-          fontSize: 38,
-          color: Colors.white,
-        ),
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   String formatSettlementPeriod(DateTime settlementDate, int settlementPeriod) {

@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:owner/screen/Setting/faq_page.dart';
 import 'package:owner/screen/Setting/notice_page.dart';
 import 'package:owner/screen/Setting/user_info_page.dart';
-import 'package:owner/screen/Settlement/settlement_page.dart';
 import 'package:owner/screen/inquiry_page.dart';
-
-import '../../common/Style/CommonSection.dart';
-import '../Register/operating_hours_setting_Page.dart';
-import '../Store/MenuManagementPage.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
+import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/model/user.dart';
+import 'package:owner/screen/LoginPage.dart';
 import 'package:owner/oss_licenses.dart';
 
 class SettingPage extends StatefulWidget {
@@ -18,151 +18,437 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  late Future<String> _version;
+
+  @override
+  void initState() {
+    super.initState();
+    _version = getVersion();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("설정"),
-          centerTitle: true,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-        ),
-        backgroundColor: Colors.white,
-        body: SafeArea(
-            child: Container(
-                margin: const EdgeInsets.fromLTRB(21, 0, 21, 21),
-                // height: double.infinity,
+      appBar: const CommonAppBar(title: "더보기"),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
                 child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      getsettingListView(),
-                      const Spacer(),
-                      businessInformation()
-                    ]))));
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          getUserInfo(),
+                          const SizedBox(height: 24),
+                          getsettingListView(),
+                          const SizedBox(height: 20),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            businessInformation(),
+          ],
+        ),
+      ),
+    );
   }
 
   List dataListItem() {
-    // var items = List.generate(5, (i) => "Item $i");
     var items = [
       "내 정보",
       "공지사항",
       "문의하기",
-      /*"정산계좌 관리",*/
       "자주묻는 질문",
-      // "알림",
       "라이선스",
       "버전",
     ];
     return items;
   }
 
+  List<IconData> getIcons() {
+    return [
+      Icons.person_outline,
+      Icons.notifications_outlined,
+      Icons.contact_support_outlined,
+      Icons.help_outline,
+      Icons.description_outlined,
+      Icons.info_outline,
+    ];
+  }
+
   List getSelectedPage() {
-    // var items = List.generate(5, (i) => "Item $i");
     var items = [
       const UserInfoPage(),
       const NoticePage(),
       const InquiryPage(),
       const FAQPage(),
-      // const OperatingHoursSettingPage(),
-      // OperatingHoursSettingPage(),
-      // MenuManagementPage(
-      //   storeId: _storeId,
-      // ),
       OssLicensesPage(),
-      // const LicensePage()
     ];
-
     return items;
   }
 
-//Converting the dataSources as a widget
+  Widget getUserInfo() {
+    User? user = Provider.of<UserProvider>(context).user;
+
+    if (user == null) {
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const LoginScreen(returnToPrevious: true),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person,
+                  size: 30,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "로그인 & 가입하기",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "로그인 후 서비스 이용이 가능합니다.",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const UserInfoPage()),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person,
+                  size: 30,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      user.name,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatEmailToId(user.email),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Colors.grey,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  String _formatEmailToId(String? email) {
+    if (email == null || email.isEmpty) {
+      return "id";
+    }
+    // @gifnut.com 부분 제거
+    if (email.contains("@gifnut.com")) {
+      return email.replaceAll("@gifnut.com", "");
+    }
+    return email;
+  }
+
   Widget getsettingListView() {
     var allItems = dataListItem();
     var selectedPage = getSelectedPage();
-    // var listView = ListView.separated(
-    var listView = ListView.builder(
-      itemCount: allItems.length,
-      itemExtent: 46.0,
-      shrinkWrap: true,
-      itemBuilder: (context, index) {
-        if (index == 5) {
-          return Version();
-        } else {
-          return GestureDetector(
-              //You need to make my child interactive
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => selectedPage[index])),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text("${allItems[index]}"),
-                    const Divider()
-                  ]));
-          // return ListTile(title: Text(allItems[index]));
-        }
-      },
-    );
-    return listView;
-  }
+    var icons = getIcons();
 
-  Widget Version() {
-    return const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text("버전"), Spacer(), Text("v 1.0.0"), Divider()])
-        ]);
-  }
-
-  Widget businessInformation() {
-    return const SizedBox(
-      width: double.infinity,
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text("502 Company",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 10)),
-          Text("대표: 한수진", style: TextStyle(fontSize: 10)),
-          Text("사업자 등록번호: 479-03-03427", style: TextStyle(fontSize: 10)),
-          Text("주소: 서울특별시 강서구 공항대로 543", style: TextStyle(fontSize: 10)),
-          Text("이메일: service@502company.com", style: TextStyle(fontSize: 10)),
-          Text("고객센터: 02-3664-3338", style: TextStyle(fontSize: 10)),
+          for (int index = 0; index < allItems.length; index++)
+            if (index == 5)
+              version()
+            else
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => selectedPage[index]),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          icons[index],
+                          size: 20,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          allItems[index],
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right,
+                        size: 20,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
         ],
       ),
     );
   }
-}
 
-class LicensePage extends StatelessWidget {
-  const LicensePage({Key? key}) : super(key: key);
+  Widget version() {
+    return FutureBuilder<String>(
+      future: _version,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        } else if (snapshot.hasError) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    "버전",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                const Text(
+                  "v 1.0.0",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    "버전",
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ),
+                Text(
+                  "v ${snapshot.data}",
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      },
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          title: const Text("라이선스"),
-          centerTitle: true,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-        ),
-        backgroundColor: Colors.white,
-        body: SafeArea(
-            child: SingleChildScrollView(
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-              Container(
-                  margin: const EdgeInsets.fromLTRB(21, 0, 21, 21),
-                  child: const Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [Text("this is license page")],
-                  ))
-            ]))));
+  Future<String> getVersion() async {
+    // package_info_plus가 없으면 하드코딩된 버전 반환
+    try {
+      // package_info_plus 패키지가 있다면 사용
+      // final packageInfo = await PackageInfo.fromPlatform();
+      // return packageInfo.version;
+      return "1.0.0";
+    } catch (e) {
+      return "1.0.0";
+    }
+  }
+
+  Widget businessInformation() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: const BoxDecoration(
+        color: Color(0xFFF5F5F5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "502 Company \n대표: 한수진 \n사업자등록번호: 479-03-03427",
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 2),
+          const Text(
+            "주소: 서울특별시 강서구 공항대로 543 \n이메일: service@502company.com \n고객센터: 02-3664-3338",
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -175,37 +461,37 @@ class OssLicensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          title: const Text("라이선스"),
-          centerTitle: true,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-        ),
+      appBar: AppBar(
+        elevation: 0,
+        title: const Text("라이선스"),
+        centerTitle: true,
         backgroundColor: Colors.white,
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              for (var i = 0; i < ossLicenses.length; i++)
-                ListTile(
-                  title: Text(ossLicenses[i].name),
-                  // subtitle: ossLicenses[i].description != null ? Text(ossLicenses[i].description!) : null,
-                  trailing: Icon(Icons.chevron_right),
-                  onTap: () {
-                    // 클릭하면 해당 오픈소스 라이선스 페이지로 이동
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (context) => MiscOssLicenseSingle(
-                            name: ossLicenses[i].name ?? '',
-                            version: ossLicenses[i].version ?? '',
-                            description: ossLicenses[i].description ?? '',
-                            licenseText: ossLicenses[i].license ?? '',
-                            homepage: ossLicenses[i].homepage ?? '')));
-                  },
-                  // onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => MiscOssLicenseSingle(name: ossLicenses[i].name, json: ossLicenses[i])))
-                )
-            ],
-          ),
-        ));
+        foregroundColor: Colors.black,
+      ),
+      backgroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            for (var i = 0; i < ossLicenses.length; i++)
+              ListTile(
+                title: Text(ossLicenses[i].name),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => MiscOssLicenseSingle(
+                      name: ossLicenses[i].name,
+                      version: ossLicenses[i].version,
+                      description: ossLicenses[i].description,
+                      licenseText: ossLicenses[i].license ?? '',
+                      homepage: ossLicenses[i].homepage ?? '',
+                    ),
+                  ));
+                },
+              )
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -250,28 +536,20 @@ class MiscOssLicenseSingle extends StatelessWidget {
               title: Text(name),
               subtitle: Text('version : $version'),
             ),
-            if (description != null)
+            if (description.isNotEmpty)
               Padding(
-                  padding:
-                      const EdgeInsets.only(top: 12.0, left: 12.0, right: 12.0),
-                  child: Text(description)),
+                padding: const EdgeInsets.only(top: 12.0, left: 12.0, right: 12.0),
+                child: Text(description),
+              ),
             const Divider(),
             Padding(
-              padding:
-                  const EdgeInsets.only(top: 12.0, left: 12.0, right: 12.0),
+              padding: const EdgeInsets.only(top: 12.0, left: 12.0, right: 12.0),
               child: Text(_bodyText()),
             ),
             const Divider(),
             ListTile(
-              title: Text('Homepage'),
+              title: const Text('Homepage'),
               subtitle: Text(homepage),
-              // onTap: () async {
-              //   if (await canLaunch(homepage)) {
-              //     await launch(homepage);
-              //   } else {
-              //     throw 'Could not launch $homepage';
-              //   }
-              // }
             ),
           ],
         ),

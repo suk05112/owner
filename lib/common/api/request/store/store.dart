@@ -1,4 +1,3 @@
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:json_annotation/json_annotation.dart';
@@ -10,13 +9,15 @@ class Store {
   int owner_id;
   int store_id;
   String store_name;
-  String store_logo;
+  String? store_logo;
   String store_telephone;
   String store_description;
   List<String> store_photo_urls;
   int store_photo_cnt;
   String store_address;
   double store_lat, store_lng;
+  String? region_code;
+  String? district_code;
   // @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
   DateTime? updated_time;
 
@@ -26,13 +27,18 @@ class Store {
   @JsonKey(fromJson: _fileFromJson, toJson: _fileToJson)
   File? bank_book;
   String? inspection_msg;
+  @JsonKey(fromJson: _inspectionStatusFromJson, toJson: _inspectionStatusToJson)
   int? inspection_status;
+  String? status;
+  String? open_yn;
+  String? created_at;
+  String? updated_at;
 
   Store(
       {this.owner_id = 0,
       this.store_id = 0,
       this.store_name = "",
-      this.store_logo = "",
+      this.store_logo,
       this.store_telephone = "",
       this.store_description = "",
       this.store_photo_urls = const [],
@@ -40,11 +46,17 @@ class Store {
       this.store_address = "",
       this.store_lat = 0,
       this.store_lng = 0,
+      this.region_code,
+      this.district_code,
       this.business_registration,
       this.bank_book,
       this.updated_time,
       this.inspection_msg,
-      this.inspection_status});
+      this.inspection_status,
+      this.status,
+      this.open_yn,
+      this.created_at,
+      this.updated_at});
 
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
   Map<String, dynamic> toJson() => _$StoreToJson(this);
@@ -58,6 +70,40 @@ class Store {
 
   static String? _fileToJson(File? file) {
     return file?.path;
+  }
+
+  static int? _inspectionStatusFromJson(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) {
+      switch (value.toUpperCase()) {
+        case 'PENDING':
+          return 0;
+        case 'APPROVED':
+        case 'APPROVE':
+          return 1;
+        case 'REJECTED':
+        case 'REJECT':
+          return 2;
+        default:
+          return null;
+      }
+    }
+    return null;
+  }
+
+  static String? _inspectionStatusToJson(int? value) {
+    if (value == null) return null;
+    switch (value) {
+      case 0:
+        return 'PENDING';
+      case 1:
+        return 'APPROVED';
+      case 2:
+        return 'REJECTED';
+      default:
+        return null;
+    }
   }
 
   // static DateTime? _dateTimeFromJson(String? date) {
@@ -81,10 +127,18 @@ class Body2 {
 
 @JsonSerializable()
 class StoreListResponse {
-  int statusCode;
+  @JsonKey(defaultValue: 0)
+  int owner_id;
+  @JsonKey(defaultValue: 0)
+  int store_count;
+  @JsonKey(name: 'stores', defaultValue: [])
   List<Store> store;
 
-  StoreListResponse({required this.statusCode, required this.store});
+  StoreListResponse({
+    required this.owner_id,
+    required this.store_count,
+    required this.store,
+  });
 
   factory StoreListResponse.fromJson(Map<String, dynamic> json) =>
       _$StoreListResponseFromJson(json);
@@ -93,10 +147,9 @@ class StoreListResponse {
 
 @JsonSerializable()
 class StoreResponse {
-  int statusCode;
   Store store;
 
-  StoreResponse({required this.statusCode, required this.store});
+  StoreResponse({required this.store});
 
   factory StoreResponse.fromJson(Map<String, dynamic> json) =>
       _$StoreResponseFromJson(json);

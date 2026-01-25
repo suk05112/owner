@@ -6,6 +6,7 @@ import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/model/Account.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
+import 'package:owner/common/utils/address_parser.dart';
 import 'package:owner/screen/Home.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
@@ -644,6 +645,22 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
     try {
       _store.store_photo_cnt = widget.storeImages?.length ?? 0;
 
+      // region_code와 district_code가 null인 경우 기본값 설정
+      if (_store.region_code == null || _store.district_code == null) {
+        print("경고: region_code 또는 district_code가 null입니다. 주소를 다시 확인해주세요.");
+        // 주소가 설정되어 있다면 다시 파싱 시도
+        if (_store.store_address.isNotEmpty) {
+          final codes = parseAddressCodes(_store.store_address);
+          _store.district_code = codes["district_code"];
+          _store.region_code = codes["region_code"];
+          print("재파싱 결과 - district_code: ${_store.district_code}, region_code: ${_store.region_code}");
+        }
+      }
+      
+      // region_code와 district_code가 여전히 null이면 빈 문자열로 설정 (서버에서 null 처리 가능하도록)
+      _store.region_code ??= "";
+      _store.district_code ??= "";
+
       // 매장 등록 API 호출
       final response = await Api().client.registerStore(_store);
       var storeId = response.store_id;
@@ -653,13 +670,22 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       final business_put_url = response.business_put_url;
 
       // 이미지 업로드
-      if (widget.logoImage != null) {
-        await uploadLogoImage(store_logo_url);
+      try {
+        if (widget.logoImage != null) {
+          await uploadLogoImage(store_logo_url);
+        }
+        if (widget.storeImages != null && widget.storeImages!.isNotEmpty) {
+          await uploadStoreImages(store_photo_urls);
+        }
+        if (business_put_url != null) {
+          await uploadBusinessImage(bankBook_put_url, business_put_url);
+        }
+        print('All images uploaded successfully.');
+      } catch (e) {
+        print('Error during image upload: $e');
+        // 이미지 업로드 실패해도 계속 진행 (선택적)
+        // throw e; // 또는 에러를 다시 throw하여 전체 프로세스 중단
       }
-      if (widget.storeImages != null && widget.storeImages!.isNotEmpty) {
-        await uploadStoreImages(store_photo_urls);
-      }
-      await uploadBusinessImage(bankBook_put_url, business_put_url);
 
       // 계좌 등록 API 호출
       try {
@@ -728,44 +754,69 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   // 매장 로고 업로드
   Future<void> uploadLogoImage(String store_logo_url) async {
     try {
-      if (widget.logoImage == null) return;
+      if (widget.logoImage == null) {
+        print('Logo image is null, skipping upload.');
+        return;
+      }
+      
+      print('Uploading logo image to: $store_logo_url');
+      final imageBytes = await widget.logoImage!.readAsBytes();
+      print('Logo image size: ${imageBytes.length} bytes');
+      
       http.Response response = await http.put(
         Uri.parse(store_logo_url),
-        body: await widget.logoImage!.readAsBytes(),
+        body: imageBytes,
+        headers: {
+          'Content-Type': 'image/png',
+        },
       );
 
       if (response.statusCode == 200) {
         print('Logo image uploaded successfully.');
       } else {
-        print('Logo image upload failed. Status code: ${response.statusCode}');
+        print('Logo image upload failed. Status code: ${response.statusCode}, Response: ${response.body}');
+        throw Exception('Logo image upload failed with status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error uploading logo image: $e');
+      rethrow;
     }
   }
 
   // 매장 사진 업로드
   Future<void> uploadStoreImages(List<String> store_photo_urls) async {
-    if (widget.storeImages == null || widget.storeImages!.isEmpty) return;
+    if (widget.storeImages == null || widget.storeImages!.isEmpty) {
+      print('Store images are null or empty, skipping upload.');
+      return;
+    }
 
+    print('Uploading ${widget.storeImages!.length} store images...');
     for (int idx = 0;
         idx < widget.storeImages!.length && idx < store_photo_urls.length;
         idx++) {
       try {
+        print('Uploading store photo $idx to: ${store_photo_urls[idx]}');
+        final imageBytes = await widget.storeImages![idx].readAsBytes();
+        print('Store photo $idx size: ${imageBytes.length} bytes');
+        
         final response = await http.put(
           Uri.parse(store_photo_urls[idx]),
-          body: await widget.storeImages![idx].readAsBytes(),
+          body: imageBytes,
+          headers: {
+            'Content-Type': 'image/png',
+          },
         );
-        await Future.delayed(const Duration(seconds: 1));
+        await Future.delayed(const Duration(milliseconds: 500));
 
         if (response.statusCode == 200) {
           print('Store photo $idx uploaded successfully.');
         } else {
-          print(
-              'Store photo $idx upload failed. Status code: ${response.statusCode}');
+          print('Store photo $idx upload failed. Status code: ${response.statusCode}, Response: ${response.body}');
+          throw Exception('Store photo $idx upload failed with status code: ${response.statusCode}');
         }
       } catch (e) {
         print('Error uploading store photo $idx: $e');
+        rethrow;
       }
     }
   }
@@ -776,28 +827,54 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
     try {
       http.Response? response1;
       if (_store.bank_book != null) {
+        print('Uploading bank book to: $bankBook_put_url');
+        final bankBookBytes = await _store.bank_book!.readAsBytes();
+        print('Bank book size: ${bankBookBytes.length} bytes');
+        
         response1 = await http.put(
           Uri.parse(bankBook_put_url),
-          body: await _store.bank_book!.readAsBytes(),
+          body: bankBookBytes,
+          headers: {
+            'Content-Type': 'image/png',
+          },
         );
+        
+        if (response1.statusCode != 200) {
+          print('Bank book upload failed. Status code: ${response1.statusCode}, Response: ${response1.body}');
+          throw Exception('Bank book upload failed with status code: ${response1.statusCode}');
+        }
+        print('Bank book uploaded successfully.');
+      } else {
+        print('Bank book is null, skipping upload.');
       }
 
       http.Response? response2;
       if (_store.business_registration != null) {
+        print('Uploading business registration to: $business_put_url');
+        final businessBytes = await _store.business_registration!.readAsBytes();
+        print('Business registration size: ${businessBytes.length} bytes');
+        
         response2 = await http.put(
           Uri.parse(business_put_url),
-          body: await _store.business_registration!.readAsBytes(),
+          body: businessBytes,
+          headers: {
+            'Content-Type': 'image/png',
+          },
         );
+        
+        if (response2.statusCode != 200) {
+          print('Business registration upload failed. Status code: ${response2.statusCode}, Response: ${response2.body}');
+          throw Exception('Business registration upload failed with status code: ${response2.statusCode}');
+        }
+        print('Business registration uploaded successfully.');
+      } else {
+        print('Business registration is null, skipping upload.');
       }
 
-      if ((response1 == null || response1.statusCode == 200) &&
-          (response2 == null || response2.statusCode == 200)) {
-        print('Business images uploaded successfully.');
-      } else {
-        print('Business images upload failed.');
-      }
+      print('Business images upload completed.');
     } catch (e) {
       print('Error uploading business images: $e');
+      rethrow;
     }
   }
 }

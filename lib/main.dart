@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -14,6 +15,12 @@ import 'package:owner/config.dart';
 
 FutureOr<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 세로 모드만 허용 (가로 회전 방지)
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Firebase는 main_dev.dart 또는 main_prod.dart에서 이미 초기화됨
   // 여기서는 API만 초기화

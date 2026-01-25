@@ -49,64 +49,82 @@ class _CafeListState extends State<CafeList> {
         Expanded(
           child: Container(
             color: Colors.white,
-            child: Consumer<StoreProvider>(
-              builder: (context, storeProvider, child) {
-                List<Store> storeList = storeProvider.storeCards ?? [];
-                return RefreshIndicator(
+            child: SafeArea(
+              top: false,
+              bottom: true,
+              child: Consumer<StoreProvider>(
+                builder: (context, storeProvider, child) {
+                  List<Store> storeList = storeProvider.storeCards ?? [];
+                  return RefreshIndicator(
                     onRefresh: () async {
-                      setState(() {
-                        Provider.of<StoreProvider>(context, listen: false)
+                      try {
+                        await Provider.of<StoreProvider>(context, listen: false)
                             .fetchStoreList(user?.owner_id ?? 0);
-                      });
+                      } catch (e) {
+                        print("매장 목록 새로고침 실패: $e");
+                      }
                     },
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          // 매장 추가 버튼
-                          SizedBox(
-                            width: double.infinity,
-                            height: 48,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const DocumentGuidePage(),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 5),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: constraints.maxHeight,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                // 매장 추가 버튼
+                                Center(
+                                  child: TextButton(
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const DocumentGuidePage(),
+                                        ),
+                                      );
+                                    },
+                                    style: TextButton.styleFrom(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 0,
+                                        vertical: 6,
+                                      ),
+                                      minimumSize: const Size(0, 48),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    child: const Text(
+                                      "+ 매장 추가",
+                                      style: TextStyle(
+                                        color: Color(0xFFF27213),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w600,
+                                        fontFamily: 'Inter',
+                                      ),
+                                    ),
                                   ),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.transparent,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(0),
                                 ),
-                              ),
-                              child: const Text(
-                                "+ 매장 추가",
-                                style: TextStyle(
-                                  color: Color(0xFFF27213),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  fontFamily: 'Inter',
-                                ),
-                              ),
+                                const SizedBox(height: 12),
+                                // 매장 리스트
+                                ...storeList.map((store) => Padding(
+                                      padding:
+                                          const EdgeInsets.only(bottom: 12),
+                                      child: storeCard(store),
+                                    )),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          // 매장 리스트
-                          ...storeList.map((store) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: storeCard(store),
-                              )),
-                        ],
-                      ),
-                    ));
-              },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -156,18 +174,18 @@ class _CafeListState extends State<CafeList> {
           child: Row(
             children: [
               // 로고 영역
-              Container(
+              SizedBox(
                 width: 64,
                 height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF7F7F7),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: store.store_logo.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          store.store_logo,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child: (store.store_logo?.isNotEmpty ?? false)
+                      ? Image.network(
+                          store.store_logo!,
                           width: 64,
                           height: 64,
                           fit: BoxFit.cover,
@@ -179,22 +197,26 @@ class _CafeListState extends State<CafeList> {
                               ),
                             );
                           },
+                        )
+                      : const Center(
+                          child: DefaultTextStyle(
+                            style: const TextStyle(fontSize: 24),
+                            child: const Text(
+                              '☕',
+                            ),
+                          ),
                         ),
-                      )
-                    : const Center(
-                        child: Text(
-                          '☕',
-                          style: TextStyle(fontSize: 24),
-                        ),
-                      ),
+                ),
               ),
               const SizedBox(width: 16),
               // 매장 정보
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Expanded(
                           child: Text(
@@ -205,6 +227,8 @@ class _CafeListState extends State<CafeList> {
                               color: Color(0xFF101010),
                               fontFamily: 'Inter',
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -212,17 +236,19 @@ class _CafeListState extends State<CafeList> {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      store.store_address,
+                    DefaultTextStyle(
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: Color(0xFF808080),
                         fontFamily: 'Inter',
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      child: Text(
+                        store.store_address,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )
                   ],
                 ),
               ),

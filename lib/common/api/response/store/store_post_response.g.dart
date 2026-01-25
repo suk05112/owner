@@ -8,14 +8,14 @@ part of 'store_post_response.dart';
 
 StorePostResponse _$StorePostResponseFromJson(Map<String, dynamic> json) =>
     StorePostResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
+      statusCode: (json['statusCode'] as num?)?.toInt() ?? 200,
       store_id: (json['store_id'] as num).toInt(),
       store_logo_url: json['store_logo_url'] as String,
       store_photo_urls: (json['store_photo_urls'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
       bankBook_put_url: json['bankBook_put_url'] as String,
-      business_put_url: json['business_put_url'] as String,
+      business_put_url: json['business_put_url'] as String?,
     )..presignedUrl = json['presignedUrl'] == null
         ? null
         : PresignedUrl.fromJson(json['presignedUrl'] as Map<String, dynamic>);

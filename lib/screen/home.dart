@@ -119,13 +119,16 @@ class _HomeState extends State<Home> {
           floatingActionButtonLocation:
               FloatingActionButtonLocation.centerDocked,
           bottomNavigationBar: BottomAppBar(
-            color: Colors.white,
+            color: const Color(0xFFF5F5F5),
             elevation: 0,
             notchMargin: 10,
             shape: const CircularNotchedRectangle(),
             child: Container(
-              height: 60,
+              height: 45,
               padding: const EdgeInsets.symmetric(horizontal: 0),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF5F5F5),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[

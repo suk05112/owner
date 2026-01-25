@@ -1,9 +1,9 @@
 import "package:flutter/material.dart";
-import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/utils/phone_utils.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/screen/LoginPage.dart';
 import 'package:provider/provider.dart';
 
@@ -16,198 +16,178 @@ class UserInfoPage extends StatefulWidget {
 
 class _UserInfoPageState extends State<UserInfoPage> {
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     User? user = Provider.of<UserProvider>(context).user;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("내정보"),
-      ),
+      appBar: const CommonAppBar(title: "내정보"),
+      backgroundColor: Colors.white,
       body: SafeArea(
-          bottom: false,
-          child: Container(
-              width: double.infinity,
-              height: double.infinity,
-              margin: EdgeInsets.fromLTRB(21, 0, 21, 21),
-              child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  textBaseline: TextBaseline.alphabetic,
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(21, 0, 21, 21),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 사용자 정보 카드
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Text("내정보"),
-                    Container(
-                      width: double.infinity,
-                      // height: double.infinity,
-                      child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(children: [
-                              SizedBox(
-                                width: 100,
-                                child: Text("이름"),
-                              ),
-                              Text("${user?.name}")
-                            ]),
-                            Row(children: [
-                              SizedBox(
-                                width: 100,
-                                child: Text("이메일"),
-                              ),
-                              Text("${user?.email ?? "email"}")
-                            ]),
-                            Row(children: [
-                              SizedBox(
-                                width: 100,
-                                child: Text("전화번호"),
-                              ),
-                              Text("${user?.phone_number != null ? PhoneUtils.formatForDisplay(user!.phone_number) : "phone"}")
-                            ]),
-                            Row(children: [
-                              SizedBox(
-                                width: 100,
-                                child: Text("관리번호"),
-                              ),
-                              Text("OWN-${user?.owner_id ?? "-1"}")
-                            ])
-                          ]),
+                    _buildInfoRow("이름", user?.name ?? "-"),
+                    const SizedBox(height: 16),
+                    _buildInfoRow("이메일", user?.email ?? "-"),
+                    const SizedBox(height: 16),
+                    _buildInfoRow(
+                      "전화번호",
+                      user?.phone_number != null
+                          ? PhoneUtils.formatForDisplay(user!.phone_number)
+                          : "-",
                     ),
-                    SizedBox(
-                      height: 5,
+                    const SizedBox(height: 16),
+                    _buildInfoRow("관리번호", "OWN-${user?.owner_id ?? "-1"}"),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              // 메뉴 리스트
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 2),
                     ),
-                    Divider(thickness: 1, height: 1, color: Colors.grey),
-                    Row(children: [
-                      TextButton(
-                          onPressed: () {
-                            Provider.of<UserProvider>(context, listen: false)
-                                .clearUser();
-
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => LoginScreen()),
-                              (route) => false, // 모든 기존 경로 제거
-                            );
-                          },
-                          child: Text('로그아웃')),
-                      Spacer()
-                    ]),
-                    Divider(thickness: 1, height: 1, color: Colors.grey),
-                    Row(children: [
-                      TextButton(
-                          onPressed: () {
-                            print("눌림");
-                            CommonDialog.show(
-                                context: context,
-                                title: "탈퇴하기",
-                                content:
-                                    "구메된 기프티콘을 처리하기 위해 문의를 통해 탈퇴하기가 가능합니다.\n 매장관리>설정>문의하기 를 통해 문의해주세요.",
-                                buttonText: "확인",
-                                onPressed: () {});
-                            // _showWithdrawalDialog();
-                          },
-                          child: Text('회원탈퇴'))
-                    ]),
-                    SizedBox(
-                      height: 30,
-                    )
-                  ]))),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    _buildMenuButton(
+                      icon: Icons.logout,
+                      text: '로그아웃',
+                      onTap: () {
+                        Provider.of<UserProvider>(context, listen: false)
+                            .clearUser();
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const LoginScreen()),
+                          (route) => false,
+                        );
+                      },
+                    ),
+                    const Divider(height: 1, thickness: 1, color: Color(0xFFE0E0E0)),
+                    _buildMenuButton(
+                      icon: Icons.person_remove,
+                      text: '회원탈퇴',
+                      textColor: Colors.red,
+                      onTap: () {
+                        CommonDialog.show(
+                          context: context,
+                          title: "탈퇴하기",
+                          content:
+                              "구메된 기프티콘을 처리하기 위해 문의를 통해 탈퇴하기가 가능합니다.\n 매장관리>설정>문의하기 를 통해 문의해주세요.",
+                          buttonText: "확인",
+                          onPressed: () {},
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  // 회원탈퇴 위젯
-  void _showWithdrawalDialog() {
-    TextEditingController inputController = TextEditingController();
-    bool showingFail = false;
-    showDialog(
-        context: context,
-        builder: (context) {
-          return StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) {
-            return AlertDialog(
-                content: Container(
-              width: 500,
-              height: 250,
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("탈퇴하시겠습니끼?"),
-                  Text("'회원탈퇴' 입력"),
-                  TextField(
-                    controller: inputController,
-                    decoration: InputDecoration(
-                      hintText: '회원탈퇴',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                    ),
-                  ),
-                  Visibility(
-                    child: Text(
-                      "'회원탈퇴' 입력창을 다시 확인해주세요",
-                      style:
-                          TextStyle(color: Colors.red), // 원하는 스타일을 적용할 수 있습니다.
-                    ),
-                    visible: showingFail,
-                  ),
-                  Spacer(),
-                  Row(
-                    children: [
-                      Container(
-                        width: 120,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              backgroundColor: ColorAssset.mainColor,
-                              foregroundColor: Colors.white),
-                          child: Text('탈퇴하기'),
+  Widget _buildInfoRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 100,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF808080),
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Color(0xFF101010),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-                          // 클릭 이벤트
-                          onPressed: () async {
-                            print("버튼 눌림");
-                            if (inputController.text == '탈퇴하기') {
-                            } else {
-                              setState(() {
-                                print("버튼 눌림2");
-
-                                showingFail = true;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                      Spacer(),
-                      Container(
-                        width: 120,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            side: const BorderSide(
-                              width: 1.0,
-                              color: ColorAssset.mainColor,
-                            ),
-                          ),
-
-                          child: const Text('취소'),
-
-                          // 클릭 이벤트
-                          onPressed: () async {
-                            Navigator.of(context).pop();
-                          },
-                        ),
-                      )
-                    ],
-                  ),
-                ],
+  Widget _buildMenuButton({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+    Color? textColor,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
               ),
-            ));
-          });
-        });
+              child: Icon(
+                icon,
+                size: 20,
+                color: textColor ?? Colors.black87,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: textColor ?? Colors.black87,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              size: 20,
+              color: Colors.grey[400],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

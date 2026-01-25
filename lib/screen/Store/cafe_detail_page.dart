@@ -96,14 +96,37 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                                         ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(5.0),
-                                          child: Image(
-                                            width: 100,
-                                            height: 100,
-                                            fit: BoxFit.fill,
-                                            image: NetworkImage(
-                                              store?.store_logo ?? "",
-                                            ),
-                                          ),
+                                          child: (store?.store_logo != null && store!.store_logo!.isNotEmpty)
+                                              ? Image.network(
+                                                  store!.store_logo!,
+                                                  width: 100,
+                                                  height: 100,
+                                                  fit: BoxFit.fill,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return Container(
+                                                      width: 100,
+                                                      height: 100,
+                                                      color: const Color(0xFFF7F7F7),
+                                                      child: const Center(
+                                                        child: Text(
+                                                          '☕',
+                                                          style: TextStyle(fontSize: 40),
+                                                        ),
+                                                      ),
+                                                    );
+                                                  },
+                                                )
+                                              : Container(
+                                                  width: 100,
+                                                  height: 100,
+                                                  color: const Color(0xFFF7F7F7),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      '☕',
+                                                      style: TextStyle(fontSize: 40),
+                                                    ),
+                                                  ),
+                                                ),
                                         ),
                                         const SizedBox(width: 20),
                                         // Spacer(),

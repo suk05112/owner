@@ -352,7 +352,9 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
       uploadLogoImage(store_logo_url);
       uploadStoreImages(store_photo_urls);
-      uploadBusinessImage(bankBook_put_url, business_put_url);
+      if (business_put_url != null) {
+        uploadBusinessImage(bankBook_put_url, business_put_url);
+      }
 
       if (widget.account != null) {
         print("Account ${widget.account}");

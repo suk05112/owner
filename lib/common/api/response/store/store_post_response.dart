@@ -1,17 +1,17 @@
-import 'dart:convert';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'store_post_response.g.dart';
 
 @JsonSerializable()
 class StorePostResponse {
+  @JsonKey(defaultValue: 200)
   int statusCode;
   int store_id;
   String store_logo_url;
   List<String> store_photo_urls;
   PresignedUrl? presignedUrl;
   String bankBook_put_url;
-  String business_put_url;
+  String? business_put_url;
 
   StorePostResponse(
       {required this.statusCode,
@@ -19,7 +19,7 @@ class StorePostResponse {
       required this.store_logo_url,
       required this.store_photo_urls,
       required this.bankBook_put_url,
-      required this.business_put_url});
+      this.business_put_url});
 
   factory StorePostResponse.fromJson(Map<String, dynamic> json) =>
       _$StorePostResponseFromJson(json);

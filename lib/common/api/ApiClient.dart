@@ -4,6 +4,7 @@ import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/api/response/store/store_post_response.dart';
+import 'package:owner/common/api/response/store/statistics_response.dart';
 import 'package:owner/common/model/Account.dart';
 import 'package:owner/common/model/Settlement.dart';
 import 'package:owner/common/model/UsedGifticon.dart';
@@ -41,7 +42,7 @@ abstract class ApiClient {
     // @Query("owner_id") int owner_id,
   );
 
-  @GET("/store/list/{owner_id}")
+  @GET("/owner/list/{owner_id}")
   Future<StoreListResponse> getStoreList(
     @Path('owner_id') int owner_id,
   );
@@ -129,5 +130,10 @@ abstract class ApiClient {
   @GET("/store/owner/list/{owner_id}")
   Future<OwnerStoreList> getOwnerStoreList(
     @Path('owner_id') int owner_id,
+  );
+
+  @GET("/statistics/{store_id}")
+  Future<StoreStatisticsResponse> getStoreStatistics(
+    @Path('store_id') int store_id,
   );
 }

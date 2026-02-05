@@ -7,25 +7,28 @@ import '../api/request/store/store.dart';
 class StoreProvider extends ChangeNotifier {
   late Store? _store;
   late List<Store>? storeCards = [];
+  bool _isLoadingStoreList = false;
+
+  bool get isLoadingStoreList => _isLoadingStoreList;
 
   void setStoreCard(List<Store>? storeCards) {
-    // if ((storeCards?.length ?? 0) > 0) {
-    //     slotCardsListVisible = true;
-    // } else {
-    //     slotCardsListVisible = false;
-    // }
-
     this.storeCards = storeCards;
     notifyListeners();
   }
 
   Future<void> fetchStoreList(int owner_id) async {
+    _isLoadingStoreList = true;
+    notifyListeners();
     try {
       print("store_provider::fetchStoreList:: fetch 호출");
       var response = await Api().client.getStoreList(owner_id);
       setStoreCard(response.store);
     } catch (error) {
       print("store_provider::fetchStoreList:: fetch 오류: $error");
+      setStoreCard(null);
+    } finally {
+      _isLoadingStoreList = false;
+      notifyListeners();
     }
   }
 

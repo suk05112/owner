@@ -5,7 +5,10 @@ import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:owner/common/model/user.dart';
+import 'package:owner/common/provier/account_provider.dart';
+import 'package:owner/common/provier/dashboard_stats_provider.dart';
 import 'package:owner/common/provier/gifticon_provider.dart';
+import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/screen/home.dart';
 import 'common/provier/store_provider.dart';
@@ -44,8 +47,11 @@ class MyApp extends StatelessWidget {
         child: MultiProvider(
           providers: [
             ChangeNotifierProvider(create: (context) => StoreProvider()),
+            ChangeNotifierProvider(create: (context) => SelectedStoreProvider()),
+            ChangeNotifierProvider(create: (context) => DashboardStatsProvider()),
             ChangeNotifierProvider(create: (context) => GifticonProvider()),
             ChangeNotifierProvider(create: (context) => UserProvider()),
+            ChangeNotifierProvider(create: (context) => AccountProvider()),
           ],
 
           child: Consumer<UserProvider>(

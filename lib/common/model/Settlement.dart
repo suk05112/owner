@@ -3,14 +3,37 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'Settlement.g.dart';
 
+int _numToInt(dynamic v) => v == null ? 0 : (v as num).toInt();
+
+int _statusToInt(dynamic v) {
+  if (v == null) return 0;
+  if (v is int) return v;
+  if (v is String) return v.toUpperCase() == 'PENDING' ? 0 : 1;
+  return 0;
+}
+
+DateTime _parsePayoutDate(dynamic v) {
+  if (v == null) return DateTime.now();
+  if (v is DateTime) return v;
+  return DateTime.parse(v as String);
+}
+
 @JsonSerializable()
 class Settlement {
   int settlement_id;
+  @JsonKey(name: 'expected_amount', fromJson: _numToInt)
   int total_price;
   String? settlement_msg;
+  @JsonKey(name: 'expected_payout_date', fromJson: _parsePayoutDate)
   DateTime settlement_date;
+  @JsonKey(name: 'cycle_id', fromJson: _numToInt)
   int settlement_period;
+  @JsonKey(fromJson: _statusToInt)
   int status;
+  @JsonKey(name: 'period_start')
+  String? period_start;
+  @JsonKey(name: 'period_end')
+  String? period_end;
 
   Settlement(
       {required this.settlement_id,
@@ -18,7 +41,9 @@ class Settlement {
       this.settlement_msg,
       required this.settlement_date,
       required this.settlement_period,
-      required this.status});
+      required this.status,
+      this.period_start,
+      this.period_end});
 
   factory Settlement.fromJson(Map<String, dynamic> json) =>
       _$SettlementFromJson(json);

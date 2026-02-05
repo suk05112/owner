@@ -380,7 +380,12 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
 
   Widget bankList() {
     List<Map<String, String>> bankData = [
-      {'name': 'NH농협', 'code': '011', 'icon': 'assets/bank/bankName=NH농협.png'},
+      {
+        'name': 'NH농협은행',
+        'code': '011',
+        'icon': 'assets/bank/bankName=NH농협.png'
+      },
+      {'name': '지역농축협', 'code': '012', 'icon': 'assets/bank/bankName=NH농협.png'},
       {
         'name': '카카오뱅크',
         'code': '090',
@@ -653,10 +658,11 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
           final codes = parseAddressCodes(_store.store_address);
           _store.district_code = codes["district_code"];
           _store.region_code = codes["region_code"];
-          print("재파싱 결과 - district_code: ${_store.district_code}, region_code: ${_store.region_code}");
+          print(
+              "재파싱 결과 - district_code: ${_store.district_code}, region_code: ${_store.region_code}");
         }
       }
-      
+
       // region_code와 district_code가 여전히 null이면 빈 문자열로 설정 (서버에서 null 처리 가능하도록)
       _store.region_code ??= "";
       _store.district_code ??= "";
@@ -758,11 +764,11 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
         print('Logo image is null, skipping upload.');
         return;
       }
-      
+
       print('Uploading logo image to: $store_logo_url');
       final imageBytes = await widget.logoImage!.readAsBytes();
       print('Logo image size: ${imageBytes.length} bytes');
-      
+
       http.Response response = await http.put(
         Uri.parse(store_logo_url),
         body: imageBytes,
@@ -774,8 +780,10 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       if (response.statusCode == 200) {
         print('Logo image uploaded successfully.');
       } else {
-        print('Logo image upload failed. Status code: ${response.statusCode}, Response: ${response.body}');
-        throw Exception('Logo image upload failed with status code: ${response.statusCode}');
+        print(
+            'Logo image upload failed. Status code: ${response.statusCode}, Response: ${response.body}');
+        throw Exception(
+            'Logo image upload failed with status code: ${response.statusCode}');
       }
     } catch (e) {
       print('Error uploading logo image: $e');
@@ -798,7 +806,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
         print('Uploading store photo $idx to: ${store_photo_urls[idx]}');
         final imageBytes = await widget.storeImages![idx].readAsBytes();
         print('Store photo $idx size: ${imageBytes.length} bytes');
-        
+
         final response = await http.put(
           Uri.parse(store_photo_urls[idx]),
           body: imageBytes,
@@ -811,8 +819,10 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
         if (response.statusCode == 200) {
           print('Store photo $idx uploaded successfully.');
         } else {
-          print('Store photo $idx upload failed. Status code: ${response.statusCode}, Response: ${response.body}');
-          throw Exception('Store photo $idx upload failed with status code: ${response.statusCode}');
+          print(
+              'Store photo $idx upload failed. Status code: ${response.statusCode}, Response: ${response.body}');
+          throw Exception(
+              'Store photo $idx upload failed with status code: ${response.statusCode}');
         }
       } catch (e) {
         print('Error uploading store photo $idx: $e');
@@ -830,7 +840,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
         print('Uploading bank book to: $bankBook_put_url');
         final bankBookBytes = await _store.bank_book!.readAsBytes();
         print('Bank book size: ${bankBookBytes.length} bytes');
-        
+
         response1 = await http.put(
           Uri.parse(bankBook_put_url),
           body: bankBookBytes,
@@ -838,10 +848,12 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
             'Content-Type': 'image/png',
           },
         );
-        
+
         if (response1.statusCode != 200) {
-          print('Bank book upload failed. Status code: ${response1.statusCode}, Response: ${response1.body}');
-          throw Exception('Bank book upload failed with status code: ${response1.statusCode}');
+          print(
+              'Bank book upload failed. Status code: ${response1.statusCode}, Response: ${response1.body}');
+          throw Exception(
+              'Bank book upload failed with status code: ${response1.statusCode}');
         }
         print('Bank book uploaded successfully.');
       } else {
@@ -853,7 +865,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
         print('Uploading business registration to: $business_put_url');
         final businessBytes = await _store.business_registration!.readAsBytes();
         print('Business registration size: ${businessBytes.length} bytes');
-        
+
         response2 = await http.put(
           Uri.parse(business_put_url),
           body: businessBytes,
@@ -861,10 +873,12 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
             'Content-Type': 'image/png',
           },
         );
-        
+
         if (response2.statusCode != 200) {
-          print('Business registration upload failed. Status code: ${response2.statusCode}, Response: ${response2.body}');
-          throw Exception('Business registration upload failed with status code: ${response2.statusCode}');
+          print(
+              'Business registration upload failed. Status code: ${response2.statusCode}, Response: ${response2.body}');
+          throw Exception(
+              'Business registration upload failed with status code: ${response2.statusCode}');
         }
         print('Business registration uploaded successfully.');
       } else {

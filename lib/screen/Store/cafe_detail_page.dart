@@ -1,350 +1,415 @@
-import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:owner/common/api/API.dart';
-import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/store_provider.dart';
-import 'package:owner/common/provier/user_provider.dart';
-import 'package:owner/main.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
+import 'package:owner/screen/Register/register_store_page.dart';
 import 'package:owner/screen/Settlement/settlement_page.dart';
-import 'package:owner/screen/Store/cafe_list_page.dart';
-import 'package:provider/provider.dart';
-
-import '../../common/Style/TextAsset.dart';
-import '../../common/Style/CommonSection.dart';
 
 import '../../common/api/request/store/store.dart';
-import '../../common/model/cafeInfo.dart';
-import '../../common/model/OperatingHours.dart';
-import '../Register/operating_hours_setting_Page.dart';
-import '../Register/register_store_page.dart';
+import '../../common/api/response/menu.dart';
 import 'MenuManagementPage.dart';
 
 class CafeDetailScreen extends StatefulWidget {
   const CafeDetailScreen({Key? key, required this.storeId}) : super(key: key);
   final int storeId;
+
   @override
   State<CafeDetailScreen> createState() => _CafeDetailScreenState();
 }
 
 class _CafeDetailScreenState extends State<CafeDetailScreen> {
-  Future<CafeInfo>? cafeList;
-  Future<OperatingHours>? operatingHours;
   late int _storeId;
-  CafeInfo? _cafeInfo;
-  Future<OperatingHours>? op;
-  bool isLoading = true;
   Store? store;
+  List<Menu> menuList = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _storeId = widget.storeId;
-    // cafeList = service.retrieveCafeInfo("0000001");
-    // print(" _initRetrieval 호출2 ${cafeList}");
-    _initRetrieval().then((value) => setState(() {
-          isLoading = false;
-          store = value;
-          print("init 호출 후 store ${store}");
-        }));
+    _load();
   }
 
-  Future<Store> _initRetrieval() async {
-    var response = await StoreProvider().getDetailStore(_storeId);
-    store = response;
-    return response;
+  Future<void> _load() async {
+    try {
+      final s = await StoreProvider().getDetailStore(_storeId);
+      List<Menu> menus = [];
+      try {
+        final res = await Api().client.getMenuList(_storeId);
+        menus = res.menuList;
+      } catch (_) {}
+      if (mounted) {
+        setState(() {
+          store = s;
+          menuList = menus;
+          isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0,
-          title: const Text("내 매장관리"),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        toolbarHeight: 61,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Color(0xFF101010)),
+          onPressed: () => Navigator.maybePop(context),
         ),
-        body: SafeArea(
-          child: SingleChildScrollView(
-              child: isLoading
-                  ? const Center(
-                      child: SizedBox(
-                      width: 30,
-                      height: 30,
-                      child: CircularProgressIndicator(),
-                    ))
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                          Container(
-                              margin: const EdgeInsets.fromLTRB(21, 0, 21, 21),
-                              child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    store?.inspection_status == 2
-                                        ? inspectionMsg(
-                                            store?.inspection_msg ?? "")
-                                        : const SizedBox(
-                                            height: 0,
-                                          ),
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(5.0),
-                                          child: (store?.store_logo != null && store!.store_logo!.isNotEmpty)
-                                              ? Image.network(
-                                                  store!.store_logo!,
-                                                  width: 100,
-                                                  height: 100,
-                                                  fit: BoxFit.fill,
-                                                  errorBuilder: (context, error, stackTrace) {
-                                                    return Container(
-                                                      width: 100,
-                                                      height: 100,
-                                                      color: const Color(0xFFF7F7F7),
-                                                      child: const Center(
-                                                        child: Text(
-                                                          '☕',
-                                                          style: TextStyle(fontSize: 40),
-                                                        ),
-                                                      ),
-                                                    );
-                                                  },
-                                                )
-                                              : Container(
-                                                  width: 100,
-                                                  height: 100,
-                                                  color: const Color(0xFFF7F7F7),
-                                                  child: const Center(
-                                                    child: Text(
-                                                      '☕',
-                                                      style: TextStyle(fontSize: 40),
-                                                    ),
-                                                  ),
-                                                ),
-                                        ),
-                                        const SizedBox(width: 20),
-                                        // Spacer(),
-                                        Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(store?.store_name ?? "매장 이름",
-                                                style: TextAssset.header3),
-                                            // Spacer(),
-                                            Text(
-                                                store?.store_address ??
-                                                    "매장 주소 없음",
-                                                style: TextAssset.body)
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-
-                                    const Divider(),
-                                    //전화번호
-                                    Row(
-                                      children: [
-                                        const Text("전화번호",
-                                            style: TextAssset.header3),
-                                        const SizedBox(width: 20),
-                                        // Spacer(),
-                                        Text(
-                                            store?.store_telephone ?? "전화번호 없음",
-                                            style: TextAssset.body)
-                                      ],
-                                    ),
-                                    const Divider(),
-
-                                    //매장소개
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text("매장소개",
-                                            style: TextAssset.header3),
-                                        // Spacer(),
-                                        Text(
-                                            store?.store_description ??
-                                                "매장 설명 없음",
-                                            style: TextAssset.body)
-                                      ],
-                                    ),
-                                    const Divider(),
-
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text("매장주소",
-                                            style: TextAssset.header3),
-                                        // Spacer(),
-                                        Text(store?.store_address ?? "매장 설명 없음",
-                                            style: TextAssset.body)
-                                      ],
-                                    ),
-                                    const Divider(),
-
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text("매장 사진",
-                                            style: TextAssset.header3),
-                                        // Spacer(),
-                                        StoreImagesGridview(),
-                                      ],
-                                    ),
-                                  ])),
-                          const Divider(
-                              thickness: 10,
-                              height: 10,
-                              color: Color(0xffF3F5F7)),
-                          //매장관리 메뉴
-                          Container(
-                            margin: const EdgeInsets.fromLTRB(21, 25, 21, 21),
-                            height: 300,
-                            child: getListView(),
-                          )
-                        ])),
-        ));
-  }
-
-  Widget StoreImagesGridview() {
-    List<Widget> itemWidgets = store!.store_photo_urls.map((item) {
-      return Container(
-          width: 100,
-          height: 100,
-          margin: const EdgeInsets.fromLTRB(0, 2, 2, 0),
-          child: ClipRRect(
-              borderRadius: BorderRadius.circular(5.0),
-              child: Image.network(item,
-                  width: 90,
-                  height: 90,
-                  fit: BoxFit.fill, errorBuilder: (context, error, stackTrace) {
-                print(error);
-                return const Image(
-                    image: AssetImage('assets/logo.jpeg'),
-                    width: 90,
-                    height: 90,
-                    fit: BoxFit.fill);
-              })));
-    }).toList();
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(children: itemWidgets),
+        title: const Text(
+          "매장 상세",
+          style: TextStyle(
+            fontFamily: 'Inter',
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+            color: Color(0xFF101010),
+          ),
+        ),
+        centerTitle: false,
+        actions: [
+          TextButton(
+            onPressed: store == null
+                ? null
+                : () async {
+                    final result = await Navigator.push<Store>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RegisterStorePage(
+                          isRegister: false,
+                          store: store,
+                        ),
+                      ),
+                    );
+                    if (result != null && mounted) setState(() => store = result);
+                  },
+            child: const Text(
+              "수정",
+              style: TextStyle(
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w400,
+                fontSize: 14,
+                color: Color(0xFFF27213),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: isLoading
+          ? const Center(
+              child: SizedBox(
+                width: 30,
+                height: 30,
+                child: CircularProgressIndicator(color: Color(0xFFF27213)),
+              ),
+            )
+          : store == null
+              ? const Center(child: Text("매장 정보를 불러올 수 없습니다."))
+              : SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildStoreImage(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (store!.inspection_status == 2)
+                              _buildInspectionMsg(store!.inspection_msg ?? ""),
+                            _buildStoreInfo(),
+                            _buildAddressPhone(),
+                            _buildMenuSection(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
     );
   }
 
-  List dataSource() {
-    // var items = List.generate(5, (i) => "Item $i");
-    var items = ["매장 정보 수정", /*"영업시간 수정",*/ "메뉴관리", /* "주문내역 관리",*/ "정산내역"];
-    return items;
-  }
-
-  List dataSource2() {
-    var items = [
-      RegisterStorePage(
-        isRegister: false,
-        store: store,
-      ),
-      // OperatingHoursSettingPage(),
-      MenuManagementPage(
-        storeId: widget.storeId,
-      ),
-      // RegisterStorePage(
-      //   isRegister: false,
-      //   store: store,
-      // ),
-      SettlementPage(
-        storeId: _storeId,
-      ),
-    ];
-
-    return items;
-  }
-
-  Widget inspectionMsg(String msg) {
+  Widget _buildStoreImage() {
+    final url = store!.store_photo_urls.isNotEmpty
+        ? store!.store_photo_urls.first
+        : null;
     return Container(
-        margin: const EdgeInsets.fromLTRB(0, 2, 0, 5),
-        padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
-        decoration: BoxDecoration(
-          color: const Color(0xffECECEC),
-          borderRadius: BorderRadius.circular(5),
+      width: double.infinity,
+      height: 176,
+      color: const Color(0xFFF7F7F7),
+      child: url != null
+          ? Image.network(
+              url,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => const Center(
+                child: Text("☕", style: TextStyle(fontSize: 48)),
+              ),
+            )
+          : const Center(
+              child: Text("☕", style: TextStyle(fontSize: 48)),
+            ),
+    );
+  }
+
+  Widget _buildInspectionMsg(String msg) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFECECEC),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "승인 반려",
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontWeight: FontWeight.w600,
+              fontSize: 14,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            msg,
+            style: const TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              color: Color(0xFF808080),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStoreInfo() {
+    return Padding(
+      padding: const EdgeInsets.only(top: 20, bottom: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F7F7),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE6E6E6)),
+            ),
+            clipBehavior: Clip.hardEdge,
+            child: (store!.store_logo != null && store!.store_logo!.isNotEmpty)
+                ? Image.network(
+                    store!.store_logo!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Text("☕", style: TextStyle(fontSize: 30)),
+                    ),
+                  )
+                : const Center(
+                    child: Text("☕", style: TextStyle(fontSize: 30)),
+                  ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  store!.store_name,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 24,
+                    color: Color(0xFF101010),
+                    height: 1.33,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  store!.store_description.isEmpty
+                      ? "매장 소개가 없습니다."
+                      : store!.store_description,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                    fontSize: 12,
+                    color: Color(0xFF808080),
+                    height: 1.9,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddressPhone() {
+    return Container(
+      padding: const EdgeInsets.only(top: 16, bottom: 16),
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Color(0xFFE6E6E6)),
         ),
-        width: 400,
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.location_on_outlined, size: 20, color: Colors.grey[600]),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  store!.store_address,
+                  style: const TextStyle(
+                    fontFamily: 'Inter',
+                    fontSize: 14,
+                    color: Color(0xFF101010),
+                    height: 1.43,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(Icons.phone_outlined, size: 20, color: Colors.grey[600]),
+              const SizedBox(width: 12),
+              Text(
+                store!.store_telephone,
+                style: const TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: Color(0xFF101010),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMenuSection() {
+    return Container(
+      padding: const EdgeInsets.only(top: 16, bottom: 24),
+      decoration: const BoxDecoration(
+        border: Border(
+          top: BorderSide(color: Color(0xFFE6E6E6)),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "**승인 반려**",
-                style: TextStyle(fontWeight: FontWeight.w600),
+                "등록된 메뉴",
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                  color: Color(0xFF101010),
+                ),
               ),
-              Text(msg)
-            ]));
-  }
-
-//Converting the dataSources as a widget
-  Widget getListView() {
-    var allItems = dataSource();
-    var selectedPage = dataSource2();
-    // var listView = ListView.separated(
-    var listView = ListView.builder(
-      itemCount: allItems.length,
-      itemExtent: 46.0,
-      itemBuilder: (context, index) {
-        return GestureDetector(
-            //You need to make my child interactive
-            onTap: () async {
-              final result = await Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => selectedPage[index]));
-              if (result.runtimeType == Store) {
-                await Future.delayed(const Duration(seconds: 3));
-
-                setState(() {
-                  store = result;
-                });
-              }
-            },
-            child: Column(children: <Widget>[
-              Text("${allItems[index]}"),
-              const Divider()
-            ]));
-        // return ListTile(title: Text(allItems[index]));
-      },
-      // separatorBuilder: (BuildContext context, int index) {
-      //   return Divider(
-      //     color: Theme.of(context).primaryColor,
-      //   );
-      // },
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => MenuManagementPage(storeId: _storeId),
+                    ),
+                  );
+                },
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "메뉴 관리",
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        fontSize: 12,
+                        color: Color(0xFFF27213),
+                      ),
+                    ),
+                    SizedBox(width: 4),
+                    Icon(Icons.chevron_right, size: 18, color: Color(0xFFF27213)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (menuList.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Text(
+                "등록된 메뉴가 없습니다.",
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 14,
+                  color: Color(0xFF808080),
+                ),
+              ),
+            )
+          else
+            ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: menuList.length,
+              separatorBuilder: (_, __) => const Divider(
+                height: 1,
+                color: Color(0xFFE6E6E6),
+              ),
+              itemBuilder: (context, index) {
+                final menu = menuList[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        menu.name,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                          color: Color(0xFF101010),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "${menu.price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원",
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
+                          color: Color(0xFFF27213),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
     );
-    return listView;
-  }
-}
-
-class OperatingHourWidget extends StatelessWidget {
-  OperatingHours operatingHours;
-
-  OperatingHourWidget({required this.operatingHours});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-        alignment: Alignment(-1.0, 0.0),
-        height: 150,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("영업시작시간"),
-            Text("${operatingHours.startTime}"),
-          ],
-        ));
   }
 }

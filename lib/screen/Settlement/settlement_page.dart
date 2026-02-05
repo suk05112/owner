@@ -54,34 +54,30 @@ class _SettlementPageState extends State<SettlementPage> {
           } else if (snapshot.hasData) {
             List<Settlement> settlements = snapshot.data!.settlements;
             if (settlements.isNotEmpty) {
-              // status == 0인 정산 예정 항목 찾기
-              Settlement? pendingSettlement;
-              List<Settlement> pastSettlements = [];
-
-              for (var settlement in settlements) {
-                if (settlement.status == 0 && pendingSettlement == null) {
-                  pendingSettlement = settlement;
-                } else {
-                  pastSettlements.add(settlement);
-                }
-              }
+              // 가장 최근(첫 번째) = 정산예정 카드, 나머지 = 리스트 (Figma 1760-1319)
+              final pendingSettlement = settlements.first;
+              final pastSettlements =
+                  settlements.length > 1 ? settlements.sublist(1) : <Settlement>[];
 
               return SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.only(top: 16, bottom: 16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // 정산 예정 카드
-                    if (pendingSettlement != null)
-                      _buildPendingSettlementCard(pendingSettlement),
-                    if (pendingSettlement != null && pastSettlements.isNotEmpty)
+                    _buildPendingSettlementCard(pendingSettlement),
+                    if (pastSettlements.isNotEmpty) ...[
                       const SizedBox(height: 16),
-                    // 정산 내역 카드들
-                    ...pastSettlements.map((settlement) => Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
+                      ...pastSettlements.map(
+                        (settlement) => Padding(
+                          padding: const EdgeInsets.only(
+                            left: 20,
+                            right: 20,
+                            bottom: 12,
+                          ),
                           child: _buildSettlementCard(settlement),
-                        )),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               );
@@ -114,9 +110,11 @@ class _SettlementPageState extends State<SettlementPage> {
     );
   }
 
+  /// Figma 1760-1319: 정산예정 카드 — 화면 전체 너비, 16 radius, #e6e6e6 테두리
   Widget _buildPendingSettlementCard(Settlement settlement) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -135,6 +133,7 @@ class _SettlementPageState extends State<SettlementPage> {
               fontWeight: FontWeight.w400,
               color: Color(0xFF101010),
               fontFamily: 'Inter',
+              height: 1.5,
             ),
           ),
           const SizedBox(height: 12),
@@ -145,6 +144,7 @@ class _SettlementPageState extends State<SettlementPage> {
               fontWeight: FontWeight.w400,
               color: Color(0xFF808080),
               fontFamily: 'Inter',
+              height: 1.43,
             ),
           ),
           const SizedBox(height: 4),
@@ -155,6 +155,7 @@ class _SettlementPageState extends State<SettlementPage> {
               fontWeight: FontWeight.w700,
               color: Color(0xFFF27213),
               fontFamily: 'Inter',
+              height: 1.2,
             ),
           ),
           const SizedBox(height: 8),
@@ -162,12 +163,15 @@ class _SettlementPageState extends State<SettlementPage> {
             formatSettlementPeriod(
               settlement.settlement_date,
               settlement.settlement_period,
+              periodStart: settlement.period_start,
+              periodEnd: settlement.period_end,
             ),
             style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
               color: Color(0xFF808080),
               fontFamily: 'Inter',
+              height: 1.43,
             ),
           ),
         ],
@@ -186,6 +190,8 @@ class _SettlementPageState extends State<SettlementPage> {
               settlement_date: settlement.settlement_date,
               settlement_period: settlement.settlement_period,
               status: settlement.status,
+              period_start: settlement.period_start,
+              period_end: settlement.period_end,
             ),
           ),
         );
@@ -213,6 +219,8 @@ class _SettlementPageState extends State<SettlementPage> {
                           formatSettlementPeriod(
                             settlement.settlement_date,
                             settlement.settlement_period,
+                            periodStart: settlement.period_start,
+                            periodEnd: settlement.period_end,
                           ),
                           style: const TextStyle(
                             fontSize: 14,
@@ -310,27 +318,32 @@ class _SettlementPageState extends State<SettlementPage> {
     return const SizedBox.shrink();
   }
 
-  String formatSettlementPeriod(DateTime settlementDate, int settlementPeriod) {
-    // Parse settlementDate
-    // final date = DateTime.parse(settlementDate);
-
+  String formatSettlementPeriod(
+    DateTime settlementDate,
+    int settlementPeriod, {
+    String? periodStart,
+    String? periodEnd,
+  }) {
+    if (periodStart != null && periodEnd != null) {
+      try {
+        final start = DateTime.parse(periodStart);
+        final end = DateTime.parse(periodEnd);
+        return "${start.year}년 ${start.month}월 ${start.day}일 ~ ${end.month}월 ${end.day}일";
+      } catch (_) {}
+    }
     if (settlementPeriod == 0) {
-      // 같은 달의 1~15일
       final year = settlementDate.year;
       final month = settlementDate.month;
       return "$year년 $month월 1일~$month월 15일";
     } else if (settlementPeriod == 1) {
-      // 이전 달의 16~말일
       final previousMonth =
           DateTime(settlementDate.year, settlementDate.month - 1, 16);
       final year = previousMonth.year;
       final month = previousMonth.month;
-      final lastDay = DateTime(settlementDate.year, settlementDate.month, 0)
-          .day; // 이전 달 말일 계산
+      final lastDay = DateTime(settlementDate.year, settlementDate.month, 0).day;
       return "$year년 $month월 16일~$month월 $lastDay일";
     }
-
-    return "Invalid settlement period";
+    return "${settlementDate.year}년 ${settlementDate.month}월 정산";
   }
 
   String formatDateTimeToKorean(DateTime dateTime) {

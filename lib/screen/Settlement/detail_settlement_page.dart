@@ -10,12 +10,16 @@ class DetailSettlementPage extends StatefulWidget {
       required this.settlement_id,
       required this.settlement_date,
       required this.settlement_period,
-      this.status})
+      this.status,
+      this.period_start,
+      this.period_end})
       : super(key: key);
   final int settlement_id;
   final DateTime settlement_date;
   final int settlement_period;
   final int? status;
+  final String? period_start;
+  final String? period_end;
 
   @override
   State<DetailSettlementPage> createState() => _DetailSettlementPageState();
@@ -122,27 +126,32 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
     );
   }
 
-  String formatSettlementPeriod(DateTime settlementDate, int settlementPeriod) {
-    // Parse settlementDate
-    // final date = DateTime.parse(settlementDate);
-
+  String formatSettlementPeriod(
+    DateTime settlementDate,
+    int settlementPeriod, {
+    String? periodStart,
+    String? periodEnd,
+  }) {
+    if (periodStart != null && periodEnd != null) {
+      try {
+        final start = DateTime.parse(periodStart);
+        final end = DateTime.parse(periodEnd);
+        return "${start.year}년 ${start.month}월 ${start.day}일 ~ ${end.month}월 ${end.day}일";
+      } catch (_) {}
+    }
     if (settlementPeriod == 0) {
-      // 같은 달의 1~15일
       final year = settlementDate.year;
       final month = settlementDate.month;
       return "$year년 $month월 1일~$month월 15일";
     } else if (settlementPeriod == 1) {
-      // 이전 달의 16~말일
       final previousMonth =
           DateTime(settlementDate.year, settlementDate.month - 1, 16);
       final year = previousMonth.year;
       final month = previousMonth.month;
-      final lastDay = DateTime(settlementDate.year, settlementDate.month, 0)
-          .day; // 이전 달 말일 계산
+      final lastDay = DateTime(settlementDate.year, settlementDate.month, 0).day;
       return "$year년 $month월 16일~$month월 $lastDay일";
     }
-
-    return "Invalid settlement period";
+    return "${settlementDate.year}년 ${settlementDate.month}월 정산";
   }
 
   String formatDateTimeToKorean(DateTime dateTime) {
@@ -189,6 +198,8 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                   formatSettlementPeriod(
                     widget.settlement_date,
                     widget.settlement_period,
+                    periodStart: widget.period_start,
+                    periodEnd: widget.period_end,
                   ),
                   style: const TextStyle(
                     fontSize: 14,

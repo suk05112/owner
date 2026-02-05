@@ -280,7 +280,8 @@ class _SettingPageState extends State<SettingPage> {
                   MaterialPageRoute(builder: (context) => selectedPage[index]),
                 ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   child: Row(
                     children: [
                       Container(
@@ -538,12 +539,14 @@ class MiscOssLicenseSingle extends StatelessWidget {
             ),
             if (description.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 12.0, left: 12.0, right: 12.0),
+                padding:
+                    const EdgeInsets.only(top: 12.0, left: 12.0, right: 12.0),
                 child: Text(description),
               ),
             const Divider(),
             Padding(
-              padding: const EdgeInsets.only(top: 12.0, left: 12.0, right: 12.0),
+              padding:
+                  const EdgeInsets.only(top: 12.0, left: 12.0, right: 12.0),
               child: Text(_bodyText()),
             ),
             const Divider(),

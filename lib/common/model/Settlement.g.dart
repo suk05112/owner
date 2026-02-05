@@ -8,21 +8,25 @@ part of 'Settlement.dart';
 
 Settlement _$SettlementFromJson(Map<String, dynamic> json) => Settlement(
       settlement_id: (json['settlement_id'] as num).toInt(),
-      total_price: (json['total_price'] as num).toInt(),
+      total_price: _numToInt(json['expected_amount']),
       settlement_msg: json['settlement_msg'] as String?,
-      settlement_date: DateTime.parse(json['settlement_date'] as String),
-      settlement_period: (json['settlement_period'] as num).toInt(),
-      status: (json['status'] as num).toInt(),
+      settlement_date: _parsePayoutDate(json['expected_payout_date']),
+      settlement_period: _numToInt(json['cycle_id']),
+      status: _statusToInt(json['status']),
+      period_start: json['period_start'] as String?,
+      period_end: json['period_end'] as String?,
     );
 
 Map<String, dynamic> _$SettlementToJson(Settlement instance) =>
     <String, dynamic>{
       'settlement_id': instance.settlement_id,
-      'total_price': instance.total_price,
+      'expected_amount': instance.total_price,
       'settlement_msg': instance.settlement_msg,
-      'settlement_date': instance.settlement_date.toIso8601String(),
-      'settlement_period': instance.settlement_period,
+      'expected_payout_date': instance.settlement_date.toIso8601String(),
+      'cycle_id': instance.settlement_period,
       'status': instance.status,
+      'period_start': instance.period_start,
+      'period_end': instance.period_end,
     };
 
 DetailSettlement _$DetailSettlementFromJson(Map<String, dynamic> json) =>

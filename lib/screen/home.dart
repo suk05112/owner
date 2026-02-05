@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:owner/common/provier/dashboard_stats_provider.dart';
+import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/screen/Setting/setting_page.dart';
@@ -37,12 +39,13 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    // 대시보드 페이지를 기본 화면으로 설정
+    // 대시보드 페이지를 기본 화면으로 설정 (매장관리는 push로 이동해 네비 바 숨김)
     currentScreen = DashboardPage(
-      onNavigateToStoreManagement: () {
-        setState(() {
-          currentScreen = const CafeList();
-        });
+      onNavigateToStoreManagement: (context) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const CafeList()),
+        );
       },
     );
   }
@@ -64,11 +67,17 @@ class _HomeState extends State<Home> {
 
               if (result != null) {
                 setState(() {
-                  //qr스캐너에서 받은 결과값을 화면의 qrResult 에 적용하도록 한다.
                   qrResult = result;
 
                   if (qrResult == 0) {
                     print("0 걸림");
+                    // QR로 기프티콘 사용 완료 시에만 통계 API 호출
+                    final storeProvider = Provider.of<SelectedStoreProvider>(context, listen: false);
+                    final statsProvider = Provider.of<DashboardStatsProvider>(context, listen: false);
+                    final storeId = storeProvider.selectedStoreId;
+                    if (storeId != null) {
+                      statsProvider.refreshStats(storeId);
+                    }
                     CommonDialog.show(
                         context: context,
                         title: "사용 완료",
@@ -137,8 +146,14 @@ class _HomeState extends State<Home> {
                       minWidth: 0,
                       onPressed: () {
                         setState(() {
-                          currentScreen = const DashboardPage(
-                            onNavigateToStoreManagement: null,
+                          currentScreen = DashboardPage(
+                            onNavigateToStoreManagement: (context) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => const CafeList()),
+                              );
+                            },
                           );
                           currentTab = 0;
                         });

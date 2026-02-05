@@ -6,6 +6,7 @@ part 'menu.g.dart';
 
 @JsonSerializable()
 class MenuGetResponse {
+  @JsonKey(defaultValue: 200)
   int statusCode;
   List<Menu> menuList;
 

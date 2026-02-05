@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/api/response/menu.dart';
@@ -6,6 +8,7 @@ import 'package:owner/common/api/response/owner/find_ownername_response.dart';
 import 'package:owner/common/api/response/store/store_post_response.dart';
 import 'package:owner/common/api/response/store/statistics_response.dart';
 import 'package:owner/common/model/Account.dart';
+import 'package:owner/common/model/account_response.dart';
 import 'package:owner/common/model/Settlement.dart';
 import 'package:owner/common/model/UsedGifticon.dart';
 import 'package:owner/common/api/response/GifticonResponse.dart';
@@ -106,7 +109,7 @@ abstract class ApiClient {
     @Path('owner_id') int owner_id,
   );
 
-  @GET("/settlement/list/{store_id}")
+  @GET("/owner/settlement/{store_id}")
   Future<SettlementList> getSettlementListByStore(
     @Path('store_id') int store_id,
   );
@@ -132,8 +135,54 @@ abstract class ApiClient {
     @Path('owner_id') int owner_id,
   );
 
-  @GET("/statistics/{store_id}")
+  @GET("owner/statistics/{store_id}")
   Future<StoreStatisticsResponse> getStoreStatistics(
     @Path('store_id') int store_id,
   );
+
+  @GET("/owner/account/{store_id}")
+  Future<GetAccountResponse> getAccount(
+    @Path('store_id') int store_id,
+  );
+
+  @PUT("/owner/account/{store_id}")
+  Future<UpdateAccountResponse> updateAccount(
+    @Path('store_id') int store_id,
+    @Body() Account account,
+  );
+}
+
+/// PUT /owner/account/{store_id} 응답 — 통장사본 있을 때 bank_book_put_url(S3 presigned) 반환
+class UpdateAccountResponse {
+  final String? bank_book_put_url;
+
+  UpdateAccountResponse({this.bank_book_put_url});
+
+  factory UpdateAccountResponse.fromJson(dynamic json) {
+    if (json == null) return UpdateAccountResponse();
+    Map<String, dynamic>? map;
+    if (json is Map<String, dynamic>) {
+      map = json;
+    } else if (json is Map) {
+      map = Map<String, dynamic>.from(json);
+    } else if (json is String) {
+      try {
+        map = jsonDecode(json) as Map<String, dynamic>?;
+      } catch (_) {
+        return UpdateAccountResponse();
+      }
+    }
+    if (map == null) return UpdateAccountResponse();
+    final url = map['bank_book_put_url'] as String? ??
+        map['bankBookPutUrl'] as String? ??
+        _fromNested(map, 'bank_book_put_url') ??
+        _fromNested(map, 'bankBookPutUrl');
+    return UpdateAccountResponse(bank_book_put_url: url);
+  }
+
+  static String? _fromNested(Map<String, dynamic> json, String key) {
+    final data = json['data'];
+    if (data is Map) return data[key] as String?;
+    return null;
+  }
 }

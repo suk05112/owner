@@ -34,19 +34,23 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadDashboardData();
   }
 
-  /// 매장 목록만 로드. 통계는 QR 스캔으로 기프티콘 사용 시에만 API 호출됨.
+  /// 매장 목록 로드 후 선택 매장 기준으로 대시보드 통계 API 호출 (앱 최초 실행·당겨서 새로고침 시)
   Future<void> _loadDashboardData() async {
     setState(() => _isLoading = true);
     try {
       user = Provider.of<UserProvider>(context, listen: false).user;
       final storeProvider = Provider.of<SelectedStoreProvider>(context, listen: false);
+      final statsProvider = Provider.of<DashboardStatsProvider>(context, listen: false);
 
       if (user != null && user!.owner_id > 0) {
         final storeListResponse = await Api().client.getStoreList(user!.owner_id);
         final stores = storeListResponse.store;
         storeProvider.setStores(stores);
-        final statsProvider = Provider.of<DashboardStatsProvider>(context, listen: false);
         statsProvider.clearIfDifferentStore(storeProvider.selectedStoreId);
+        final selectedStoreId = storeProvider.selectedStoreId;
+        if (selectedStoreId != null) {
+          await statsProvider.refreshStats(selectedStoreId);
+        }
       }
     } catch (e) {
       print("Error loading dashboard data: $e");

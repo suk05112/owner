@@ -465,9 +465,13 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<SettlementList> getSettlementListByStore(int store_id) async {
+  Future<SettlementList> getSettlementListByStore(
+    int store_id,
+    int? past_months,
+  ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'past_months': past_months};
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<SettlementList>(
@@ -492,25 +496,27 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<DetailSettlementList> getDetailSettlements(int settlement_id) async {
+  Future<SettlementDetailResponse> getDetailSettlements(
+    int settlement_id,
+  ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<DetailSettlementList>(
+    final _options = _setStreamType<SettlementDetailResponse>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/settlement/detail/${settlement_id}',
+            '/owner/settlement/detail/${settlement_id}',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
     final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late DetailSettlementList _value;
+    late SettlementDetailResponse _value;
     try {
-      _value = DetailSettlementList.fromJson(_result.data!);
+      _value = SettlementDetailResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;

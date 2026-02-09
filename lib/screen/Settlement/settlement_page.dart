@@ -21,7 +21,7 @@ class _SettlementPageState extends State<SettlementPage> {
   void initState() {
     super.initState();
     _storeId = widget.storeId;
-    futureSettlements = Api().client.getSettlementListByStore(_storeId);
+    futureSettlements = Api().client.getSettlementListByStore(_storeId, 3);
   }
 
   @override
@@ -54,30 +54,16 @@ class _SettlementPageState extends State<SettlementPage> {
           } else if (snapshot.hasData) {
             List<Settlement> settlements = snapshot.data!.settlements;
             if (settlements.isNotEmpty) {
-              // 가장 최근(첫 번째) = 정산예정 카드, 나머지 = 리스트 (Figma 1760-1319)
-              final pendingSettlement = settlements.first;
-              final pastSettlements =
-                  settlements.length > 1 ? settlements.sublist(1) : <Settlement>[];
-
+              // 상단 카드: PENDING이면서 expected_payout_date가 오늘 이상인 것 중 가장 앞선(가장 빠른) 날짜 항목
+              final cardSettlement = _findPendingSettlementForCard(settlements);
               return SingleChildScrollView(
-                padding: const EdgeInsets.only(top: 16, bottom: 16),
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildPendingSettlementCard(pendingSettlement),
-                    if (pastSettlements.isNotEmpty) ...[
-                      const SizedBox(height: 16),
-                      ...pastSettlements.map(
-                        (settlement) => Padding(
-                          padding: const EdgeInsets.only(
-                            left: 20,
-                            right: 20,
-                            bottom: 12,
-                          ),
-                          child: _buildSettlementCard(settlement),
-                        ),
-                      ),
-                    ],
+                    if (cardSettlement != null) _buildPendingSettlementCard(cardSettlement),
+                    if (cardSettlement != null) const SizedBox(height: 16),
+                    _buildSettlementList(settlements),
                   ],
                 ),
               );
@@ -108,6 +94,21 @@ class _SettlementPageState extends State<SettlementPage> {
         },
       ),
     );
+  }
+
+  /// PENDING이면서 expected_payout_date가 오늘 이상인 항목 중 가장 빠른 날짜 것 반환
+  Settlement? _findPendingSettlementForCard(List<Settlement> settlements) {
+    final today = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    Settlement? candidate;
+    for (final s in settlements) {
+      if (s.status?.toUpperCase() != 'PENDING') continue;
+      final payoutDate = DateTime(s.settlement_date.year, s.settlement_date.month, s.settlement_date.day);
+      if (payoutDate.isBefore(today)) continue; // 오늘 지난 건 제외
+      if (candidate == null || s.settlement_date.isBefore(candidate.settlement_date)) {
+        candidate = s;
+      }
+    }
+    return candidate;
   }
 
   /// Figma 1760-1319: 정산예정 카드 — 화면 전체 너비, 16 radius, #e6e6e6 테두리
@@ -179,89 +180,101 @@ class _SettlementPageState extends State<SettlementPage> {
     );
   }
 
-  Widget _buildSettlementCard(Settlement settlement) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => DetailSettlementPage(
-              settlement_id: settlement.settlement_id,
-              settlement_date: settlement.settlement_date,
-              settlement_period: settlement.settlement_period,
-              status: settlement.status,
-              period_start: settlement.period_start,
-              period_end: settlement.period_end,
-            ),
-          ),
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(0),
-          border: Border.all(
-            color: const Color(0xFFE6E6E6),
-            width: 1,
-          ),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          formatSettlementPeriod(
-                            settlement.settlement_date,
-                            settlement.settlement_period,
-                            periodStart: settlement.period_start,
-                            periodEnd: settlement.period_end,
-                          ),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Color(0xFF101010),
-                            fontFamily: 'Inter',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _buildStatusBadge(settlement.status),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    formatCurrency(settlement.total_price),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFF27213),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                ],
+  /// Figma 1760-1340: 박스 없이 구분선만으로 리스트 표시
+  Widget _buildSettlementList(List<Settlement> settlements) {
+    return Column(
+      children: [
+        for (int i = 0; i < settlements.length; i++) ...[
+          _buildSettlementListTile(settlements[i]),
+          if (i < settlements.length - 1)
+            const Divider(height: 1, color: Color(0xFFE6E6E6)),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSettlementListTile(Settlement settlement) {
+    return Material(
+      color: Colors.white,
+      child: InkWell(
+        onTap: () {
+          final id = settlement.settlement_id;
+          if (id == null) return;
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => DetailSettlementPage(
+                settlement_id: id,
+                settlement_date: settlement.settlement_date,
+                settlement_period: settlement.settlement_period,
+                status: settlement.status,
+                period_start: settlement.period_start,
+                period_end: settlement.period_end,
               ),
             ),
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.chevron_right,
-              color: Color(0xFF101010),
-              size: 20,
-            ),
-          ],
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            formatSettlementPeriod(
+                              settlement.settlement_date,
+                              settlement.settlement_period,
+                              periodStart: settlement.period_start,
+                              periodEnd: settlement.period_end,
+                            ),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: Color(0xFF101010),
+                              fontFamily: 'Inter',
+                              height: 20 / 14,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildStatusBadge(settlement.status),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      formatCurrency(settlement.total_price),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFF27213),
+                        fontFamily: 'Inter',
+                        height: 28 / 18,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right,
+                color: Color(0xFF101010),
+                size: 20,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildStatusBadge(int status) {
-    if (status == 0) {
-      // 입금 예정
+  Widget _buildStatusBadge(String? status) {
+    final u = status?.toUpperCase() ?? '';
+    if (u == 'PENDING' || u == 'READY') {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
@@ -278,8 +291,8 @@ class _SettlementPageState extends State<SettlementPage> {
           ),
         ),
       );
-    } else if (status == 1) {
-      // 입금 완료
+    }
+    if (u == 'COMPLETED') {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
@@ -296,8 +309,8 @@ class _SettlementPageState extends State<SettlementPage> {
           ),
         ),
       );
-    } else if (status == 2) {
-      // 입금 실패
+    }
+    if (u == 'FAILED') {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
@@ -310,6 +323,24 @@ class _SettlementPageState extends State<SettlementPage> {
             fontSize: 12,
             fontWeight: FontWeight.w400,
             color: Colors.red,
+            fontFamily: 'Inter',
+          ),
+        ),
+      );
+    }
+    if (u == 'HOLD') {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: const Color(0xFF808080).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Text(
+          "보류",
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF808080),
             fontFamily: 'Inter',
           ),
         ),

@@ -112,10 +112,11 @@ abstract class ApiClient {
   @GET("/owner/settlement/{store_id}")
   Future<SettlementList> getSettlementListByStore(
     @Path('store_id') int store_id,
+    @Query('past_months') int? past_months,
   );
 
-  @GET("/settlement/detail/{settlement_id}")
-  Future<DetailSettlementList> getDetailSettlements(
+  @GET("/owner/settlement/detail/{settlement_id}")
+  Future<SettlementDetailResponse> getDetailSettlements(
     @Path('settlement_id') int settlement_id,
   );
 

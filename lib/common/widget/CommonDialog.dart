@@ -1,77 +1,130 @@
 import 'package:flutter/material.dart';
 
+/// 공통 알림 다이얼로그 — 제목/내용/버튼 스타일 통일
 class CommonDialog {
+  static const Color _primary = Color(0xFFF27213);
+  static const Color _titleColor = Color(0xFF101010);
+  static const Color _contentColor = Color(0xFF808080);
+
   static void show({
     required BuildContext context,
     required String title,
     required String content,
     required String buttonText,
-    required VoidCallback onPressed, // onPressed 매개변수 추가
+    required VoidCallback onPressed,
     bool cancel = false,
+    Widget? icon,
   }) {
     showDialog(
       context: context,
       barrierDismissible: false,
+      barrierColor: Colors.black38,
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(20),
           ),
-          title: Column(
-            children: <Widget>[
-              Text(title),
-            ],
-          ),
+          contentPadding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+          titlePadding: EdgeInsets.zero,
+          title: null,
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Text(content),
+            children: [
+              if (icon != null) ...[
+                icon,
+                const SizedBox(height: 20),
+              ],
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: _titleColor,
+                  height: 1.3,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                content,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: _contentColor,
+                  height: 1.45,
+                ),
+              ),
+              const SizedBox(height: 24),
+              if (cancel) WithCancelBtn(context, onPressed, buttonText) else OKBtn(context, onPressed, buttonText),
             ],
           ),
-          actions: <Widget>[
-            if (cancel)
-              WithCancelBtn(context, onPressed)
-            else
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: OKBtn(context, onPressed),
-              )
-          ],
+          actions: const [],
         );
       },
     );
   }
 
-  static Widget OKBtn(context, onPressed) {
+  static Widget OKBtn(BuildContext context, VoidCallback onPressed, String buttonText) {
     return SizedBox(
       width: double.infinity,
-      child: TextButton(
-        child: Text('확인'),
+      height: 52,
+      child: ElevatedButton(
         onPressed: () {
           onPressed();
-          Navigator.pop(context);
+          Navigator.of(context).pop();
         },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Text(
+          buttonText,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
       ),
     );
   }
 
-  static Widget WithCancelBtn(context, onPressed) {
+  static Widget WithCancelBtn(BuildContext context, VoidCallback onPressed, String buttonText) {
     return Row(
       children: [
-        TextButton(
-          child: Text('취소'),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: _contentColor,
+              side: const BorderSide(color: Color(0xFFE6E6E6)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+            child: const Text('취소'),
+          ),
         ),
-        TextButton(
-          child: Text('확인'), // cancel이 true일 때 "확인", false일 때 buttonText
-          onPressed: () {
-            onPressed(); // 전달받은 onPressed 함수 호출
-            Navigator.pop(context);
-          },
+        const SizedBox(width: 12),
+        Expanded(
+          child: SizedBox(
+            height: 48,
+            child: ElevatedButton(
+              onPressed: () {
+                onPressed();
+                Navigator.of(context).pop();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: Text(buttonText),
+            ),
+          ),
         ),
       ],
     );

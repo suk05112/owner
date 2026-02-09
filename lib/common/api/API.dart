@@ -217,11 +217,20 @@ class Api {
   /// 이 함수가 호출 된 이후,
   /// Api().client 의 baseURL 은 변경됩니다.
   Future<ApiClient> setBaseClient(String baseUrl) async {
-    final user = FirebaseAuth.instance.currentUser;
-    final idToken = await user?.getIdToken(); // Firebase ID Token
-
-    // App Check 토큰 가져오기 (공통 함수 사용)
-    final appCheckToken = await _getAppCheckToken();
+    String? idToken;
+    String? appCheckToken;
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      idToken = await user?.getIdToken(); // Firebase ID Token
+    } catch (e) {
+      // 네트워크 오류 등으로 토큰 획득 실패 시 앱은 계속 실행 (토큰 없이 클라이언트 생성)
+      print('⚠️ Firebase ID Token 획득 실패 (네트워크 등): $e');
+    }
+    try {
+      appCheckToken = await _getAppCheckToken();
+    } catch (e) {
+      print('⚠️ App Check Token 획득 실패 (무시): $e');
+    }
 
     final baseHeaders = await _getHeaders();
 

@@ -14,6 +14,7 @@ import 'package:owner/screen/home.dart';
 import 'common/provier/store_provider.dart';
 import 'screen/LoginPage.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/utils/network_utils.dart';
 import 'package:owner/config.dart';
 
 FutureOr<void> main() async {
@@ -63,7 +64,9 @@ class MyApp extends StatelessWidget {
                 theme: ThemeData(
                   primarySwatch: Colors.blue,
                 ),
-                home: user == null ? const LoginScreen() : const Home(),
+                home: _NetworkFirstRunCheck(
+                  child: user == null ? const LoginScreen() : const Home(),
+                ),
                 debugShowCheckedModeBanner: false,
               );
             },
@@ -79,6 +82,28 @@ class MyApp extends StatelessWidget {
           // home: const MyHomePage(title: 'Flutter Demo Home Page'),
         ));
   }
+}
+
+/// 앱 최초 진입 시 인터넷 미연결이면 안내 다이얼로그 표시 (공통 모듈 사용)
+class _NetworkFirstRunCheck extends StatefulWidget {
+  const _NetworkFirstRunCheck({required this.child});
+  final Widget child;
+
+  @override
+  State<_NetworkFirstRunCheck> createState() => _NetworkFirstRunCheckState();
+}
+
+class _NetworkFirstRunCheckState extends State<_NetworkFirstRunCheck> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      NetworkUtils.checkOnFirstLaunchAndShowDialogIfOffline(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class MyHomePage extends StatefulWidget {

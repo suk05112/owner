@@ -49,7 +49,8 @@ class _CafeListState extends State<CafeList> {
         scrolledUnderElevation: 0,
         centerTitle: false,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Color(0xFF101010)),
+          icon: const Icon(Icons.arrow_back_ios,
+              size: 20, color: Color(0xFF101010)),
           onPressed: () => Navigator.maybePop(context),
         ),
         title: const Text(
@@ -93,77 +94,84 @@ class _CafeListState extends State<CafeList> {
         child: Container(
           color: Colors.white,
           child: Consumer<StoreProvider>(
-                builder: (context, storeProvider, child) {
-                  final isLoading = storeProvider.isLoadingStoreList;
-                  List<Store> storeList = storeProvider.storeCards ?? [];
-                  return Column(
-                    children: [
-                      if (isLoading)
-                        const LinearProgressIndicator(
-                          backgroundColor: Color(0xFFE6E6E6),
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFF27213)),
-                        ),
-                      Expanded(
-                        child: RefreshIndicator(
-                          onRefresh: () async {
-                      try {
-                        await Provider.of<StoreProvider>(context, listen: false)
-                            .fetchStoreList(user?.owner_id ?? 0);
-                      } catch (e) {
-                        print("매장 목록 새로고침 실패: $e");
-                      }
-                    },
-                    child: isLoading && storeList.isEmpty
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFFF27213),
-                            ),
-                          )
-                        : !isLoading && storeList.isEmpty
-                            ? Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(24),
-                                  child: Text(
-                                    "등록된 매장이 없습니다.\n매장을 추가해주세요.",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      color: Colors.grey[700],
-                                      height: 1.5,
+            builder: (context, storeProvider, child) {
+              final isLoading = storeProvider.isLoadingStoreList;
+              List<Store> storeList = storeProvider.storeCards ?? [];
+              return Column(
+                children: [
+                  if (isLoading)
+                    const LinearProgressIndicator(
+                      backgroundColor: Color(0xFFE6E6E6),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFFF27213)),
+                    ),
+                  Expanded(
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        try {
+                          await Provider.of<StoreProvider>(context,
+                                  listen: false)
+                              .fetchStoreList(user?.owner_id ?? 0);
+                        } catch (e) {
+                          print("매장 목록 새로고침 실패: $e");
+                        }
+                      },
+                      child: isLoading && storeList.isEmpty
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFF27213),
+                              ),
+                            )
+                          : !isLoading && storeList.isEmpty
+                              ? Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(24),
+                                    child: Text(
+                                      "등록된 매장이 없습니다.\n매장을 추가해주세요.",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey[700],
+                                        height: 1.5,
+                                      ),
                                     ),
                                   ),
+                                )
+                              : LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return SingleChildScrollView(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      padding: const EdgeInsets.fromLTRB(
+                                          16, 14, 16, 16),
+                                      child: ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          minHeight: constraints.maxHeight,
+                                        ),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            ...storeList.map((store) => Padding(
+                                                  padding:
+                                                      const EdgeInsets.only(
+                                                          bottom: 15),
+                                                  child: storeCard(store),
+                                                )),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                              )
-                            : LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return SingleChildScrollView(
-                                    physics: const AlwaysScrollableScrollPhysics(),
-                                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
-                                    child: ConstrainedBox(
-                                      constraints: BoxConstraints(
-                                        minHeight: constraints.maxHeight,
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          ...storeList.map((store) => Padding(
-                                                padding: const EdgeInsets.only(bottom: 15),
-                                                child: storeCard(store),
-                                              )),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
         ),
+      ),
     );
   }
 

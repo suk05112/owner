@@ -17,7 +17,7 @@ class DetailSettlementPage extends StatefulWidget {
   final int settlement_id;
   final DateTime settlement_date;
   final int settlement_period;
-  final int? status;
+  final String? status;
   final String? period_start;
   final String? period_end;
 
@@ -27,7 +27,7 @@ class DetailSettlementPage extends StatefulWidget {
 
 class _DetailSettlementPageState extends State<DetailSettlementPage> {
   late int _settlement_id;
-  late Future<DetailSettlementList> futureDetailSettlements;
+  late Future<SettlementDetailResponse> futureDetailSettlements;
 
   @override
   void initState() {
@@ -41,7 +41,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
     return Scaffold(
       appBar: const CommonAppBar(title: "상세 정산 내역"),
       backgroundColor: Colors.white,
-      body: FutureBuilder<DetailSettlementList>(
+      body: FutureBuilder<SettlementDetailResponse>(
         future: futureDetailSettlements,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -64,34 +64,25 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
               ),
             );
           } else if (snapshot.hasData) {
-            List<DetailSettlement> settlements =
-                snapshot.data!.detailSettlements;
+            final data = snapshot.data!;
+            final settlement = data.settlement;
+            final details = data.details;
 
-            // 총 정산 금액 계산
-            int totalAmount =
-                settlements.fold(0, (sum, item) => sum + item.deposit);
-
-            // 날짜별로 그룹화
-            Map<String, List<DetailSettlement>> groupedByDate = {};
-            for (var settlement in settlements) {
-              if (settlement.used_time != null) {
-                String dateKey = formatDate(settlement.used_time!);
-                groupedByDate.putIfAbsent(dateKey, () => []).add(settlement);
-              }
-            }
-
-            // 정산 상태 확인
-            int status = widget.status ?? 1; // 기본값은 입금완료
+            int totalAmount = settlement.net_payout_amount;
 
             return SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 정산 정보 카드
-                  _buildSettlementInfoCard(status, totalAmount),
+                  _buildSettlementInfoCard(
+                    settlement.status,
+                    totalAmount,
+                    periodStart: settlement.period_start,
+                    periodEnd: settlement.period_end,
+                    failureReason: settlement.failure_reason,
+                  ),
                   const SizedBox(height: 16),
-                  // 주문 내역
                   const Text(
                     "주문 내역",
                     style: TextStyle(
@@ -102,10 +93,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // 날짜별 주문 목록
-                  ...groupedByDate.entries.map((entry) {
-                    return _buildDateGroup(entry.key, entry.value);
-                  }),
+                  _buildDetailsList(details),
                 ],
               ),
             );
@@ -148,7 +136,8 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
           DateTime(settlementDate.year, settlementDate.month - 1, 16);
       final year = previousMonth.year;
       final month = previousMonth.month;
-      final lastDay = DateTime(settlementDate.year, settlementDate.month, 0).day;
+      final lastDay =
+          DateTime(settlementDate.year, settlementDate.month, 0).day;
       return "$year년 $month월 16일~$month월 $lastDay일";
     }
     return "${settlementDate.year}년 ${settlementDate.month}월 정산";
@@ -177,7 +166,22 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
     return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
   }
 
-  Widget _buildSettlementInfoCard(int status, int totalAmount) {
+  Widget _buildSettlementInfoCard(
+    String? status,
+    int totalAmount, {
+    String? periodStart,
+    String? periodEnd,
+    String? failureReason,
+  }) {
+    String periodText = '정산 기간';
+    if (periodStart != null && periodEnd != null) {
+      try {
+        final start = DateTime.parse(periodStart);
+        final end = DateTime.parse(periodEnd);
+        periodText =
+            "${start.year}년 ${start.month}월 ${start.day}일 ~ ${end.month}월 ${end.day}일";
+      } catch (_) {}
+    }
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -195,12 +199,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
             children: [
               Expanded(
                 child: Text(
-                  formatSettlementPeriod(
-                    widget.settlement_date,
-                    widget.settlement_period,
-                    periodStart: widget.period_start,
-                    periodEnd: widget.period_end,
-                  ),
+                  periodText,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
@@ -232,13 +231,251 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
               fontFamily: 'Inter',
             ),
           ),
+          if (status?.toUpperCase() == 'FAILED' &&
+              failureReason != null &&
+              failureReason.trim().isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Text(
+              "실패 사유",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Color(0xFF808080),
+                fontFamily: 'Inter',
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              failureReason.trim(),
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Colors.red,
+                fontFamily: 'Inter',
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildStatusBadge(int status) {
-    if (status == 0) {
+  /// used_at(ISO 문자열)에서 날짜 키 추출 (yyyy.MM.dd)
+  String _dateKeyFromUsedAt(String? usedAt) {
+    if (usedAt == null || usedAt.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(usedAt);
+      return '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  /// used_at에서 시간만 (HH:mm)
+  String _timeFromUsedAt(String? usedAt) {
+    if (usedAt == null || usedAt.isEmpty) return '';
+    try {
+      final dt = DateTime.parse(usedAt);
+      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Widget _buildDetailsList(List<SettlementDetailItem> details) {
+    if (details.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Text(
+          "주문 내역이 없습니다.",
+          style: TextStyle(
+            fontSize: 14,
+            color: Color(0xFF808080),
+            fontFamily: 'Inter',
+          ),
+        ),
+      );
+    }
+    // 날짜별 그룹화 (used_at 기준)
+    final Map<String, List<SettlementDetailItem>> byDate = {};
+    for (final d in details) {
+      final key = _dateKeyFromUsedAt(d.used_at).isEmpty ? '기타' : _dateKeyFromUsedAt(d.used_at);
+      byDate.putIfAbsent(key, () => []).add(d);
+    }
+    // 날짜 순 정렬 (기타는 마지막)
+    final sortedKeys = byDate.keys.toList()
+      ..sort((a, b) {
+        if (a == '기타') return 1;
+        if (b == '기타') return -1;
+        return b.compareTo(a);
+      });
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: sortedKeys.map((dateKey) {
+        final items = byDate[dateKey]!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (dateKey != '기타')
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Text(
+                  dateKey,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF101010),
+                    fontFamily: 'Inter',
+                  ),
+                ),
+              ),
+            ...items.map((d) => _buildOrderItemRow(
+                  menuName: d.menu_name?.trim().isNotEmpty == true ? d.menu_name! : '주문',
+                  timeStr: _timeFromUsedAt(d.used_at),
+                  amount: d.amount,
+                  feeAmount: d.fee_amount,
+                  settlementAmount: d.settlement_amount,
+                )),
+          ],
+        );
+      }).toList(),
+    );
+  }
+
+  /// 좌측 메뉴명+시간, 우측 메뉴금액·수수료(숫자만)·정산금액(주황), 구분선
+  Widget _buildOrderItemRow({
+    required String menuName,
+    required String timeStr,
+    required int amount,
+    required int feeAmount,
+    required int settlementAmount,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFE6E6E6), width: 1),
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  menuName,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Color(0xFF101010),
+                    fontFamily: 'Inter',
+                  ),
+                ),
+                if (timeStr.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    timeStr,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF808080),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "메뉴 금액",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF808080),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    formatCurrency(amount),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF101010),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "수수료",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF808080),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    formatCurrency(feeAmount),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: Color(0xFF101010),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    "정산금액",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFF27213),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    formatCurrency(settlementAmount),
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFFF27213),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String? status) {
+    final u = status?.toUpperCase() ?? '';
+    if (u == 'PENDING' || u == 'READY') {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
@@ -255,7 +492,8 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
           ),
         ),
       );
-    } else if (status == 1) {
+    }
+    if (u == 'COMPLETED') {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
@@ -272,7 +510,8 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
           ),
         ),
       );
-    } else if (status == 2) {
+    }
+    if (u == 'FAILED') {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
         decoration: BoxDecoration(
@@ -290,167 +529,25 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
         ),
       );
     }
+    if (u == 'HOLD') {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        decoration: BoxDecoration(
+          color: const Color(0xFF808080).withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: const Text(
+          "보류",
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFF808080),
+            fontFamily: 'Inter',
+          ),
+        ),
+      );
+    }
     return const SizedBox.shrink();
   }
 
-  Widget _buildDateGroup(String date, List<DetailSettlement> orders) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 날짜 헤더
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: const BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: Color(0xFFE6E6E6),
-                width: 1,
-              ),
-            ),
-          ),
-          child: Text(
-            date,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF101010),
-              fontFamily: 'Inter',
-            ),
-          ),
-        ),
-        // 주문 목록
-        ...orders.map((order) => _buildOrderItem(order)),
-      ],
-    );
-  }
-
-  Widget _buildOrderItem(DetailSettlement settlement) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: Color(0xFFE6E6E6),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 왼쪽: 메뉴명과 시간
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  settlement.menu_name,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF101010),
-                    fontFamily: 'Inter',
-                  ),
-                ),
-                const SizedBox(height: 4),
-                if (settlement.used_time != null)
-                  Text(
-                    formatTime(settlement.used_time!),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF808080),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          // 오른쪽: 금액 정보
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              // 메뉴 금액
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "메뉴 금액",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF808080),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    formatCurrency(settlement.price),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF808080),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              // 수수료
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "수수료",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF808080),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    "-${formatCurrency(settlement.commission)}",
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xFF808080),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              // 정산금액
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "정산금액",
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFF27213),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    formatCurrency(settlement.deposit),
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFFF27213),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
 }

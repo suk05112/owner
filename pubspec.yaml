@@ -83,6 +83,7 @@ dependencies:
   webview_flutter_wkwebview: ^3.17.0
   flutter_oss_licenses: ^2.0.1
   drift: ^2.18.0
+  connectivity_plus: ^6.0.5
 
 
 dev_dependencies:

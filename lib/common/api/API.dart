@@ -346,16 +346,16 @@ class AuthInterceptor extends Interceptor {
       // refresh access token
       try {
         print('[401 interceptor] call auth/refresh start');
-        // HttpResponse<AuthRefreshResponse> authRefreshResponse = await Api().client.postAuthRefresh(AuthRefreshPost(refresh_token: refreshToken!));
+        // For now, we'll skip the actual refresh token logic as it depends on secure storage
+        // In a production app, you would implement proper refresh token handling here
 
-        print('[401 interceptor] call auth/refresh success');
+        print('[401 interceptor] call auth/refresh success (skipped actual refresh for now)');
 
         // request 재요청
         final user = FirebaseAuth.instance.currentUser;
         final idToken = await user?.getIdToken(); // Firebase ID Token
 
         // App Check 토큰 가져오기 (공통 함수 사용, 401 에러 시에는 캐시 무시)
-        // 캐시 무시를 위해 forceRefresh를 true로 설정하되, 실제로는 캐시를 사용하지 않도록
         final appCheckToken = await Api._getAppCheckToken(forceRefresh: true);
 
         RequestOptions requestOptions = err.requestOptions;

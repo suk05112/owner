@@ -18,7 +18,7 @@ Future<void> main() async {
   // 특정 이름으로 초기화하여 중복 방지
   try {
     await Firebase.initializeApp(
-      name: 'Cafe Owner',
+      name: 'Cafe_Owner',
       options: DefaultFirebaseOptions.currentPlatform,
     );
     print('✅ Firebase 초기화 완료');

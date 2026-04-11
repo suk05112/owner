@@ -3,19 +3,55 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'flavors.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
 /// Example:
 /// ```dart
 /// import 'firebase_options_mock.dart';
-// ...
+/// // ...
 /// await Firebase.initializeApp(
-//   options: DefaultFirebaseOptions.currentPlatform,
-// );
+///   options: DefaultFirebaseOptions.currentPlatform,
+/// );
 /// ```
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
+    // Mock mode uses dev Firebase configuration
+    if (F.isMock) {
+      if (kIsWeb) {
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for web - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
+      }
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.android:
+          return androidDev;
+        case TargetPlatform.iOS:
+          return iosDev;
+        case TargetPlatform.macOS:
+          throw UnsupportedError(
+            'DefaultFirebaseOptions have not been configured for macos - '
+            'you can reconfigure this by running the FlutterFire CLI again.',
+          );
+        case TargetPlatform.windows:
+          throw UnsupportedError(
+            'DefaultFirebaseOptions have not been configured for windows - '
+            'you can reconfigure this by running the FlutterFire CLI again.',
+          );
+        case TargetPlatform.linux:
+          throw UnsupportedError(
+            'DefaultFirebaseOptions have not been configured for linux - '
+            'you can reconfigure this by running the FlutterFire CLI again.',
+          );
+        default:
+          throw UnsupportedError(
+            'DefaultFirebaseOptions are not supported for this platform.',
+          );
+      }
+    }
+
     if (kIsWeb) {
       return web;
     }
@@ -42,6 +78,24 @@ class DefaultFirebaseOptions {
         );
     }
   }
+
+  static const FirebaseOptions androidDev = FirebaseOptions(
+    apiKey: 'AIzaSyBtFLsEuL770bVt6HQ0dbOgo5hDkNaoYqs',
+    appId: '1:299419302046:android:0dac4e0605c6038d31a38f',
+    messagingSenderId: '299419302046',
+    projectId: 'cafe-owner',
+    storageBucket: 'cafe-owner.appspot.com',
+  );
+
+  static const FirebaseOptions iosDev = FirebaseOptions(
+    apiKey: 'AIzaSyBqwPQocNYiSEqlZNkAGDCtuj-N7QaQDoA',
+    appId: '1:299419302046:ios:b053be5dde0c51eb31a38f',
+    messagingSenderId: '299419302046',
+    projectId: 'cafe-owner',
+    storageBucket: 'cafeplatform.firebasestorage.app',
+    iosBundleId: 'com.gifnut.owner.dev',
+  );
+}
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyCEboIUnDEP5HK0Nfm8jQZSBpd_7OZN8io',

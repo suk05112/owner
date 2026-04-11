@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:owner/flavors.dart';
 
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/account_provider.dart';
@@ -10,6 +11,8 @@ import 'package:owner/common/provier/dashboard_stats_provider.dart';
 import 'package:owner/common/provier/gifticon_provider.dart';
 import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/provier/mock_user_provider.dart';
+import 'package:owner/common/provier/mock_auth_provider.dart';
 import 'package:owner/screen/home.dart';
 import 'common/provier/store_provider.dart';
 import 'screen/LoginPage.dart';
@@ -47,11 +50,19 @@ class MyApp extends StatelessWidget {
         canPop: false,
         child: MultiProvider(
           providers: [
-            ChangeNotifierProvider(create: (context) => StoreProvider()),
+            // Conditional providers based on flavor
+            if (F.isMock)
+              ChangeNotifierProvider(create: (context) => MockStoreProvider())
+            else
+              ChangeNotifierProvider(create: (context) => StoreProvider()),
             ChangeNotifierProvider(create: (context) => SelectedStoreProvider()),
             ChangeNotifierProvider(create: (context) => DashboardStatsProvider()),
             ChangeNotifierProvider(create: (context) => GifticonProvider()),
-            ChangeNotifierProvider(create: (context) => UserProvider()),
+            // Conditional providers based on flavor
+            if (F.isMock)
+              ChangeNotifierProvider(create: (context) => MockUserProvider())
+            else
+              ChangeNotifierProvider(create: (context) => UserProvider()),
             ChangeNotifierProvider(create: (context) => AccountProvider()),
           ],
 

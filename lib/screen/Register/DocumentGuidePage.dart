@@ -94,8 +94,8 @@ class DocumentGuidePage extends StatelessWidget {
         Container(
           width: 48,
           height: 48,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFEDE0),
+          decoration: const BoxDecoration(
+            color: Color(0xFFFFEDE0),
             shape: BoxShape.circle,
           ),
           child: Icon(

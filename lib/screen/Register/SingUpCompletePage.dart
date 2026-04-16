@@ -27,7 +27,7 @@ class SignUpCompletePage extends StatelessWidget {
                     color: ColorAssset.mainColor.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.check_circle,
                     size: 60,
                     color: ColorAssset.mainColor,
@@ -66,7 +66,8 @@ class SignUpCompletePage extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => CafeList()),
+                        MaterialPageRoute(
+                            builder: (context) => const CafeList()),
                       );
                     },
                     style: ElevatedButton.styleFrom(

@@ -84,6 +84,7 @@ dependencies:
   flutter_oss_licenses: ^2.0.1
   drift: ^2.18.0
   connectivity_plus: ^6.0.5
+  package_info_plus: ^8.0.2
 
 
 dev_dependencies:

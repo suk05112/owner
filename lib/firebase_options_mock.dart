@@ -95,8 +95,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'cafeplatform.firebasestorage.app',
     iosBundleId: 'com.gifnut.owner.dev',
   );
-}
-
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyCEboIUnDEP5HK0Nfm8jQZSBpd_7OZN8io',
     appId: '1:299419302046:web:c7f7e0761449357731a38f',

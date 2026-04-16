@@ -39,9 +39,10 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
   final _formKey = GlobalKey<FormState>();
 
+  @override
   void initState() {
     super.initState();
-    print("menu id " + widget.menuId.toString());
+    print("menu id ${widget.menuId}");
     print("menu url ${widget.menu?.menu_image_url}");
 
     if (widget.menu != null) {
@@ -67,7 +68,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
       // ),
     ),
     isDense: true,
-    contentPadding: EdgeInsets.fromLTRB(21, 14, 21, 18),
+    contentPadding: const EdgeInsets.fromLTRB(21, 14, 21, 18),
   );
 
   @override
@@ -85,7 +86,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                 Expanded(
                     child: SingleChildScrollView(
                         child: Container(
-                            margin: EdgeInsets.fromLTRB(21, 10, 21, 21),
+                            margin: const EdgeInsets.fromLTRB(21, 10, 21, 21),
                             child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -95,7 +96,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                     height: 15,
                                   ),
                                   //메뉴 이름
-                                  Text("메뉴명"),
+                                  const Text("메뉴명"),
                                   TextFormField(
                                     controller: menuNameInputController,
                                     keyboardType: TextInputType.text,
@@ -207,7 +208,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
               }
               if (_formKey.currentState!.validate()) {
                 //메뉴 새로 등록
-                var new_menu = Menu(
+                var newMenu = Menu(
                     store_id: widget.storeId,
                     name: menuNameInputController.text,
                     menu_id: -1,
@@ -218,7 +219,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
                 if (isUpdated) {
                   //메뉴 수정
-                  new_menu = Menu(
+                  newMenu = Menu(
                       store_id: widget.storeId,
                       name: menuNameInputController.text,
                       menu_id: widget.menu!.menu_id,
@@ -229,21 +230,21 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
                   Api()
                       .client
-                      .updateMenu(new_menu.menu_id, new_menu)
+                      .updateMenu(newMenu.menu_id, newMenu)
                       .then((response) async => {
                             await uploadMenuImage(response.menu_put_url),
-                            new_menu.menu_image_url = response.menu_get_url,
-                            Navigator.pop(context, new_menu)
+                            newMenu.menu_image_url = response.menu_get_url,
+                            Navigator.pop(context, newMenu)
                           });
                 } else {
                   //메뉴 등록
                   Api()
                       .client
-                      .addMenu(new_menu.store_id, new_menu)
+                      .addMenu(newMenu.store_id, newMenu)
                       .then((response) async => {
                             await uploadMenuImage(response.menu_put_url),
-                            new_menu.menu_image_url = response.menu_get_url,
-                            Navigator.pop(context, new_menu)
+                            newMenu.menu_image_url = response.menu_get_url,
+                            Navigator.pop(context, newMenu)
                           });
                 }
               }
@@ -359,7 +360,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
     }
   }
 
-  Future<void> uploadMenuImage(menu_upload_url) async {
+  Future<void> uploadMenuImage(menuUploadUrl) async {
     print("eidtMenu::uploadMenuImage");
     print(_image);
 
@@ -369,7 +370,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
     }
     try {
       http.Response response = await http.put(
-        Uri.parse(menu_upload_url),
+        Uri.parse(menuUploadUrl),
         body: await _image?.readAsBytes(),
         headers: {
           // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경

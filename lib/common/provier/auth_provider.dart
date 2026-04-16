@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-import 'package:owner/common/api/API.dart';
 
 /*
 enum OAuthProviderUser { kakaoUser, googleUser }

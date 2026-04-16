@@ -16,7 +16,7 @@ class MockAuthProvider {
     print('Mock login start - accepting any credentials');
 
     // Simulate network delay
-    await Future.delayed(Duration(milliseconds: 500));
+    await Future.delayed(const Duration(milliseconds: 500));
 
     // Return mock user
     final mockUser = User(
@@ -34,7 +34,7 @@ class MockAuthProvider {
     // Mock auto-login: always return mock user
     print('Mock auto login start');
 
-    await Future.delayed(Duration(milliseconds: 300));
+    await Future.delayed(const Duration(milliseconds: 300));
 
     final mockUser = User(
       owner_id: 12345,
@@ -49,7 +49,7 @@ class MockAuthProvider {
 
   Future<void> logout() async {
     print('Mock logout start');
-    await Future.delayed(Duration(milliseconds: 100));
+    await Future.delayed(const Duration(milliseconds: 100));
     print('Mock logout success');
   }
 

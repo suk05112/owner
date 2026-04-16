@@ -39,11 +39,14 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() => _isLoading = true);
     try {
       user = Provider.of<UserProvider>(context, listen: false).user;
-      final storeProvider = Provider.of<SelectedStoreProvider>(context, listen: false);
-      final statsProvider = Provider.of<DashboardStatsProvider>(context, listen: false);
+      final storeProvider =
+          Provider.of<SelectedStoreProvider>(context, listen: false);
+      final statsProvider =
+          Provider.of<DashboardStatsProvider>(context, listen: false);
 
       if (user != null && user!.owner_id > 0) {
-        final storeListResponse = await Api().client.getStoreList(user!.owner_id);
+        final storeListResponse =
+            await Api().client.getStoreList(user!.owner_id);
         final stores = storeListResponse.store;
         storeProvider.setStores(stores);
         statsProvider.clearIfDifferentStore(storeProvider.selectedStoreId);
@@ -102,7 +105,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                       color: const Color(0xFFFFEDE0),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                          color: const Color(0xFFF27213).withOpacity(0.3)),
+                                          color: const Color(0xFFF27213)
+                                              .withOpacity(0.3)),
                                     ),
                                     child: const Text(
                                       "등록된 매장이 없습니다.\n'매장관리' 메뉴에서 매장을 추가해주세요.",
@@ -121,8 +125,12 @@ class _DashboardPageState extends State<DashboardPage> {
                                   stores: stores,
                                   onSelected: (Store s) {
                                     storeProvider.setSelectedStore(s);
-                                    final statsProvider = Provider.of<DashboardStatsProvider>(context, listen: false);
-                                    statsProvider.clearIfDifferentStore(s.store_id);
+                                    final statsProvider =
+                                        Provider.of<DashboardStatsProvider>(
+                                            context,
+                                            listen: false);
+                                    statsProvider
+                                        .clearIfDifferentStore(s.store_id);
                                   },
                                 ),
                                 const SizedBox(height: 20),
@@ -142,8 +150,8 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                       ),
-                ),
               ),
+            ),
           ],
         );
       },
@@ -284,7 +292,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.store,
                 title: "매장 관리",
                 onTap: () {
-                  if (hasNoStores || selectedStoreId == null) {
+                  if (selectedStoreId == null) {
                     _showNoStoreMessage();
                     return;
                   }
@@ -448,7 +456,8 @@ class _StoreDropdown extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.keyboard_arrow_down, size: 20, color: _textColor),
+                const Icon(Icons.keyboard_arrow_down,
+                    size: 20, color: _textColor),
               ],
             ),
           ),
@@ -459,11 +468,13 @@ class _StoreDropdown extends StatelessWidget {
 
   void _showMenu(BuildContext context) {
     final RenderBox button = context.findRenderObject()! as RenderBox;
-    final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero),
+            ancestor: overlay),
       ),
       Offset.zero & overlay.size,
     );

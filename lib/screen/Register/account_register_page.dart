@@ -562,7 +562,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                   childAspectRatio: 2 / 1.5, //item 의 가로 1, 세로 2 의 비율
                   mainAxisSpacing: 5, //수평 Padding
                   crossAxisSpacing: 5, //수직 Padding
-                  physics: ScrollPhysics(),
+                  physics: const ScrollPhysics(),
                   children: List.generate(bankData.length, (index) {
                     final bank = bankData[index];
 
@@ -604,7 +604,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                   childAspectRatio: 2 / 1.5, //item 의 가로 1, 세로 2 의 비율
                   mainAxisSpacing: 5, //수평 Padding
                   crossAxisSpacing: 5, //수직 Padding
-                  physics: ScrollPhysics(),
+                  physics: const ScrollPhysics(),
                   children: List.generate(securitiesData.length, (index) {
                     final security = securitiesData[index];
 
@@ -670,21 +670,21 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       // 매장 등록 API 호출
       final response = await Api().client.registerStore(_store);
       var storeId = response.store_id;
-      var store_logo_url = response.store_logo_url;
-      final store_photo_urls = response.store_photo_urls;
-      final bankBook_put_url = response.bankBook_put_url;
-      final business_put_url = response.business_put_url;
+      var storeLogoUrl = response.store_logo_url;
+      final storePhotoUrls = response.store_photo_urls;
+      final bankbookPutUrl = response.bankBook_put_url;
+      final businessPutUrl = response.business_put_url;
 
       // 이미지 업로드
       try {
         if (widget.logoImage != null) {
-          await uploadLogoImage(store_logo_url);
+          await uploadLogoImage(storeLogoUrl);
         }
         if (widget.storeImages != null && widget.storeImages!.isNotEmpty) {
-          await uploadStoreImages(store_photo_urls);
+          await uploadStoreImages(storePhotoUrls);
         }
-        if (business_put_url != null) {
-          await uploadBusinessImage(bankBook_put_url, business_put_url);
+        if (businessPutUrl != null) {
+          await uploadBusinessImage(bankbookPutUrl, businessPutUrl);
         }
         print('All images uploaded successfully.');
       } catch (e) {
@@ -737,7 +737,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
         if (statusCode == 500) {
           errorMessage = "서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
         } else {
-          errorMessage = "매장 등록에 실패했습니다. (${statusCode})";
+          errorMessage = "매장 등록에 실패했습니다. ($statusCode)";
         }
       }
       if (mounted) {
@@ -758,19 +758,19 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   }
 
   // 매장 로고 업로드
-  Future<void> uploadLogoImage(String store_logo_url) async {
+  Future<void> uploadLogoImage(String storeLogoUrl) async {
     try {
       if (widget.logoImage == null) {
         print('Logo image is null, skipping upload.');
         return;
       }
 
-      print('Uploading logo image to: $store_logo_url');
+      print('Uploading logo image to: $storeLogoUrl');
       final imageBytes = await widget.logoImage!.readAsBytes();
       print('Logo image size: ${imageBytes.length} bytes');
 
       http.Response response = await http.put(
-        Uri.parse(store_logo_url),
+        Uri.parse(storeLogoUrl),
         body: imageBytes,
         headers: {
           'Content-Type': 'image/png',
@@ -792,7 +792,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   }
 
   // 매장 사진 업로드
-  Future<void> uploadStoreImages(List<String> store_photo_urls) async {
+  Future<void> uploadStoreImages(List<String> storePhotoUrls) async {
     if (widget.storeImages == null || widget.storeImages!.isEmpty) {
       print('Store images are null or empty, skipping upload.');
       return;
@@ -800,15 +800,15 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
 
     print('Uploading ${widget.storeImages!.length} store images...');
     for (int idx = 0;
-        idx < widget.storeImages!.length && idx < store_photo_urls.length;
+        idx < widget.storeImages!.length && idx < storePhotoUrls.length;
         idx++) {
       try {
-        print('Uploading store photo $idx to: ${store_photo_urls[idx]}');
+        print('Uploading store photo $idx to: ${storePhotoUrls[idx]}');
         final imageBytes = await widget.storeImages![idx].readAsBytes();
         print('Store photo $idx size: ${imageBytes.length} bytes');
 
         final response = await http.put(
-          Uri.parse(store_photo_urls[idx]),
+          Uri.parse(storePhotoUrls[idx]),
           body: imageBytes,
           headers: {
             'Content-Type': 'image/png',
@@ -833,16 +833,16 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
 
   // 통장사본, 사업자등록증 업로드
   Future<void> uploadBusinessImage(
-      String bankBook_put_url, String business_put_url) async {
+      String bankbookPutUrl, String businessPutUrl) async {
     try {
       http.Response? response1;
       if (_store.bank_book != null) {
-        print('Uploading bank book to: $bankBook_put_url');
+        print('Uploading bank book to: $bankbookPutUrl');
         final bankBookBytes = await _store.bank_book!.readAsBytes();
         print('Bank book size: ${bankBookBytes.length} bytes');
 
         response1 = await http.put(
-          Uri.parse(bankBook_put_url),
+          Uri.parse(bankbookPutUrl),
           body: bankBookBytes,
           headers: {
             'Content-Type': 'image/png',
@@ -862,12 +862,12 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
 
       http.Response? response2;
       if (_store.business_registration != null) {
-        print('Uploading business registration to: $business_put_url');
+        print('Uploading business registration to: $businessPutUrl');
         final businessBytes = await _store.business_registration!.readAsBytes();
         print('Business registration size: ${businessBytes.length} bytes');
 
         response2 = await http.put(
-          Uri.parse(business_put_url),
+          Uri.parse(businessPutUrl),
           body: businessBytes,
           headers: {
             'Content-Type': 'image/png',

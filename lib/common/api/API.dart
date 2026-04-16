@@ -33,8 +33,8 @@ class Api {
     final options = BaseOptions(
       baseUrl: AppConfig.baseUrl,
       headers: headers,
-      connectTimeout: Duration(seconds: 15),
-      receiveTimeout: Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
     );
     dio = Dio(options)..interceptors.add(CustomLogInterceptor());
     client = ApiClient(Dio(options)..interceptors.add(CustomLogInterceptor()));
@@ -101,6 +101,11 @@ class Api {
 
   /// App Check Token을 가져오는 공통 함수 (재시도 및 캐싱 포함)
   static Future<String?> _getAppCheckToken({bool forceRefresh = false}) async {
+    // Mock 모드에서는 App Check 토큰을 가져오지 않음
+    if (F.isMock) {
+      return null;
+    }
+
     // 캐시된 토큰이 있고 아직 유효하면 반환
     if (!forceRefresh &&
         _cachedAppCheckToken != null &&
@@ -205,9 +210,9 @@ class Api {
     Dio dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       headers: headers,
-      connectTimeout: Duration(seconds: 15),
-      receiveTimeout: Duration(seconds: 15),
-      sendTimeout: Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
     ))
       ..interceptors.add(CustomLogInterceptor());
 
@@ -244,9 +249,9 @@ class Api {
     Dio dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       headers: headers,
-      connectTimeout: Duration(seconds: 15),
-      receiveTimeout: Duration(seconds: 15),
-      sendTimeout: Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
     ))
       ..interceptors.add(CustomLogInterceptor())
       ..interceptors.add(AuthInterceptor());
@@ -369,9 +374,9 @@ class AuthInterceptor extends Interceptor {
         Dio dio = Dio(BaseOptions(
           baseUrl: requestOptions.baseUrl, // 원래 baseUrl 사용
           headers: headers,
-          connectTimeout: Duration(seconds: 15),
-          receiveTimeout: Duration(seconds: 15),
-          sendTimeout: Duration(seconds: 15),
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 15),
         ));
 
         print('[401 interceptor] 재요청');

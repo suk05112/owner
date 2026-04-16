@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 class Register extends StatefulWidget {
+  const Register({super.key});
+
   // @override
   // void initState() {
   //   // TODO: implement initState
@@ -43,7 +45,7 @@ class _RegisterState extends State<Register> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("회원가입"),
+        title: const Text("회원가입"),
       ),
       body: Center(
         child: Column(
@@ -53,7 +55,7 @@ class _RegisterState extends State<Register> {
               onPressed: () {
                 // Respond to button press
               },
-              child: Text("회원가입"),
+              child: const Text("회원가입"),
             ),
             const Text(
               'You have pushed the button this many times:',

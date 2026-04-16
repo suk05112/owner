@@ -372,7 +372,7 @@ class _ChangeAccountPageState extends State<ChangeAccountPage> {
               // 하단 버튼 영역
               Container(
                 padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
                   border: Border(top: BorderSide(color: _borderColor)),
                 ),

@@ -427,10 +427,10 @@ class _SettingPageState extends State<SettingPage> {
       decoration: const BoxDecoration(
         color: Color(0xFFF5F5F5),
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "502 Company \n대표: 한수진 \n사업자등록번호: 479-03-03427",
             style: TextStyle(
               fontSize: 10,
@@ -438,8 +438,8 @@ class _SettingPageState extends State<SettingPage> {
               height: 1.4,
             ),
           ),
-          const SizedBox(height: 2),
-          const Text(
+          SizedBox(height: 2),
+          Text(
             "주소: 서울특별시 강서구 공항대로 543 \n이메일: service@502company.com \n고객센터: 02-3664-3338",
             style: TextStyle(
               fontSize: 10,
@@ -454,6 +454,8 @@ class _SettingPageState extends State<SettingPage> {
 }
 
 class OssLicensesPage extends StatelessWidget {
+  const OssLicensesPage({super.key});
+
   static Future<List<String>> loadLicenses() async {
     final ossKeys = List<String>.from(ossLicenses);
     return ossKeys..sort();
@@ -503,7 +505,8 @@ class MiscOssLicenseSingle extends StatelessWidget {
   final String licenseText;
   final String homepage;
 
-  MiscOssLicenseSingle({
+  const MiscOssLicenseSingle({
+    super.key,
     required this.name,
     required this.version,
     required this.description,

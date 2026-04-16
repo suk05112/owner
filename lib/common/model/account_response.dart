@@ -9,8 +9,9 @@ class GetAccountResponse {
   factory GetAccountResponse.fromJson(Map<String, dynamic> json) {
     final a = json['account'];
     if (a == null) return GetAccountResponse(account: null);
-    if (a is Map && a.isEmpty)
+    if (a is Map && a.isEmpty) {
       return GetAccountResponse(account: null);
+    }
     return GetAccountResponse(
       account: Account.fromJson(Map<String, dynamic>.from(a as Map)),
     );

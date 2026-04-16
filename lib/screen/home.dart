@@ -324,13 +324,13 @@ class _MainState extends State<Main> {
   String qrResult = '';
 
   final PageStorageBucket bucket = PageStorageBucket();
-  Widget currentScreen = CafeDetailScreen(
+  Widget currentScreen = const CafeDetailScreen(
     storeId: 1,
   );
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text(
           '홈 화면',

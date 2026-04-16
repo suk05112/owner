@@ -56,7 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleEmailLogin() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    // Only show validation error in non-mock mode for testing purposes
+    if (!F.isMock && (_emailController.text.isEmpty || _passwordController.text.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("이메일과 비밀번호를 입력해주세요.")),
       );
@@ -77,13 +78,13 @@ class _LoginScreenState extends State<LoginScreen> {
         print('Mock mode: bypassing Firebase authentication');
 
         // Simulate network delay
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
 
-        // Create mock user
+        // Create mock user with any email/password (for testing)
         final mockUser = my_app.User(
           owner_id: 12345,
           name: 'Mock Store Owner',
-          email: emailWithDomain.isNotEmpty ? emailWithDomain : 'mock@example.com',
+          email: emailInput.isNotEmpty ? emailInput : 'test@test.com',
           phone_number: '010-1234-5678',
         );
 
@@ -140,12 +141,12 @@ class _LoginScreenState extends State<LoginScreen> {
         // In mock mode, treat Firebase errors as unexpected
         print('Mock mode: Unexpected Firebase error: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("로그인 중 오류가 발생했습니다.")),
+          const SnackBar(content: Text("로그인 중 오류가 발생했습니다.")),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("로그인 중 오류가 발생했습니다.")),
+        const SnackBar(content: Text("로그인 중 오류가 발생했습니다.")),
       );
     } finally {
       setState(() {
@@ -169,17 +170,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: SingleChildScrollView(
                   child: Container(
                     color: Colors.white,
-                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    margin: const EdgeInsets.symmetric(horizontal: 0),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 40),
-                          SizedBox(height: 50),
+                          const SizedBox(height: 40),
+                          const SizedBox(height: 50),
                           // 상단 제목 영역
-                          SizedBox(height: 8),
-                          Text(
+                          const SizedBox(height: 8),
+                          const Text(
                             '로그인',
                             style: TextStyle(
                               fontSize: 24,
@@ -187,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.black,
                             ),
                           ),
-                          SizedBox(height: 40),
+                          const SizedBox(height: 40),
                           // 이메일 입력 필드
                           TextField(
                             controller: _emailController,
@@ -203,13 +204,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderSide:
                                     BorderSide(color: Colors.grey[300]!),
                               ),
-                              focusedBorder: UnderlineInputBorder(
+                              focusedBorder: const UnderlineInputBorder(
                                 borderSide:
                                     BorderSide(color: Colors.black, width: 2),
                               ),
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           // 비밀번호 입력 필드
                           TextField(
                             controller: _passwordController,
@@ -225,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderSide:
                                     BorderSide(color: Colors.grey[300]!),
                               ),
-                              focusedBorder: UnderlineInputBorder(
+                              focusedBorder: const UnderlineInputBorder(
                                 borderSide:
                                     BorderSide(color: Colors.black, width: 2),
                               ),
@@ -245,7 +246,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
 
-                          SizedBox(height: 50),
+                          const SizedBox(height: 50),
                           // 이메일로 로그인 버튼
                           SizedBox(
                             width: double.infinity,
@@ -261,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 elevation: 0,
                               ),
                               child: _loading
-                                  ? SizedBox(
+                                  ? const SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
@@ -271,7 +272,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 Colors.white),
                                       ),
                                     )
-                                  : Text(
+                                  : const Text(
                                       '아이디로 로그인',
                                       style: TextStyle(
                                         fontSize: 16,
@@ -280,7 +281,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
                           // 회원가입 | 아이디 찾기 | 비밀번호 찾기
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -291,17 +292,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                            BasicInfoInputPage()),
+                                            const BasicInfoInputPage()),
                                   );
                                 },
                                 style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   minimumSize: Size.zero,
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: Text(
+                                child: const Text(
                                   '회원가입',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -319,17 +320,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (_) => FindUserIDPage()),
+                                        builder: (_) => const FindUserIDPage()),
                                   );
                                 },
                                 style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   minimumSize: Size.zero,
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: Text(
+                                child: const Text(
                                   '아이디 찾기',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -347,17 +348,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (_) => FindPasswordPage()),
+                                        builder: (_) =>
+                                            const FindPasswordPage()),
                                   );
                                 },
                                 style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   minimumSize: Size.zero,
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: Text(
+                                child: const Text(
                                   '비밀번호 찾기',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -367,7 +369,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 50),
+                          const SizedBox(height: 50),
                         ],
                       ),
                     ),
@@ -388,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> login(String uid) async {
-    print("로그인 함수 호출 ${uid}");
+    print("로그인 함수 호출 $uid");
 
     try {
       if (F.isMock) {
@@ -396,7 +398,7 @@ class _LoginScreenState extends State<LoginScreen> {
         print('Mock mode: bypassing API login call');
 
         // Simulate network delay
-        await Future.delayed(Duration(milliseconds: 500));
+        await Future.delayed(const Duration(milliseconds: 500));
 
         // Set mock user data (already set in _handleEmailLogin, but ensure consistency)
         user.owner_id = 12345;
@@ -455,7 +457,7 @@ class _LoginScreenState extends State<LoginScreen> {
       } else {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => Home()),
+          MaterialPageRoute(builder: (context) => const Home()),
         );
       }
     } on DioException catch (e) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:owner/flavors.dart';
@@ -13,8 +14,9 @@ import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/provier/mock_user_provider.dart';
 import 'package:owner/common/provier/mock_auth_provider.dart';
+import 'package:owner/common/provier/mock_store_provider.dart';
 import 'package:owner/screen/home.dart';
-import 'common/provier/store_provider.dart';
+import 'package:owner/common/provier/store_provider.dart';
 import 'screen/LoginPage.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/utils/network_utils.dart';
@@ -22,6 +24,8 @@ import 'package:owner/config.dart';
 
 FutureOr<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await _ensureFlavor();
+  print('최종 Flavor: ${F.appFlavor}');
 
   // 세로 모드만 허용 (가로 회전 방지)
   await SystemChrome.setPreferredOrientations([
@@ -39,6 +43,44 @@ FutureOr<void> main() async {
   runApp(const MyApp());
 }
 
+Future<void> _ensureFlavor() async {
+  final env =
+      const String.fromEnvironment('ENV', defaultValue: '').toLowerCase();
+  final envFlavor = _flavorFromString(env);
+  if (envFlavor != null) {
+    F.appFlavor = envFlavor;
+  }
+
+  // iOS MockDebug safety-net:
+  // if app bundle/app name contains "mock", force mock flavor
+  // even when the wrong entrypoint was selected.
+  try {
+    final info = await PackageInfo.fromPlatform();
+    final marker = '${info.packageName} ${info.appName}'.toLowerCase();
+    if (marker.contains('mock')) {
+      F.appFlavor = Flavor.mock;
+    }
+  } catch (_) {
+    // Keep already resolved flavor.
+  }
+
+  F.appFlavor ??= Flavor.prod;
+}
+
+Flavor? _flavorFromString(String value) {
+  switch (value) {
+    case 'dev':
+      return Flavor.dev;
+    case 'prod':
+    case 'production':
+      return Flavor.prod;
+    case 'mock':
+      return Flavor.mock;
+    default:
+      return null;
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -51,18 +93,17 @@ class MyApp extends StatelessWidget {
         child: MultiProvider(
           providers: [
             // Conditional providers based on flavor
-            if (F.isMock)
-              ChangeNotifierProvider(create: (context) => MockStoreProvider())
-            else
-              ChangeNotifierProvider(create: (context) => StoreProvider()),
-            ChangeNotifierProvider(create: (context) => SelectedStoreProvider()),
-            ChangeNotifierProvider(create: (context) => DashboardStatsProvider()),
+            ChangeNotifierProvider(create: (context) => MockStoreProvider()),
+
+            ChangeNotifierProvider(create: (context) => StoreProvider()),
+            ChangeNotifierProvider(
+                create: (context) => SelectedStoreProvider()),
+            ChangeNotifierProvider(
+                create: (context) => DashboardStatsProvider()),
             ChangeNotifierProvider(create: (context) => GifticonProvider()),
             // Conditional providers based on flavor
-            if (F.isMock)
-              ChangeNotifierProvider(create: (context) => MockUserProvider())
-            else
-              ChangeNotifierProvider(create: (context) => UserProvider()),
+            ChangeNotifierProvider(create: (context) => MockUserProvider()),
+            ChangeNotifierProvider(create: (context) => UserProvider()),
             ChangeNotifierProvider(create: (context) => AccountProvider()),
           ],
 
@@ -156,7 +197,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // MaterialPageRoute(builder: (context) => CafeList()));
                 // MaterialPageRoute(builder: (context) => EmployeeScreen()));
               },
-              child: Text("회원가입"),
+              child: const Text("회원가입"),
             ),
           ],
         ),

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/provier/store_provider.dart';
-import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/screen/Register/register_store_page.dart';
-import 'package:owner/screen/Settlement/settlement_page.dart';
 
 import '../../common/api/request/store/store.dart';
 import '../../common/api/response/menu.dart';
@@ -60,7 +58,8 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, size: 20, color: Color(0xFF101010)),
+          icon: const Icon(Icons.arrow_back_ios,
+              size: 20, color: Color(0xFF101010)),
           onPressed: () => Navigator.maybePop(context),
         ),
         title: const Text(
@@ -87,7 +86,8 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                         ),
                       ),
                     );
-                    if (result != null && mounted) setState(() => store = result);
+                    if (result != null && mounted)
+                      setState(() => store = result);
                   },
             child: const Text(
               "수정",
@@ -269,7 +269,8 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.location_on_outlined, size: 20, color: Colors.grey[600]),
+              Icon(Icons.location_on_outlined,
+                  size: 20, color: Colors.grey[600]),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -332,7 +333,8 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => MenuManagementPage(storeId: _storeId),
+                      builder: (context) =>
+                          MenuManagementPage(storeId: _storeId),
                     ),
                   );
                 },
@@ -349,7 +351,8 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                       ),
                     ),
                     SizedBox(width: 4),
-                    Icon(Icons.chevron_right, size: 18, color: Color(0xFFF27213)),
+                    Icon(Icons.chevron_right,
+                        size: 18, color: Color(0xFFF27213)),
                   ],
                 ),
               ),

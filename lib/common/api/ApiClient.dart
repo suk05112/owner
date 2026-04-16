@@ -35,19 +35,19 @@ abstract class ApiClient {
 
   @POST("/owner/push-token/{owner_id}")
   Future<OwnerPushTokenResponse> registerOwnerPushToken(
-    @Path('owner_id') int owner_id,
+    @Path('owner_id') int ownerId,
     @Body() OwnerPushTokenPost pushToken,
   );
 
   @GET("/store/info/{store_Id}")
   Future<StoreResponse> getStoreDetailInfo(
-    @Path('store_Id') int store_Id,
+    @Path('store_Id') int storeId,
     // @Query("owner_id") int owner_id,
   );
 
   @GET("/owner/list/{owner_id}")
   Future<StoreListResponse> getStoreList(
-    @Path('owner_id') int owner_id,
+    @Path('owner_id') int ownerId,
   );
 
   @POST("/store/register")
@@ -57,7 +57,7 @@ abstract class ApiClient {
 
   @POST("/store/update/{menu_id}")
   Future<StoreUpdateResponse> updateStore(
-    @Path('menu_id') int menu_id,
+    @Path('menu_id') int menuId,
     @Body() Store store,
   );
 
@@ -73,82 +73,82 @@ abstract class ApiClient {
 
   @GET("/menu/list/{store_Id}")
   Future<MenuGetResponse> getMenuList(
-    @Path('store_Id') int store_Id,
+    @Path('store_Id') int storeId,
   );
 
   @POST("/menu/add/{store_id}")
   Future<MenuPostResponse> addMenu(
-    @Path('store_id') int store_id,
+    @Path('store_id') int storeId,
     @Body() Menu menu,
   );
 
   @POST("/menu/update/{menu_id}")
   Future<MenuUpdateResponse> updateMenu(
-    @Path('menu_id') int menu_id,
+    @Path('menu_id') int menuId,
     @Body() Menu menu,
   );
 
   @DELETE("/menu/delete/{menu_id}")
   Future<MenuDeleteResponse> deleteMenu(
-    @Path('menu_id') int menu_id,
+    @Path('menu_id') int menuId,
   );
 
   @PATCH("/gifticon/use/{gifticon_id}")
   Future<GifticonPatchResponse> useGifticon(
-    @Path('gifticon_id') int gifticon_id,
+    @Path('gifticon_id') int gifticonId,
   );
 
   @POST("/owner/inquiry/{owner_id}")
   Future<InquiryPostResponse> subjectInquiry(
-    @Path('owner_id') int owner_id,
+    @Path('owner_id') int ownerId,
     @Body() Inquiry inquiry,
   );
 
   @GET("/owner/inquiry/{owner_id}")
   Future<InquiryListResponse> getInquiry(
-    @Path('owner_id') int owner_id,
+    @Path('owner_id') int ownerId,
   );
 
   @GET("/owner/settlement/{store_id}")
   Future<SettlementList> getSettlementListByStore(
-    @Path('store_id') int store_id,
-    @Query('past_months') int? past_months,
+    @Path('store_id') int storeId,
+    @Query('past_months') int? pastMonths,
   );
 
   @GET("/owner/settlement/detail/{settlement_id}")
   Future<SettlementDetailResponse> getDetailSettlements(
-    @Path('settlement_id') int settlement_id,
+    @Path('settlement_id') int settlementId,
   );
 
   @POST("/settlement/register/{store_id}")
   Future<String> registerAccount(
-    @Path('store_id') int store_id,
+    @Path('store_id') int storeId,
     @Body() Account account,
   );
 
   @GET("/gifticon/used/{store_id}")
   Future<UsedGifticonList> getUsedGifticon(
-    @Path('store_id') int store_id,
+    @Path('store_id') int storeId,
   );
 
   @GET("/store/owner/list/{owner_id}")
   Future<OwnerStoreList> getOwnerStoreList(
-    @Path('owner_id') int owner_id,
+    @Path('owner_id') int ownerId,
   );
 
   @GET("owner/statistics/{store_id}")
   Future<StoreStatisticsResponse> getStoreStatistics(
-    @Path('store_id') int store_id,
+    @Path('store_id') int storeId,
   );
 
   @GET("/owner/account/{store_id}")
   Future<GetAccountResponse> getAccount(
-    @Path('store_id') int store_id,
+    @Path('store_id') int storeId,
   );
 
   @PUT("/owner/account/{store_id}")
   Future<UpdateAccountResponse> updateAccount(
-    @Path('store_id') int store_id,
+    @Path('store_id') int storeId,
     @Body() Account account,
   );
 }

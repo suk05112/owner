@@ -12,7 +12,7 @@ class QRCheckScreen extends StatefulWidget {
 
   final String eventKeyword; // 특정 키워드
 
-  QRCheckScreen({required this.eventKeyword});
+  const QRCheckScreen({super.key, required this.eventKeyword});
 
   @override
   State<QRCheckScreen> createState() => _QRCheckScreenState();
@@ -49,7 +49,7 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
             child: QRView(
               key: qrKey,
               onQRViewCreated: _onQRViewCreated,
-              formatsAllowed: [BarcodeFormat.qrcode],
+              formatsAllowed: const [BarcodeFormat.qrcode],
               overlay: QrScannerOverlayShape(
                 borderRadius: 10,
                 borderColor: Colors.blue,
@@ -82,7 +82,7 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
         final scannedCode = event.code!;
         List<String> scannedData = scannedCode.split(',');
         int scannedStoreId = int.tryParse(scannedData[0]) ?? -1;
-        String gifticon_id = scannedData[1];
+        String gifticonId = scannedData[1];
 
         // 🔹 API 호출하여 store 목록 가져오기
         var response =
@@ -92,13 +92,13 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
         List<int> storeIdList =
             response.ownerStoreList.map((store) => store.store_id).toList();
 
-        print("list: ${storeIdList}, scannedStoreId: ${scannedStoreId}");
+        print("list: $storeIdList, scannedStoreId: $scannedStoreId");
         // 🔹 store_id 검사
         if (storeIdList.contains(scannedStoreId)) {
           print("eventcode: ${event.code}, keyword: ${widget.eventKeyword}");
 
           final response =
-              await Api().client.useGifticon(int.tryParse(gifticon_id) ?? 0);
+              await Api().client.useGifticon(int.tryParse(gifticonId) ?? 0);
 
           if (mounted) {
             Navigator.pop(context, response.result);

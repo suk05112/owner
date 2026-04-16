@@ -1,6 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:dio/dio.dart';
-import 'dart:ffi';
 
 part 'UsedGifticon.g.dart';
 

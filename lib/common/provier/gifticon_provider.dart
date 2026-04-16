@@ -19,19 +19,19 @@ class GifticonProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchStoreList(int owner_id) async {
+  Future<void> fetchStoreList(int ownerId) async {
     try {
       print("store_provider::fetchStoreList:: fetch 호출");
-      var response = await Api().client.getStoreList(owner_id);
+      var response = await Api().client.getStoreList(ownerId);
       setStoreCard(response.store);
     } catch (error) {
       print("store_provider::fetchStoreList:: fetch 오류: $error");
     }
   }
 
-  Future<List<Store>> getStoreList(int owner_id) async {
+  Future<List<Store>> getStoreList(int ownerId) async {
     print("store_provider::getStoreList:: fetch 호출");
-    var response = await Api().client.getStoreList(owner_id);
+    var response = await Api().client.getStoreList(ownerId);
     notifyListeners();
 
     return response.store;
@@ -47,7 +47,7 @@ class GifticonProvider extends ChangeNotifier {
     return response.store;
   }
 
-  useGifticon(int gifticon_id) async {
-    return await Api().client.useGifticon(gifticon_id);
+  useGifticon(int gifticonId) async {
+    return await Api().client.useGifticon(gifticonId);
   }
 }

@@ -44,7 +44,7 @@ Future<void> main() async {
 
     // 토큰 가져오기는 백그라운드에서 시도 (실패해도 계속 진행)
     // 실제로 토큰이 필요할 때만 가져오도록 API 호출 시점에 처리
-    Future.delayed(Duration(seconds: 3), () async {
+    Future.delayed(const Duration(seconds: 3), () async {
       try {
         final token = await FirebaseAppCheck.instance.getToken();
         if (token != null) {

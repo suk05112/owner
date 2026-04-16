@@ -8,7 +8,7 @@ import 'package:owner/screen/Store/EditMenuPage.dart';
 import '../../common/api/response/menu.dart';
 
 class MenuManagementPage extends StatefulWidget {
-  const MenuManagementPage({Key? key, required this.storeId});
+  const MenuManagementPage({super.key, required this.storeId});
   final int storeId;
 
   @override
@@ -59,7 +59,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
               child: CircularProgressIndicator(),
             ))
           : menu!.isEmpty
-              ? Container(
+              ? SizedBox(
                   width: double.infinity,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -118,7 +118,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                             });
                           }
                         },
-                        child: Text("메뉴 추가"),
+                        child: const Text("메뉴 추가"),
                       );
                     }
                     return InkWell(
@@ -159,7 +159,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
           PopupMenuButton(
               // color: Colors.black,
               // add icon, by default "3 dot" icon
-              icon: Icon(Icons.settings),
+              icon: const Icon(Icons.settings),
               // child: Text("text"),
               itemBuilder: (context) {
                 return [
@@ -179,7 +179,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
               },
               onSelected: (value) async {
                 if (value == 0) {
-                  final modified_menu = await Navigator.push(
+                  final modifiedMenu = await Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (context) => EditMenuPage(
@@ -187,11 +187,11 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
                               )));
                   setState(() {
                     print("메뉴 수정 완료");
-                    menu!.add(modified_menu);
+                    menu!.add(modifiedMenu);
                   });
                   print("My account menu is selected.");
                 } else if (value == 1) {
-                  print("menu id in manage" + await menuLength.toString());
+                  print("menu id in manage${await menuLength.toString()}");
                 } else if (value == 2) {
                   print("Logout menu is selected.");
                 }
@@ -291,13 +291,13 @@ class _ReorderableExampleState extends State<ReorderableExample> {
 
     return ReorderableListView(
       // padding: const EdgeInsets.symmetric(horizontal: 40),
-      padding: EdgeInsets.all(10),
+      padding: const EdgeInsets.all(10),
 
       proxyDecorator: proxyDecorator,
       children: <Widget>[
-        Container(
+        SizedBox(
           height: 500,
-          key: Key('dafd'),
+          key: const Key('dafd'),
           child: FutureBuilder<List<Menu>>(
               future: menuList,
               builder:
@@ -316,10 +316,11 @@ class _ReorderableExampleState extends State<ReorderableExample> {
                       );
                     },
                     separatorBuilder: (BuildContext context, int index) {
-                      if (index == 0)
+                      if (index == 0) {
                         return SizedBox.shrink(
                           key: Key('$index'),
                         );
+                      }
                       return Divider(
                         key: Key('$index'),
                       );

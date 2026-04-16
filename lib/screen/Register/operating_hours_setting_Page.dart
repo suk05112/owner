@@ -32,15 +32,15 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
   final _selectedColor = Color(0xff9D9BFF);
   final _unselectedColor = Color(0xffCAC9FF);
   final _tabs = [
-    Tab(text: '매일 같아요'),
-    Tab(text: '평일/주말 달라요'),
-    Tab(text: '매일 달라요'),
+    const Tab(text: '매일 같아요'),
+    const Tab(text: '평일/주말 달라요'),
+    const Tab(text: '매일 달라요'),
   ];
 
   final _iconTabs = [
-    Tab(icon: Icon(Icons.home)),
-    Tab(icon: Icon(Icons.search)),
-    Tab(icon: Icon(Icons.settings)),
+    const Tab(icon: Icon(Icons.home)),
+    const Tab(icon: Icon(Icons.search)),
+    const Tab(icon: Icon(Icons.settings)),
   ];
 
   late bool _isStart;
@@ -57,7 +57,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
     super.initState();
     initializeDateFormatting("ko_KR", null);
     _isStart = widget.isStart;
-    print("isstart ${_isStart}");
+    print("isstart $_isStart");
     _starTime = DateTime.now();
     _endTime = DateTime.now();
 
@@ -73,37 +73,37 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
 
   @override
   Widget build(BuildContext context) {
-    print("build 실행 ${_isStart}");
+    print("build 실행 $_isStart");
     return Scaffold(
         appBar: AppBar(
-          title: Text("운영시간 관리하기"),
+          title: const Text("운영시간 관리하기"),
           backgroundColor: ColorAssset.mainColor,
         ),
         body: SafeArea(
             child: SingleChildScrollView(
                 child: Container(
-                    margin: EdgeInsets.fromLTRB(10, 20, 10, 21),
+                    margin: const EdgeInsets.fromLTRB(10, 20, 10, 21),
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment
                             .start, // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             "운영시간",
                             style: TextAssset.header3,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10,
                           ),
                           Container(
                             height: kToolbarHeight - 8.0,
                             decoration: BoxDecoration(
-                              color: Color(0xffCAC9FF),
+                              color: const Color(0xffCAC9FF),
                               borderRadius: BorderRadius.circular(8.0),
                             ),
                             child: getTabBarWidget(),
                           ),
                           Container(
-                            margin: EdgeInsets.fromLTRB(2, 20, 2, 20),
+                            margin: const EdgeInsets.fromLTRB(2, 20, 2, 20),
                             height: 300,
                             width: double.infinity,
                             child: TabBarView(
@@ -115,19 +115,19 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                               ],
                             ),
                           ),
-                          Text(
+                          const Text(
                             "정기 휴무일",
                             style: TextAssset.header3,
                           ),
-                          Text(
+                          const Text(
                             "임시 휴무일",
                             style: TextAssset.header3,
                           ),
-                          Text(
+                          const Text(
                             "공휴일 휴무",
                             style: TextAssset.header3,
                           ),
-                          Text(
+                          const Text(
                             "추가안내",
                             style: TextAssset.header3,
                           ),
@@ -143,21 +143,21 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
       labelColor: Colors.white,
       unselectedLabelColor: Colors.black,
       tabs: [
-        Container(
+        SizedBox(
           width: (MediaQuery.of(context).size.width - 80) / 4,
-          child: Tab(text: '매일 같아요'),
+          child: const Tab(text: '매일 같아요'),
         ),
-        Container(
+        SizedBox(
             width: (MediaQuery.of(context).size.width - 60) / 3,
-            child: Text(
+            child: const Text(
               "평일/주말 달라요",
               style: TextAssset.body2,
             )
             // Tab(text: '평일/주말 달라요'),
             ),
-        Container(
+        SizedBox(
           width: (MediaQuery.of(context).size.width - 80) / 4,
-          child: Tab(text: '매일 달라요'),
+          child: const Tab(text: '매일 달라요'),
         ),
       ],
       // tabs: _tabs,
@@ -170,8 +170,8 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("영업시간"),
-          SizedBox(
+          const Text("영업시간"),
+          const SizedBox(
             width: 8,
           ),
           GestureDetector(
@@ -202,10 +202,11 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: Color(0xffE4E7EE), width: 1)),
+                    border:
+                        Border.all(color: const Color(0xffE4E7EE), width: 1)),
                 child: Center(
                     child: Text(
-                  "${startFormatDate}   ~    ${endFormatDate}",
+                  "$startFormatDate   ~    $endFormatDate",
                   textAlign: TextAlign.center,
                 )),
               ))
@@ -215,9 +216,9 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
   }
 
   Widget getSettingTimeWidget(StateSetter bottomState) {
-    _myFunction() => print("Being pressed!");
+    myFunction() => print("Being pressed!");
 
-    print("getSettingTimeWidget:: ${_isStart}");
+    print("getSettingTimeWidget:: $_isStart");
     return SizedBox(
         height: 335,
         child: Column(children: [
@@ -226,12 +227,12 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                 onPressed: () {
                   print("touch");
                 },
-                child: Text("취소")),
+                child: const Text("취소")),
             TextButton(
                 onPressed: () {
                   print("touch");
                 },
-                child: Text("확인"))
+                child: const Text("확인"))
           ]),
           InkWell(
             onTap: () {
@@ -253,7 +254,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                       Text("시작",
                           style: TextStyle(
                               color: _isStart ? Colors.blue : Colors.black)),
-                      Text("${startFormatDate}",
+                      Text(startFormatDate,
                           style: TextStyle(
                               color: _isStart ? Colors.blue : Colors.black)),
                     ],
@@ -277,13 +278,13 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                 Text("종료",
                     style: TextStyle(
                         color: _isStart ? Colors.black : Colors.blue)),
-                Text("${endFormatDate}",
+                Text(endFormatDate,
                     style: TextStyle(
                         color: _isStart ? Colors.black : Colors.blue)),
               ],
             ),
           ),
-          Container(
+          SizedBox(
               height: MediaQuery.of(context).size.height / 4,
               child: CupertinoDatePicker(
                 mode: CupertinoDatePickerMode.time,
@@ -291,8 +292,8 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                     1969,
                     1,
                     1,
-                    TimeOfDay(hour: 15, minute: 0).hour,
-                    TimeOfDay(hour: 15, minute: 0).minute),
+                    const TimeOfDay(hour: 15, minute: 0).hour,
+                    const TimeOfDay(hour: 15, minute: 0).minute),
                 onDateTimeChanged: onDateTimeChanged,
                 // onDateTimeChanged: (DateTime newDateTime) {
                 //   var newTod = TimeOfDay.fromDateTime(newDateTime);
@@ -320,12 +321,12 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
   //평일 주말 달라요
   Widget getWeekdayWeekendWidget() {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text("평일"),
+      const Text("평일"),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("영업시간"),
-          SizedBox(
+          const Text("영업시간"),
+          const SizedBox(
             width: 8,
           ),
           GestureDetector(
@@ -338,8 +339,9 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                 decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(5),
-                    border: Border.all(color: Color(0xffE4E7EE), width: 1)),
-                child: Center(
+                    border:
+                        Border.all(color: const Color(0xffE4E7EE), width: 1)),
+                child: const Center(
                     child: Text(
                   "09:00    ~    20:00",
                   textAlign: TextAlign.center,
@@ -347,12 +349,12 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
               ))
         ],
       ),
-      Text("주말"),
+      const Text("주말"),
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("영업시간"),
-          SizedBox(
+          const Text("영업시간"),
+          const SizedBox(
             width: 8,
           ),
           GestureDetector(
@@ -363,7 +365,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                 width: 270,
                 height: 40,
                 decoration: OperatingHoursBox.boxSyle,
-                child: Center(
+                child: const Center(
                     child: Text(
                   "09:00    ~    20:00",
                   textAlign: TextAlign.center,
@@ -381,8 +383,8 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("월요일"),
-          SizedBox(
+          const Text("월요일"),
+          const SizedBox(
             width: 8,
           ),
           GestureDetector(
@@ -393,7 +395,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                 width: 270,
                 height: 40,
                 decoration: OperatingHoursBox.boxSyle,
-                child: Center(
+                child: const Center(
                     child: Text(
                   "09:00    ~    20:00",
                   textAlign: TextAlign.center,
@@ -401,15 +403,15 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
               ))
         ],
       ),
-      SizedBox(
+      const SizedBox(
         height: 18,
       ),
       //화요일
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text("화요일"),
-          SizedBox(
+          const Text("화요일"),
+          const SizedBox(
             width: 8,
           ),
           GestureDetector(
@@ -420,7 +422,7 @@ class _OperatingHoursSettingPageState extends State<OperatingHoursSettingPage>
                 width: 270,
                 height: 40,
                 decoration: OperatingHoursBox.boxSyle,
-                child: Center(
+                child: const Center(
                     child: Text(
                   "09:00    ~    20:00",
                   textAlign: TextAlign.center,
@@ -436,15 +438,16 @@ class OperatingHoursBox {
   static var boxSyle = BoxDecoration(
       color: Colors.white,
       borderRadius: BorderRadius.circular(5),
-      border: Border.all(color: Color(0xffE4E7EE), width: 1));
+      border: Border.all(color: const Color(0xffE4E7EE), width: 1));
 }
 
 class PreferencesSelectTime extends StatefulWidget {
-  String _title;
-  TimeOfDay _timeOfDay;
-  Function _updateTimeFunction;
+  final String _title;
+  final TimeOfDay _timeOfDay;
+  final Function _updateTimeFunction;
 
-  PreferencesSelectTime(this._title, this._timeOfDay, this._updateTimeFunction);
+  PreferencesSelectTime(this._title, this._timeOfDay, this._updateTimeFunction,
+      {super.key});
 
   @override
   PreferencesSelectTimeState createState() =>
@@ -452,9 +455,9 @@ class PreferencesSelectTime extends StatefulWidget {
 }
 
 class PreferencesSelectTimeState extends State<PreferencesSelectTime> {
-  String _title;
-  TimeOfDay _timeOfDay;
-  Function _updateTimeFunction;
+  final String _title;
+  final TimeOfDay _timeOfDay;
+  final Function _updateTimeFunction;
   PreferencesSelectTimeState(
       this._title, this._timeOfDay, this._updateTimeFunction);
 
@@ -464,7 +467,7 @@ class PreferencesSelectTimeState extends State<PreferencesSelectTime> {
         appBar: AppBar(
           title: Text(_title),
         ),
-        body: Container(
+        body: SizedBox(
             height: MediaQuery.of(context).size.height / 4,
             child: CupertinoDatePicker(
               mode: CupertinoDatePickerMode.time,

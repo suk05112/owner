@@ -27,25 +27,25 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
     my_app.User? user = Provider.of<UserProvider>(context, listen: false).user;
 
     // 로그인된 사용자가 있을 때만 API 호출
-    if (user?.owner_id != null && user!.owner_id! > 0) {
-      final ownerId = user!.owner_id!;
+    if (user?.owner_id != null && user!.owner_id > 0) {
+      final ownerId = user.owner_id;
       Api().client.getOwnerStoreList(ownerId).then((value) => {
-          setState(() {
-            _stores = value.ownerStoreList;
-            
-            // 빈 배열 체크 후 처리
-            if (_stores.isNotEmpty) {
-              _selectedStore = _stores[0].store_name;
-              futureUsedGifticonList =
-                  Api().client.getUsedGifticon(_stores[0].store_id);
-            } else {
-              _selectedStore = '';
-              // 빈 리스트인 경우 빈 데이터로 설정
-              futureUsedGifticonList =
-                  Future.value(UsedGifticonList(gifticonList: []));
-            }
-          })
-        });
+            setState(() {
+              _stores = value.ownerStoreList;
+
+              // 빈 배열 체크 후 처리
+              if (_stores.isNotEmpty) {
+                _selectedStore = _stores[0].store_name;
+                futureUsedGifticonList =
+                    Api().client.getUsedGifticon(_stores[0].store_id);
+              } else {
+                _selectedStore = '';
+                // 빈 리스트인 경우 빈 데이터로 설정
+                futureUsedGifticonList =
+                    Future.value(UsedGifticonList(gifticonList: []));
+              }
+            })
+          });
     }
   }
 
@@ -70,9 +70,11 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
                             child: Text("등록된 매장이 없습니다."),
                           )
                         : DropdownButton<String>(
-                            value: _selectedStore.isEmpty ? null : _selectedStore,
+                            value:
+                                _selectedStore.isEmpty ? null : _selectedStore,
                             items: _stores
-                                .map((OwnerStore store) => DropdownMenuItem<String>(
+                                .map((OwnerStore store) =>
+                                    DropdownMenuItem<String>(
                                       value: store.store_name,
                                       child: Text(store.store_name),
                                     ))
@@ -80,10 +82,10 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
                             onChanged: (value) {
                               // items 의 DropdownMenuItem 의 value 반환
                               if (value == null) return;
-                              
+
                               setState(() {
                                 _selectedStore = value;
-                                print("selectedStore ${_selectedStore}");
+                                print("selectedStore $_selectedStore");
 
                                 // 선택된 store의 store_id 찾기
                                 final selectedStore = _stores.firstWhere(
@@ -124,8 +126,9 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
                             if (usedGifticonList.isNotEmpty) {
                               return RefreshIndicator(
                                   onRefresh: () async {
-                                    if (_stores.isEmpty || _selectedStore.isEmpty) return;
-                                    
+                                    if (_stores.isEmpty ||
+                                        _selectedStore.isEmpty) return;
+
                                     setState(() {
                                       final selectedStore = _stores.firstWhere(
                                         (store) =>
@@ -180,8 +183,9 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
                                       ]));
                             } else {
                               return RefreshIndicator(onRefresh: () async {
-                                if (_stores.isEmpty || _selectedStore.isEmpty) return;
-                                
+                                if (_stores.isEmpty || _selectedStore.isEmpty)
+                                  return;
+
                                 setState(() {
                                   final selectedStore = _stores.firstWhere(
                                     (store) =>

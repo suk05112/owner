@@ -1,10 +1,7 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 // import 'dart:ffi';
 // import 'package:ffi/ffi.dart';
 import 'package:json_annotation/json_annotation.dart';
 // import 'package:retrofit/retrofit.dart';
-import 'package:dio/dio.dart';
-import 'dart:ffi';
 
 part 'cafeInfo.g.dart';
 

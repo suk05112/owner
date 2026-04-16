@@ -30,14 +30,14 @@ class StorePost {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['store_name'] = this.store_name;
-    data['logo'] = this.logo;
-    data['open_yn'] = this.open_yn;
-    data['status'] = this.status;
-    data['store_lat'] = this.store_lat;
-    data['store_lng'] = this.store_lng;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['store_name'] = store_name;
+    data['logo'] = logo;
+    data['open_yn'] = open_yn;
+    data['status'] = status;
+    data['store_lat'] = store_lat;
+    data['store_lng'] = store_lng;
 
     return data;
   }

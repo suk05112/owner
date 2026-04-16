@@ -8,7 +8,14 @@ class AppConfig {
 
   // 환경에 따른 baseUrl 반환
   static String get baseUrl {
-    print("AppConfig:: ${env}");
-    return F.appFlavor == Flavor.dev ? devBaseUrl : prodBaseUrl;
+    print("AppConfig:: $env");
+    switch (F.appFlavor) {
+      case Flavor.dev:
+      case Flavor.mock:
+        return devBaseUrl;
+      case Flavor.prod:
+      default:
+        return prodBaseUrl;
+    }
   }
 }

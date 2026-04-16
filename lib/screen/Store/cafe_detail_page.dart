@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/provier/mock_store_provider.dart';
 import 'package:owner/common/provier/store_provider.dart';
+import 'package:owner/common/widget/store_image.dart';
 import 'package:owner/flavors.dart';
 import 'package:owner/screen/Register/register_store_page.dart';
 import 'package:provider/provider.dart';
@@ -31,6 +32,12 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
     _load();
   }
 
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
   Future<void> _load() async {
     try {
       final Store s;
@@ -38,7 +45,10 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
       if (F.isMock) {
         s = await Provider.of<MockStoreProvider>(context, listen: false)
             .getDetailStore(_storeId);
-        // mock 모드에서는 메뉴 API 호출 없이 빈 목록 사용
+        try {
+          final res = await Api().client.getMenuList(_storeId);
+          menus = res.menuList;
+        } catch (_) {}
       } else {
         s = await Provider.of<StoreProvider>(context, listen: false)
             .getDetailStore(_storeId);
@@ -146,25 +156,64 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
     );
   }
 
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
   Widget _buildStoreImage() {
-    final url = store!.store_photo_urls.isNotEmpty
-        ? store!.store_photo_urls.first
-        : null;
-    return Container(
+    final urls = store!.store_photo_urls;
+    if (urls.isEmpty) {
+      return Container(
+        width: double.infinity,
+        height: 176,
+        color: const Color(0xFFF7F7F7),
+        child: const Center(child: Text("☕", style: TextStyle(fontSize: 48))),
+      );
+    }
+    return SizedBox(
       width: double.infinity,
       height: 176,
-      color: const Color(0xFFF7F7F7),
-      child: url != null
-          ? Image.network(
-              url,
+      child: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: urls.length,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            itemBuilder: (context, i) => StoreImage(
+              url: urls[i],
+              width: double.infinity,
+              height: 176,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const Center(
-                child: Text("☕", style: TextStyle(fontSize: 48)),
+              errorWidget: Container(
+                color: const Color(0xFFF7F7F7),
+                child: const Center(
+                    child: Text("☕", style: TextStyle(fontSize: 48))),
               ),
-            )
-          : const Center(
-              child: Text("☕", style: TextStyle(fontSize: 48)),
             ),
+          ),
+          if (urls.length > 1)
+            Positioned(
+              bottom: 10,
+              left: 0,
+              right: 0,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(urls.length, (i) {
+                  final active = i == _currentPage;
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    margin: const EdgeInsets.symmetric(horizontal: 3),
+                    width: active ? 16 : 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: active ? Colors.white : Colors.white54,
+                      borderRadius: BorderRadius.circular(3),
+                    ),
+                  );
+                }),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
@@ -217,10 +266,12 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
             ),
             clipBehavior: Clip.hardEdge,
             child: (store!.store_logo != null && store!.store_logo!.isNotEmpty)
-                ? Image.network(
-                    store!.store_logo!,
+                ? StoreImage(
+                    url: store!.store_logo!,
+                    width: 80,
+                    height: 80,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const Center(
+                    errorWidget: const Center(
                       child: Text("☕", style: TextStyle(fontSize: 30)),
                     ),
                   )
@@ -393,28 +444,57 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
               ),
               itemBuilder: (context, index) {
                 final menu = menuList[index];
+                final priceStr = menu.price
+                    .toString()
+                    .replaceAllMapped(
+                        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                        (m) => '${m[1]},');
                 return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Row(
                     children: [
-                      Text(
-                        menu.name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
-                          color: Color(0xFF101010),
+                      StoreImage(
+                        url: menu.menu_image_url,
+                        width: 56,
+                        height: 56,
+                        fit: BoxFit.cover,
+                        borderRadius: BorderRadius.circular(8),
+                        errorWidget: Container(
+                          width: 56,
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF7F7F7),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.image_not_supported_outlined,
+                              size: 20, color: Color(0xFF808080)),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        "${menu.price.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (m) => '${m[1]},')}원",
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontWeight: FontWeight.w500,
-                          fontSize: 12,
-                          color: Color(0xFFF27213),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              menu.name,
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                color: Color(0xFF101010),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "$priceStr원",
+                              style: const TextStyle(
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                fontSize: 12,
+                                color: Color(0xFFF27213),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ],

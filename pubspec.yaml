@@ -122,6 +122,8 @@ flutter:
     - assets/
     - assets/bank/
     - assets/mock/
+    - assets/mock/images/menu/
+    - assets/mock/images/store/
     - assets/securities/
     - assets/securities/name=sk증권.png
     - assets/securities/name=LS증권.png

@@ -6,11 +6,15 @@
       "owner_id": 12345,
       "store_id": 1,
       "store_name": "Mock 카페",
-      "store_logo": "",
+      "store_logo": "asset:assets/mock/images/store/logo_1.png",
       "store_telephone": "02-1234-5678",
       "store_description": "Mock 카페입니다.",
-      "store_photo_urls": [],
-      "store_photo_cnt": 0,
+      "store_photo_urls": [
+        "asset:assets/mock/images/store/store_image_1_1.png",
+        "asset:assets/mock/images/store/store_image_1_2.png",
+        "asset:assets/mock/images/store/store_image_1_3.png"
+      ],
+      "store_photo_cnt": 3,
       "store_address": "서울시 강남구 테헤란로 123",
       "store_lat": 37.4979,
       "store_lng": 127.0276,

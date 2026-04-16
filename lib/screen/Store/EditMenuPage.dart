@@ -9,6 +9,7 @@ import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
+import 'package:owner/common/widget/store_image.dart';
 import '../../common/api/response/menu.dart';
 
 import 'package:http/http.dart' as http;
@@ -50,11 +51,15 @@ class _EditMenuPageState extends State<EditMenuPage> {
       menuPriceInputController.text = widget.menu!.price.toString();
       menuDescInputController.text = widget.menu!.description;
 
-      _fileFromImageUrl().then((value) => {
-            setState(() {
-              _image = value;
-            })
-          });
+      // asset: 접두어 URL은 로컬 파일로 다운로드하지 않고 StoreImage 위젯이 직접 렌더링
+      final url = widget.menu?.menu_image_url ?? '';
+      if (!url.startsWith('asset:')) {
+        _fileFromImageUrl().then((value) => {
+              setState(() {
+                _image = value;
+              })
+            });
+      }
     }
   }
 
@@ -289,56 +294,76 @@ class _EditMenuPageState extends State<EditMenuPage> {
     );
   }
 
+  static const Color _borderColor = Color(0xFFE6E6E6);
+  static const Color _hintColor = Color(0xFF808080);
+
   Widget menuImage() {
     bool isUpdated = widget.menuId != null;
 
     return GestureDetector(
-        onTap: () async {
-          pickMenuImage();
-        },
-        child: SizedBox(
-          // width: double.infinity,
-          height: 240,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center, // 이미지가 중앙에 오도록 설정
-
-            children: [
-              Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (_image == null)
-                      if (isUpdated)
-                        Image.network(widget.menu?.menu_image_url ?? "",
-                            width: 200,
-                            height: 200,
-                            cacheWidth: 200,
-                            cacheHeight: 200,
-                            fit: BoxFit.fill,
-                            errorBuilder: (context, error, stackTrace) {
-                          print("su>> Image load error: $error");
-                          return Image.asset('assets/americano.jpeg',
-                              width: 200, height: 200, fit: BoxFit.fill);
-                        })
-                      else
-                        Image.asset(
-                          'assets/americano.jpeg',
-                          width: 200,
-                          height: 200,
-                        )
-                    else
-                      Image.file(
+      onTap: () async {
+        pickMenuImage();
+      },
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF7F7F7),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _borderColor),
+              ),
+              child: _image != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(
                         _image!,
-                        fit: BoxFit.fill,
+                        fit: BoxFit.cover,
                         width: 200,
                         height: 200,
                       ),
-                    const Text("이미지를 터치해 선택하세요.")
-                  ]),
-            ],
+                    )
+                  : isUpdated
+                      ? StoreImage(
+                          url: widget.menu?.menu_image_url ?? "",
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                          borderRadius: BorderRadius.circular(12),
+                          errorWidget: _emptyImagePlaceholder(),
+                        )
+                      : _emptyImagePlaceholder(),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              "이미지를 터치해 선택하세요.",
+              style: TextStyle(fontSize: 13, color: _hintColor),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyImagePlaceholder() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: const [
+        Icon(Icons.camera_alt_outlined, size: 40, color: _hintColor),
+        SizedBox(height: 8),
+        Text(
+          "사진 추가",
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w400,
+            color: _hintColor,
           ),
-        ));
+        ),
+      ],
+    );
   }
 
   void pickMenuImage() async {

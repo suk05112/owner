@@ -92,18 +92,27 @@ class MyApp extends StatelessWidget {
         canPop: false,
         child: MultiProvider(
           providers: [
-            // Conditional providers based on flavor
             ChangeNotifierProvider(create: (context) => MockStoreProvider()),
-
             ChangeNotifierProvider(create: (context) => StoreProvider()),
             ChangeNotifierProvider(
                 create: (context) => SelectedStoreProvider()),
             ChangeNotifierProvider(
                 create: (context) => DashboardStatsProvider()),
             ChangeNotifierProvider(create: (context) => GifticonProvider()),
-            // Conditional providers based on flavor
             ChangeNotifierProvider(create: (context) => MockUserProvider()),
-            ChangeNotifierProvider(create: (context) => UserProvider()),
+            ChangeNotifierProvider(create: (_) {
+              final provider = UserProvider();
+              // mock 모드에서는 스토리지 로드 없이 즉시 mock 유저를 주입
+              if (F.isMock) {
+                provider.setMockUser(User(
+                  owner_id: 12345,
+                  name: 'Mock Store Owner',
+                  email: 'mock@test.com',
+                  phone_number: '010-1234-5678',
+                ));
+              }
+              return provider;
+            }),
             ChangeNotifierProvider(create: (context) => AccountProvider()),
           ],
 
@@ -111,14 +120,18 @@ class MyApp extends StatelessWidget {
             builder: (context, userProvider, child) {
               User? user = userProvider.user;
 
+              // mock 모드: provider 생성 시 이미 mock 유저가 주입되어 있으므로 바로 Home
+              // real 모드: 스토리지에서 유저 로드 완료 여부에 따라 Login/Home 분기
+              final Widget homeWidget = (F.isMock || user != null)
+                  ? const Home()
+                  : const LoginScreen();
+
               return MaterialApp(
                 title: 'Flutter Demo',
                 theme: ThemeData(
                   primarySwatch: Colors.blue,
                 ),
-                home: _NetworkFirstRunCheck(
-                  child: user == null ? const LoginScreen() : const Home(),
-                ),
+                home: _NetworkFirstRunCheck(child: homeWidget),
                 debugShowCheckedModeBanner: false,
               );
             },
@@ -149,9 +162,11 @@ class _NetworkFirstRunCheckState extends State<_NetworkFirstRunCheck> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      NetworkUtils.checkOnFirstLaunchAndShowDialogIfOffline(context);
-    });
+    if (!F.isMock) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        NetworkUtils.checkOnFirstLaunchAndShowDialogIfOffline(context);
+      });
+    }
   }
 
   @override

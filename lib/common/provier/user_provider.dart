@@ -14,6 +14,12 @@ class UserProvider with ChangeNotifier {
     _loadUserFromStorage();
   }
 
+  /// mock 모드 전용: 스토리지 저장 없이 메모리에만 유저 세팅
+  void setMockUser(User user) {
+    _user = user;
+    notifyListeners();
+  }
+
   /// Set the user and save it to storage
   Future<void> setUser(User user) async {
     _user = user;

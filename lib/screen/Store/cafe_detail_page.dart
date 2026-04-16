@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/provier/mock_store_provider.dart';
 import 'package:owner/common/provier/store_provider.dart';
+import 'package:owner/flavors.dart';
 import 'package:owner/screen/Register/register_store_page.dart';
+import 'package:provider/provider.dart';
 
 import '../../common/api/request/store/store.dart';
 import '../../common/api/response/menu.dart';
@@ -30,12 +33,20 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
 
   Future<void> _load() async {
     try {
-      final s = await StoreProvider().getDetailStore(_storeId);
+      final Store s;
       List<Menu> menus = [];
-      try {
-        final res = await Api().client.getMenuList(_storeId);
-        menus = res.menuList;
-      } catch (_) {}
+      if (F.isMock) {
+        s = await Provider.of<MockStoreProvider>(context, listen: false)
+            .getDetailStore(_storeId);
+        // mock 모드에서는 메뉴 API 호출 없이 빈 목록 사용
+      } else {
+        s = await Provider.of<StoreProvider>(context, listen: false)
+            .getDetailStore(_storeId);
+        try {
+          final res = await Api().client.getMenuList(_storeId);
+          menus = res.menuList;
+        } catch (_) {}
+      }
       if (mounted) {
         setState(() {
           store = s;

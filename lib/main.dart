@@ -15,6 +15,9 @@ import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/provier/mock_user_provider.dart';
 import 'package:owner/common/provier/mock_auth_provider.dart';
 import 'package:owner/common/provier/mock_store_provider.dart';
+import 'package:owner/common/provier/mock_dashboard_stats_provider.dart';
+import 'package:owner/common/provier/mock_account_provider.dart';
+import 'package:owner/common/provier/mock_gifticon_provider.dart';
 import 'package:owner/screen/home.dart';
 import 'package:owner/common/provier/store_provider.dart';
 import 'screen/LoginPage.dart';
@@ -93,6 +96,9 @@ class MyApp extends StatelessWidget {
         child: MultiProvider(
           providers: [
             ChangeNotifierProvider(create: (context) => MockStoreProvider()),
+            ChangeNotifierProvider(create: (context) => MockDashboardStatsProvider()),
+            ChangeNotifierProvider(create: (context) => MockAccountProvider()),
+            ChangeNotifierProvider(create: (context) => MockGifticonProvider()),
             ChangeNotifierProvider(create: (context) => StoreProvider()),
             ChangeNotifierProvider(
                 create: (context) => SelectedStoreProvider()),

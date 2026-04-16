@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/user.dart' as my_app;
 import 'package:owner/common/provier/dashboard_stats_provider.dart';
+import 'package:owner/common/provier/mock_dashboard_stats_provider.dart';
+import 'package:owner/common/provier/mock_store_provider.dart';
 import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
+import 'package:owner/flavors.dart';
 import 'package:owner/screen/Account/account_management_page.dart';
 import 'package:owner/screen/Settlement/settlement_page.dart';
 import 'package:owner/screen/Store/cafe_detail_page.dart';
@@ -41,22 +44,35 @@ class _DashboardPageState extends State<DashboardPage> {
       user = Provider.of<UserProvider>(context, listen: false).user;
       final storeProvider =
           Provider.of<SelectedStoreProvider>(context, listen: false);
-      final statsProvider =
-          Provider.of<DashboardStatsProvider>(context, listen: false);
 
       if (user != null && user!.owner_id > 0) {
-        final storeListResponse =
-            await Api().client.getStoreList(user!.owner_id);
-        final stores = storeListResponse.store;
-        storeProvider.setStores(stores);
-        statsProvider.clearIfDifferentStore(storeProvider.selectedStoreId);
-        final selectedStoreId = storeProvider.selectedStoreId;
-        if (selectedStoreId != null) {
-          await statsProvider.refreshStats(selectedStoreId);
+        List<Store> stores;
+        if (F.isMock) {
+          stores = await Provider.of<MockStoreProvider>(context, listen: false)
+              .getStoreList(user!.owner_id);
+          storeProvider.setStores(stores);
+          final statsProvider =
+              Provider.of<MockDashboardStatsProvider>(context, listen: false);
+          final selectedStoreId = storeProvider.selectedStoreId;
+          if (selectedStoreId != null) {
+            await statsProvider.refreshStats(selectedStoreId);
+          }
+        } else {
+          final storeListResponse =
+              await Api().client.getStoreList(user!.owner_id);
+          stores = storeListResponse.store;
+          storeProvider.setStores(stores);
+          final statsProvider =
+              Provider.of<DashboardStatsProvider>(context, listen: false);
+          statsProvider.clearIfDifferentStore(storeProvider.selectedStoreId);
+          final selectedStoreId = storeProvider.selectedStoreId;
+          if (selectedStoreId != null) {
+            await statsProvider.refreshStats(selectedStoreId);
+          }
         }
       }
     } catch (e) {
-      print("Error loading dashboard data: $e");
+      debugPrint("Error loading dashboard data: $e");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -136,14 +152,24 @@ class _DashboardPageState extends State<DashboardPage> {
                                 const SizedBox(height: 20),
                               ],
                               // 통계 카드들 (QR 사용 시에만 API로 갱신된 값 표시)
-                              Consumer<DashboardStatsProvider>(
-                                builder: (context, statsProvider, _) =>
-                                    _buildStatsSection(
-                                  issuedCount: statsProvider.issuedCount,
-                                  usedCount: statsProvider.usedCount,
-                                  unusedCount: statsProvider.unusedCount,
+                              if (F.isMock)
+                                Consumer<MockDashboardStatsProvider>(
+                                  builder: (context, statsProvider, _) =>
+                                      _buildStatsSection(
+                                    issuedCount: statsProvider.issuedCount,
+                                    usedCount: statsProvider.usedCount,
+                                    unusedCount: statsProvider.unusedCount,
+                                  ),
+                                )
+                              else
+                                Consumer<DashboardStatsProvider>(
+                                  builder: (context, statsProvider, _) =>
+                                      _buildStatsSection(
+                                    issuedCount: statsProvider.issuedCount,
+                                    usedCount: statsProvider.usedCount,
+                                    unusedCount: statsProvider.unusedCount,
+                                  ),
                                 ),
-                              ),
                               const SizedBox(height: 24),
                               _buildQuickMenuSection(storeProvider),
                             ],

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/api/ApiClient.dart';
+import 'package:owner/common/api/MockApiClient.dart';
 import 'package:owner/config.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -29,6 +30,12 @@ class Api {
   }
 
   Future<void> _initializeClients() async {
+    // mock 모드에서는 네트워크 클라이언트 초기화 없이 MockApiClient 사용
+    if (F.isMock) {
+      dio = Dio(); // 사용되지 않지만 late 필드이므로 초기화 필요
+      client = MockApiClient();
+      return;
+    }
     final headers = await _getHeaders();
     final options = BaseOptions(
       baseUrl: AppConfig.baseUrl,
@@ -222,6 +229,11 @@ class Api {
   /// 이 함수가 호출 된 이후,
   /// Api().client 의 baseURL 은 변경됩니다.
   Future<ApiClient> setBaseClient(String baseUrl) async {
+    // mock 모드에서는 네트워크 클라이언트 교체 없이 MockApiClient 유지
+    if (F.isMock) {
+      client = MockApiClient();
+      return client;
+    }
     String? idToken;
     String? appCheckToken;
     try {

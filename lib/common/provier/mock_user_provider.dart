@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:owner/common/model/user.dart';
 
 class MockUserProvider with ChangeNotifier {
@@ -6,16 +8,24 @@ class MockUserProvider with ChangeNotifier {
 
   User? get user => _user;
 
-  bool get isMock => true;
-
   MockUserProvider() {
-    // Initialize with mock user data
-    _user = User(
-      owner_id: 12345,
-      name: 'Mock Store Owner',
-      email: 'mock@example.com',
-      phone_number: '010-1234-5678',
-    );
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    try {
+      final jsonStr = await rootBundle.loadString('assets/mock/user.json');
+      final json = jsonDecode(jsonStr) as Map<String, dynamic>;
+      _user = User(
+        owner_id: json['owner_id'] as int,
+        name: json['name'] as String,
+        email: json['email'] as String,
+        phone_number: json['phone_number'] as String,
+      );
+      notifyListeners();
+    } catch (e) {
+      debugPrint("MockUserProvider: user.json 로드 실패: $e");
+    }
   }
 
   Future<void> setUser(User user) async {
@@ -23,9 +33,7 @@ class MockUserProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<User?> fetchUser() async {
-    return _user;
-  }
+  Future<User?> fetchUser() async => _user;
 
   Future<void> clearUser() async {
     _user = null;

@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:owner/common/api/request/store/store.dart';
+import 'package:owner/common/api/response/GifticonResponse.dart';
+import 'package:owner/common/model/UsedGifticon.dart';
 
-class MockStoreProvider extends ChangeNotifier {
+class MockGifticonProvider extends ChangeNotifier {
   List<Store>? storeCards = [];
-  bool _isLoadingStoreList = false;
-
-  bool get isLoadingStoreList => _isLoadingStoreList;
 
   void setStoreCard(List<Store>? storeCards) {
     this.storeCards = storeCards;
@@ -15,17 +14,13 @@ class MockStoreProvider extends ChangeNotifier {
   }
 
   Future<void> fetchStoreList(int ownerId) async {
-    _isLoadingStoreList = true;
-    notifyListeners();
     try {
-      final stores = await getStoreList(ownerId);
-      setStoreCard(stores);
+      final jsonStr = await rootBundle.loadString('assets/mock/store_list.json');
+      final json = jsonDecode(jsonStr) as Map<String, dynamic>;
+      final response = StoreListResponse.fromJson(json);
+      setStoreCard(response.store);
     } catch (error) {
-      debugPrint("mock_store_provider::fetchStoreList:: 오류: $error");
-      setStoreCard(null);
-    } finally {
-      _isLoadingStoreList = false;
-      notifyListeners();
+      debugPrint("MockGifticonProvider.fetchStoreList error: $error");
     }
   }
 
@@ -33,6 +28,7 @@ class MockStoreProvider extends ChangeNotifier {
     final jsonStr = await rootBundle.loadString('assets/mock/store_list.json');
     final json = jsonDecode(jsonStr) as Map<String, dynamic>;
     final response = StoreListResponse.fromJson(json);
+    notifyListeners();
     return response.store;
   }
 
@@ -41,5 +37,16 @@ class MockStoreProvider extends ChangeNotifier {
     final json = jsonDecode(jsonStr) as Map<String, dynamic>;
     final response = StoreResponse.fromJson(json);
     return response.store;
+  }
+
+  Future<GifticonPatchResponse> useGifticon(int gifticonId) async {
+    // mock: 항상 성공(result=0) 반환
+    return GifticonPatchResponse(result: 0);
+  }
+
+  Future<UsedGifticonList> getUsedGifticon(int storeId) async {
+    final jsonStr = await rootBundle.loadString('assets/mock/used_gifticon_list.json');
+    final json = jsonDecode(jsonStr) as Map<String, dynamic>;
+    return UsedGifticonList.fromJson(json);
   }
 }

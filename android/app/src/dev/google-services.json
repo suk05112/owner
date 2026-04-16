@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1061431508687",
+    "project_id": "cafe-owner-dev",
+    "storage_bucket": "cafe-owner-dev.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1061431508687:android:74ef6fdc4a6d922e72c1ba",
+        "android_client_info": {
+          "package_name": "com.gifnut.owner.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGb1Z77BbL5bUOFLrfUDAp3tkmLIQiGVQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:dio/dio.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
@@ -16,6 +15,7 @@ import 'package:owner/common/model/user.dart' as my_app;
 
 import '../../common/widget/CommonWidget.dart';
 import '../../common/utils/phone_utils.dart';
+import '../../common/utils/api_error_utils.dart';
 import 'SingUpCompletePage.dart';
 
 class BasicInfoInputPage extends StatefulWidget {
@@ -329,44 +329,10 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                     }
 
                                     if (mounted) {
-                                      // 실제 오류 메시지 사용
-                                      String errorMessage = apiError.toString();
-
-                                      // DioException인 경우 더 자세한 정보 추출
-                                      if (apiError is DioException) {
-                                        if (apiError.response != null) {
-                                          // 서버에서 반환한 에러 메시지가 있으면 사용
-                                          final responseData =
-                                              apiError.response?.data;
-                                          if (responseData is Map &&
-                                              responseData['message'] != null) {
-                                            errorMessage =
-                                                responseData['message']
-                                                    .toString();
-                                          } else if (apiError
-                                                  .response?.statusMessage !=
-                                              null) {
-                                            errorMessage = apiError
-                                                .response!.statusMessage!;
-                                          } else {
-                                            errorMessage = apiError.message ??
-                                                apiError.toString();
-                                          }
-                                        } else {
-                                          // 네트워크 에러인 경우
-                                          errorMessage = apiError.message ??
-                                              apiError.toString();
-                                        }
-                                      } else {
-                                        // 다른 예외인 경우
-                                        errorMessage = apiError.toString();
-                                      }
-
-                                      print("회원가입 실패 다이얼로그 표시 (API 예외)");
                                       CommonDialog.show(
                                         context: context,
                                         title: "회원가입 오류",
-                                        content: errorMessage,
+                                        content: ApiErrorUtils.toUserMessage(apiError),
                                         buttonText: "확인",
                                         onPressed: () {},
                                       );
@@ -429,83 +395,30 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                             builder: (context) =>
                                                 const SignUpCompletePage()));
                                   }
-                                } on DioException catch (e) {
-                                  // 서버 회원가입 실패 시 Firebase 계정 삭제
-                                  print(
-                                      "회원가입 API DioException 발생: ${e.type}, ${e.message}");
-                                  print(
-                                      "DioException response: ${e.response?.statusCode}, ${e.response?.data}");
+                                } catch (e) {
+                                  print("회원가입 API 예외 발생: $e");
                                   try {
                                     await userCredential.user?.delete();
                                     await FirebaseAuth.instance.signOut();
-                                    print("Firebase 계정 삭제 완료 (DioException)");
+                                    print("Firebase 계정 삭제 완료 (예외)");
                                   } catch (deleteError) {
                                     print("Firebase 계정 삭제 중 오류: $deleteError");
-                                  }
-
-                                  // 실제 오류 메시지 사용
-                                  String errorMessage = e.toString();
-
-                                  // DioException인 경우 더 자세한 정보 추출
-                                  if (e.response != null) {
-                                    // 서버에서 반환한 에러 메시지가 있으면 사용
-                                    final responseData = e.response?.data;
-                                    if (responseData is Map &&
-                                        responseData['message'] != null) {
-                                      errorMessage =
-                                          responseData['message'].toString();
-                                    } else if (e.response?.statusMessage !=
-                                        null) {
-                                      errorMessage = e.response!.statusMessage!;
-                                    } else {
-                                      errorMessage = e.message ?? e.toString();
-                                    }
-                                  } else {
-                                    // 네트워크 에러인 경우
-                                    errorMessage = e.message ?? e.toString();
                                   }
 
                                   if (mounted) {
                                     setState(() {
                                       _isLoading = false;
                                     });
-                                    print("회원가입 실패 다이얼로그 표시 (DioException)");
                                     CommonDialog.show(
                                       context: context,
                                       title: "회원가입 오류",
-                                      content: errorMessage,
-                                      buttonText: "확인",
-                                      onPressed: () {},
-                                    );
-                                  }
-                                } catch (e, stackTrace) {
-                                  // 서버 회원가입 실패 시 Firebase 계정 삭제
-                                  print("회원가입 API 일반 예외 발생: $e");
-                                  print("스택 트레이스: $stackTrace");
-                                  try {
-                                    await userCredential.user?.delete();
-                                    await FirebaseAuth.instance.signOut();
-                                    print("Firebase 계정 삭제 완료 (일반 예외)");
-                                  } catch (deleteError) {
-                                    print("Firebase 계정 삭제 중 오류: $deleteError");
-                                  }
-
-                                  if (mounted) {
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    print("회원가입 실패 다이얼로그 표시 (일반 예외)");
-                                    CommonDialog.show(
-                                      context: context,
-                                      title: "오류",
-                                      content: e.toString(),
+                                      content: ApiErrorUtils.toUserMessage(e),
                                       buttonText: "확인",
                                       onPressed: () {},
                                     );
                                   }
                                 }
                               } catch (e) {
-                                // Firebase 계정 생성 후 오류 발생 시 계정 삭제
                                 try {
                                   await userCredential.user?.delete();
                                   await FirebaseAuth.instance.signOut();
@@ -520,7 +433,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                   CommonDialog.show(
                                     context: context,
                                     title: "회원가입 실패",
-                                    content: e.toString(),
+                                    content: ApiErrorUtils.toUserMessage(e),
                                     buttonText: "확인",
                                     onPressed: () {},
                                   );

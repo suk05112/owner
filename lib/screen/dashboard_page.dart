@@ -288,7 +288,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildQuickMenuSection(SelectedStoreProvider storeProvider) {
-    final hasNoStores = storeProvider.hasNoStores;
+    final hasNoStores = _isLoading || storeProvider.hasNoStores;
     final selectedStoreId = storeProvider.selectedStoreId;
 
     return Column(
@@ -318,7 +318,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.store,
                 title: "매장 관리",
                 onTap: () {
-                  if (selectedStoreId == null) {
+                  if (hasNoStores || selectedStoreId == null) {
                     _showNoStoreMessage();
                     return;
                   }

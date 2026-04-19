@@ -17,7 +17,8 @@ import 'package:owner/common/model/inquiry.dart';
 /// mock 모드에서 Api().client 대신 사용.
 /// 모든 메서드는 assets/mock/ fixture에서 데이터를 반환하고 네트워크 호출을 하지 않는다.
 class MockApiClient implements ApiClient {
-  Future<T> _load<T>(String asset, T Function(Map<String, dynamic>) parse) async {
+  Future<T> _load<T>(
+      String asset, T Function(Map<String, dynamic>) parse) async {
     final str = await rootBundle.loadString(asset);
     return parse(jsonDecode(str) as Map<String, dynamic>);
   }
@@ -26,7 +27,7 @@ class MockApiClient implements ApiClient {
 
   @override
   Future<OwnerLoginResponse> login(String uid) async =>
-      OwnerLoginResponse(name: 'Mock Store Owner', phone_number: '010-1234-5678');
+      OwnerLoginResponse(name: '김철수', phone_number: '010-1234-5678');
 
   @override
   Future<OwnerRegisterResponse> registerOwner(OwnerRegisterPost owner) async =>
@@ -58,7 +59,8 @@ class MockApiClient implements ApiClient {
 
   @override
   Future<OwnerStoreList> getOwnerStoreList(int ownerId) async {
-    final data = await _load('assets/mock/store_list.json', StoreListResponse.fromJson);
+    final data =
+        await _load('assets/mock/store_list.json', StoreListResponse.fromJson);
     final ownerStores = data.store
         .map((s) => OwnerStore(store_id: s.store_id, store_name: s.store_name))
         .toList();
@@ -85,8 +87,8 @@ class MockApiClient implements ApiClient {
       );
 
   @override
-  Future<StoreStatisticsResponse> getStoreStatistics(int storeId) =>
-      _load('assets/mock/dashboard_stats.json', StoreStatisticsResponse.fromJson);
+  Future<StoreStatisticsResponse> getStoreStatistics(int storeId) => _load(
+      'assets/mock/dashboard_stats.json', StoreStatisticsResponse.fromJson);
 
   // ── 메뉴 ──────────────────────────────────────────────────────────────────
 
@@ -96,11 +98,13 @@ class MockApiClient implements ApiClient {
 
   @override
   Future<MenuPostResponse> addMenu(int storeId, Menu menu) async =>
-      MenuPostResponse(statusCode: 200, menu_id: 99, menu_put_url: '', menu_get_url: '');
+      MenuPostResponse(
+          statusCode: 200, menu_id: 99, menu_put_url: '', menu_get_url: '');
 
   @override
   Future<MenuUpdateResponse> updateMenu(int menuId, Menu menu) async =>
-      MenuUpdateResponse(statusCode: 200, msg: 'ok', menu_put_url: '', menu_get_url: '');
+      MenuUpdateResponse(
+          statusCode: 200, msg: 'ok', menu_put_url: '', menu_get_url: '');
 
   @override
   Future<MenuDeleteResponse> deleteMenu(int menuId) async =>
@@ -119,12 +123,22 @@ class MockApiClient implements ApiClient {
   // ── 정산 ──────────────────────────────────────────────────────────────────
 
   @override
-  Future<SettlementList> getSettlementListByStore(int storeId, int? pastMonths) =>
+  Future<SettlementList> getSettlementListByStore(
+          int storeId, int? pastMonths) =>
       _load('assets/mock/settlement_list.json', SettlementList.fromJson);
 
   @override
-  Future<SettlementDetailResponse> getDetailSettlements(int settlementId) async =>
-      SettlementDetailResponse(settlement: SettlementSummary(), details: []);
+  Future<SettlementDetailResponse> getDetailSettlements(
+      int settlementId) async {
+    try {
+      return await _load(
+        'assets/mock/settlement_detail_$settlementId.json',
+        SettlementDetailResponse.fromJson,
+      );
+    } catch (_) {
+      return SettlementDetailResponse(settlement: SettlementSummary(), details: []);
+    }
+  }
 
   // ── 계좌 ──────────────────────────────────────────────────────────────────
 
@@ -133,7 +147,8 @@ class MockApiClient implements ApiClient {
       _load('assets/mock/account.json', GetAccountResponse.fromJson);
 
   @override
-  Future<UpdateAccountResponse> updateAccount(int storeId, Account account) async =>
+  Future<UpdateAccountResponse> updateAccount(
+          int storeId, Account account) async =>
       UpdateAccountResponse();
 
   @override
@@ -142,7 +157,8 @@ class MockApiClient implements ApiClient {
   // ── 문의 ──────────────────────────────────────────────────────────────────
 
   @override
-  Future<InquiryPostResponse> subjectInquiry(int ownerId, Inquiry inquiry) async =>
+  Future<InquiryPostResponse> subjectInquiry(
+          int ownerId, Inquiry inquiry) async =>
       InquiryPostResponse(statusCode: 200);
 
   @override

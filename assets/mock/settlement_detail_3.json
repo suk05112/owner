@@ -1,0 +1,67 @@
+{
+  "settlement": {
+    "settlement_id": 3,
+    "store_id": 1,
+    "cycle_id": 1,
+    "period_start": "2026-03-01",
+    "period_end": "2026-03-15",
+    "total_sales_amount": 225000,
+    "total_fee_amount": 30000,
+    "net_payout_amount": 195000,
+    "status": "COMPLETED",
+    "payout_date": "2026-04-01",
+    "failure_reason": null
+  },
+  "details": [
+    {
+      "id": 17,
+      "gifticon_id": 287,
+      "menu_name": "아이스 아메리카노",
+      "used_at": "2026-03-15T15:10:00.000Z",
+      "amount": 4500,
+      "fee_amount": 600,
+      "settlement_amount": 3900,
+      "status": "USED"
+    },
+    {
+      "id": 16,
+      "gifticon_id": 286,
+      "menu_name": "카페 라떼",
+      "used_at": "2026-03-13T12:30:00.000Z",
+      "amount": 5500,
+      "fee_amount": 733,
+      "settlement_amount": 4767,
+      "status": "USED"
+    },
+    {
+      "id": 15,
+      "gifticon_id": 285,
+      "menu_name": "바닐라 라떼",
+      "used_at": "2026-03-10T10:20:00.000Z",
+      "amount": 5800,
+      "fee_amount": 773,
+      "settlement_amount": 5027,
+      "status": "USED"
+    },
+    {
+      "id": 14,
+      "gifticon_id": 284,
+      "menu_name": "아이스 아메리카노",
+      "used_at": "2026-03-07T14:00:00.000Z",
+      "amount": 4500,
+      "fee_amount": 600,
+      "settlement_amount": 3900,
+      "status": "USED"
+    },
+    {
+      "id": 13,
+      "gifticon_id": 283,
+      "menu_name": "카푸치노",
+      "used_at": "2026-03-04T09:15:00.000Z",
+      "amount": 5500,
+      "fee_amount": 733,
+      "settlement_amount": 4767,
+      "status": "USED"
+    }
+  ]
+}

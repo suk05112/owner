@@ -21,8 +21,8 @@ class MockAuthProvider {
     // Return mock user
     final mockUser = User(
       owner_id: 12345,
-      name: 'Mock Store Owner',
-      email: email.isNotEmpty ? email : 'mock@example.com',
+      name: '김철수',
+      email: email.isNotEmpty ? email : 'chulsu@gifnut.com',
       phone_number: '010-1234-5678',
     );
 
@@ -38,7 +38,7 @@ class MockAuthProvider {
 
     final mockUser = User(
       owner_id: 12345,
-      name: 'Mock Store Owner',
+      name: '김철수',
       email: 'mock@example.com',
       phone_number: '010-1234-5678',
     );

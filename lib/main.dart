@@ -96,7 +96,8 @@ class MyApp extends StatelessWidget {
         child: MultiProvider(
           providers: [
             ChangeNotifierProvider(create: (context) => MockStoreProvider()),
-            ChangeNotifierProvider(create: (context) => MockDashboardStatsProvider()),
+            ChangeNotifierProvider(
+                create: (context) => MockDashboardStatsProvider()),
             ChangeNotifierProvider(create: (context) => MockAccountProvider()),
             ChangeNotifierProvider(create: (context) => MockGifticonProvider()),
             ChangeNotifierProvider(create: (context) => StoreProvider()),
@@ -106,19 +107,7 @@ class MyApp extends StatelessWidget {
                 create: (context) => DashboardStatsProvider()),
             ChangeNotifierProvider(create: (context) => GifticonProvider()),
             ChangeNotifierProvider(create: (context) => MockUserProvider()),
-            ChangeNotifierProvider(create: (_) {
-              final provider = UserProvider();
-              // mock 모드에서는 스토리지 로드 없이 즉시 mock 유저를 주입
-              if (F.isMock) {
-                provider.setMockUser(User(
-                  owner_id: 12345,
-                  name: 'Mock Store Owner',
-                  email: 'mock@test.com',
-                  phone_number: '010-1234-5678',
-                ));
-              }
-              return provider;
-            }),
+            ChangeNotifierProvider(create: (_) => UserProvider()),
             ChangeNotifierProvider(create: (context) => AccountProvider()),
           ],
 

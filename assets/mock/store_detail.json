@@ -2,10 +2,10 @@
   "store": {
     "owner_id": 12345,
     "store_id": 1,
-    "store_name": "Mock 카페",
+    "store_name": "카페 드림",
     "store_logo": "asset:assets/mock/images/store/logo_1.png",
     "store_telephone": "02-1234-5678",
-    "store_description": "Mock 카페입니다.",
+    "store_description": "따뜻한 분위기의 동네 카페입니다. 신선한 원두로 매일 로스팅하여 최상의 커피를 제공합니다.",
     "store_photo_urls": [
       "asset:assets/mock/images/store/store_image_1_1.png",
       "asset:assets/mock/images/store/store_image_1_2.png",

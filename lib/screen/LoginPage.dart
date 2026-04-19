@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/provier/mock_user_provider.dart';
-import 'package:owner/common/provier/mock_auth_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:provider/provider.dart';
 import 'package:owner/flavors.dart';
@@ -57,7 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _handleEmailLogin() async {
     // Only show validation error in non-mock mode for testing purposes
-    if (!F.isMock && (_emailController.text.isEmpty || _passwordController.text.isEmpty)) {
+    if (!F.isMock &&
+        (_emailController.text.isEmpty || _passwordController.text.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("이메일과 비밀번호를 입력해주세요.")),
       );
@@ -80,13 +80,8 @@ class _LoginScreenState extends State<LoginScreen> {
         // Simulate network delay
         await Future.delayed(const Duration(milliseconds: 500));
 
-        // Create mock user with any email/password (for testing)
-        final mockUser = my_app.User(
-          owner_id: 12345,
-          name: 'Mock Store Owner',
-          email: emailInput.isNotEmpty ? emailInput : 'test@test.com',
-          phone_number: '010-1234-5678',
-        );
+        // Use mock fixture user first so assets/mock/user.json changes are reflected.
+        final mockUser = await _resolveMockUser(emailInput);
 
         user = mockUser;
 
@@ -400,10 +395,12 @@ class _LoginScreenState extends State<LoginScreen> {
         // Simulate network delay
         await Future.delayed(const Duration(milliseconds: 500));
 
-        // Set mock user data (already set in _handleEmailLogin, but ensure consistency)
-        user.owner_id = 12345;
-        user.phone_number = '010-1234-5678';
-        user.name = 'Mock Store Owner';
+        // Keep consistency with fixture-based mock user.
+        final resolvedMockUser = await _resolveMockUser(user.email);
+        user.owner_id = resolvedMockUser.owner_id;
+        user.phone_number = resolvedMockUser.phone_number;
+        user.name = resolvedMockUser.name;
+        user.email = resolvedMockUser.email;
 
         // Ensure user is set in providers
         Provider.of<MockUserProvider>(context, listen: false).setUser(user);
@@ -563,5 +560,24 @@ class _LoginScreenState extends State<LoginScreen> {
       print('Push token 등록 실패: $e');
       // 실패해도 로그인은 계속 진행되므로 에러를 throw하지 않음
     }
+  }
+
+  Future<my_app.User> _resolveMockUser(String emailInput) async {
+    final provider = Provider.of<MockUserProvider>(context, listen: false);
+    final fromAsset = await provider.fetchUser();
+    final fallback = fromAsset ??
+        my_app.User(
+          owner_id: 12345,
+          name: '김철수',
+          email: 'chulsu@gifnut.com',
+          phone_number: '010-1234-5678',
+        );
+
+    return my_app.User(
+      owner_id: fallback.owner_id,
+      name: fallback.name,
+      email: emailInput.isNotEmpty ? emailInput : fallback.email,
+      phone_number: fallback.phone_number,
+    );
   }
 }

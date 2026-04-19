@@ -18,42 +18,6 @@
       "menu_image_url": "asset:assets/mock/images/menu/menu_1_2.png",
       "description": "부드러운 우유와 에스프레소",
       "status": 1
-    },
-    {
-      "menu_id": 3,
-      "store_id": 1,
-      "name": "바닐라 라떼",
-      "price": 5500,
-      "menu_image_url": "asset:assets/mock/images/menu/menu_2_1.png",
-      "description": "달콤한 바닐라 시럽과 라떼",
-      "status": 1
-    },
-    {
-      "menu_id": 4,
-      "store_id": 1,
-      "name": "카푸치노",
-      "price": 5000,
-      "menu_image_url": "asset:assets/mock/images/menu/menu_2_2.png",
-      "description": "풍성한 우유 거품의 카푸치노",
-      "status": 1
-    },
-    {
-      "menu_id": 5,
-      "store_id": 1,
-      "name": "콜드브루",
-      "price": 5500,
-      "menu_image_url": "asset:assets/mock/images/menu/menu_3_1.png",
-      "description": "12시간 저온 추출 콜드브루",
-      "status": 1
-    },
-    {
-      "menu_id": 6,
-      "store_id": 1,
-      "name": "플랫화이트",
-      "price": 5000,
-      "menu_image_url": "asset:assets/mock/images/menu/menu_3_2.png",
-      "description": "진한 에스프레소와 스팀 밀크",
-      "status": 1
     }
   ]
 }

@@ -15,6 +15,7 @@ import 'package:owner/common/model/user.dart' as my_app;
 
 import '../../common/widget/CommonWidget.dart';
 import '../../common/utils/phone_utils.dart';
+import '../../common/utils/api_error_utils.dart';
 import 'SingUpCompletePage.dart';
 
 class BasicInfoInputPage extends StatefulWidget {
@@ -411,24 +412,24 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                         builder: (context) =>
                                             const SignUpCompletePage()));
                               } catch (e) {
-                                // 서버 회원가입 실패 시 Firebase 계정 삭제
-                                print("회원가입 API 일반 예외 발생: $e");
+                                print("회원가입 API 예외 발생: $e");
                                 try {
                                   await userCredential.user?.delete();
                                   await FirebaseAuth.instance.signOut();
-                                  print("Firebase 계정 삭제 완료 (일반 예외)");
+                                  print("Firebase 계정 삭제 완료 (예외)");
                                 } catch (deleteError) {
                                   print("Firebase 계정 삭제 중 오류: $deleteError");
                                 }
 
-                                CommonDialog.show(
-                                  context: context,
-                                  title: "회원가입 실패",
-                                  content:
-                                      "알 수 없는 오류가 발생했습니다.\n잠시 후 다시 시도해주세요.",
-                                  buttonText: "확인",
-                                  onPressed: () {},
-                                );
+                                if (mounted) {
+                                  CommonDialog.show(
+                                    context: context,
+                                    title: "회원가입 실패",
+                                    content: ApiErrorUtils.toUserMessage(e),
+                                    buttonText: "확인",
+                                    onPressed: () {},
+                                  );
+                                }
                               }
                               // FirebaseAuth.instance.currentUser
                               //     ?.sendEmailVerification();

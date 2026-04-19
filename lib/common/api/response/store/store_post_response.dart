@@ -57,9 +57,9 @@ class PresignedUrl {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['logo'] = this.logo;
-    data['store_photo'] = this.storePhoto;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['logo'] = logo;
+    data['store_photo'] = storePhoto;
     return data;
   }
 }
@@ -89,4 +89,3 @@ class PresignedUrl {
 //     return data;
 //   }
 // }
-

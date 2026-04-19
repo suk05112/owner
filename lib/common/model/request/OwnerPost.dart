@@ -22,13 +22,13 @@ class OwnerPost {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['uid'] = this.uid;
-    data['password'] = this.password;
-    data['phone'] = this.phone;
-    data['name'] = this.name;
-    data['bankbook'] = this.bankbook;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
+    data['uid'] = uid;
+    data['password'] = password;
+    data['phone'] = phone;
+    data['name'] = name;
+    data['bankbook'] = bankbook;
     return data;
   }
 }

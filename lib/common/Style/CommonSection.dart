@@ -9,12 +9,12 @@ class CommonSection {
   static Widget getHeader(String sectionString) {
     // Widget getHeader() {
     return Row(children: [
-      Spacer(),
+      const Spacer(),
       Text(
         sectionString,
         style: TextAssset.header1,
       ),
-      Spacer(),
+      const Spacer(),
     ]);
   }
 

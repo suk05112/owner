@@ -84,6 +84,7 @@ dependencies:
   flutter_oss_licenses: ^2.0.1
   drift: ^2.18.0
   connectivity_plus: ^6.0.5
+  package_info_plus: ^8.0.2
 
 
 dev_dependencies:
@@ -120,6 +121,9 @@ flutter:
   assets:
     - assets/
     - assets/bank/
+    - assets/mock/
+    - assets/mock/images/menu/
+    - assets/mock/images/store/
     - assets/securities/
     - assets/securities/name=sk증권.png
     - assets/securities/name=LS증권.png

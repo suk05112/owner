@@ -10,7 +10,7 @@ class ColorAssset {
   static Color hexToColor(String hexString) {
     String hexStr = hexString.replaceAll('#', '');
     if (hexStr.length == 6) {
-      hexStr = "0xFF" + hexStr;
+      hexStr = "0xFF$hexStr";
     }
     return Color(int.parse(hexStr, radix: 16));
   }

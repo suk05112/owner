@@ -23,7 +23,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Text("메뉴명"),
+              const Text("메뉴명"),
               TextFormField(
                 controller: menuNameInputController,
                 keyboardType: TextInputType.text,
@@ -34,7 +34,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
                   return null;
                 },
               ),
-              Text("설명"),
+              const Text("설명"),
               TextFormField(
                 controller: menuDescInputController,
                 keyboardType: TextInputType.text,
@@ -45,7 +45,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
                   return null;
                 },
               ),
-              Text("가격"),
+              const Text("가격"),
               Row(
                 children: [
                   Flexible(
@@ -60,13 +60,13 @@ class _AddMenuPageState extends State<AddMenuPage> {
                       },
                     ),
                   ),
-                  Text("원")
+                  const Text("원")
                 ],
               ),
-              Text("상태"),
+              const Text("상태"),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color.fromARGB(255, 151, 125, 253),
+                  backgroundColor: const Color.fromARGB(255, 151, 125, 253),
                   // minimumSize: const Size.fromHeight(50), // NEW
                 ),
                 onPressed: () {
@@ -80,7 +80,7 @@ class _AddMenuPageState extends State<AddMenuPage> {
                   //     categoryId: "001"));
                   Navigator.pop(context);
                 },
-                child: Text('확인'),
+                child: const Text('확인'),
               ),
             ]),
       ),

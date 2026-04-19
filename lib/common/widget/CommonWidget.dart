@@ -19,7 +19,7 @@ class PhoneAuthResult {
 }
 
 class InputInfoWidget extends StatefulWidget {
-  InputInfoWidget({
+  const InputInfoWidget({
     super.key,
     required this.title,
     required this.hintText,
@@ -52,7 +52,7 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         children: [
           Text(
             widget.title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
               color: Colors.black87,
@@ -102,7 +102,7 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
     enabledBorder: UnderlineInputBorder(
       borderSide: BorderSide(color: Colors.grey[300]!),
     ),
-    focusedBorder: UnderlineInputBorder(
+    focusedBorder: const UnderlineInputBorder(
       borderSide: BorderSide(color: Colors.black, width: 2),
     ),
   );
@@ -113,7 +113,7 @@ void showModalDialog(BuildContext context, String message) {
       barrierDismissible: false,
       context: context,
       builder: (BuildContext context) {
-        return Text("dialog");
+        return const Text("dialog");
         // return LoplatDialogCenterConfirm(
         //   children: [
         //     Row(
@@ -186,7 +186,7 @@ class _PhoneNumberVerificationWidgetState
     enabledBorder: UnderlineInputBorder(
       borderSide: BorderSide(color: Colors.grey[300]!),
     ),
-    focusedBorder: UnderlineInputBorder(
+    focusedBorder: const UnderlineInputBorder(
       borderSide: BorderSide(color: Colors.black, width: 2),
     ),
   );
@@ -296,7 +296,7 @@ class _PhoneNumberVerificationWidgetState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(errorMessage),
-            duration: Duration(seconds: 3),
+            duration: const Duration(seconds: 3),
             backgroundColor: Colors.red[700],
           ),
         );
@@ -348,7 +348,7 @@ class _PhoneNumberVerificationWidgetState
                       ),
                       const SizedBox(height: 20),
                     ],
-                    Text(
+                    const Text(
                       "전화번호",
                       style: TextStyle(
                         fontSize: 14,
@@ -394,9 +394,9 @@ class _PhoneNumberVerificationWidgetState
                             if (!phonePattern.hasMatch(phoneNumber)) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
+                                  content: const Text(
                                       '전화번호 형식이 올바르지 않습니다. (예: 010-1234-5678)'),
-                                  duration: Duration(seconds: 2),
+                                  duration: const Duration(seconds: 2),
                                   backgroundColor: Colors.grey[800],
                                 ),
                               );
@@ -410,7 +410,7 @@ class _PhoneNumberVerificationWidgetState
                             // verifyPhoneNumber("+821025446458");
                             // verifyPhoneNumber("+821012345678");
                           },
-                          child: isTouched ? Text('재전송') : Text('인증'),
+                          child: isTouched ? const Text('재전송') : const Text('인증'),
                         ),
                       ],
                     ),
@@ -420,7 +420,7 @@ class _PhoneNumberVerificationWidgetState
                         child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(
+                              const Text(
                                 "인증번호",
                                 style: TextStyle(
                                   fontSize: 14,
@@ -541,10 +541,10 @@ class _PhoneNumberVerificationWidgetState
                                                 ScaffoldMessenger.of(context)
                                                     .showSnackBar(
                                                   SnackBar(
-                                                    content: Text(
+                                                    content: const Text(
                                                         '인증번호가 올바르지 않습니다.'),
                                                     duration:
-                                                        Duration(seconds: 2),
+                                                        const Duration(seconds: 2),
                                                     backgroundColor:
                                                         Colors.red[700],
                                                   ),
@@ -556,10 +556,10 @@ class _PhoneNumberVerificationWidgetState
                                                 ScaffoldMessenger.of(context)
                                                     .showSnackBar(
                                                   SnackBar(
-                                                    content: Text(
+                                                    content: const Text(
                                                         '인증 중 오류가 발생했습니다.'),
                                                     duration:
-                                                        Duration(seconds: 2),
+                                                        const Duration(seconds: 2),
                                                     backgroundColor:
                                                         Colors.red[700],
                                                   ),
@@ -648,7 +648,7 @@ class _PhoneNumberVerificationWidgetState
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(errorMessage),
-              duration: Duration(seconds: 3),
+              duration: const Duration(seconds: 3),
               backgroundColor: Colors.red[700],
             ),
           );
@@ -665,8 +665,8 @@ class _PhoneNumberVerificationWidgetState
           // 토스트 메시지 표시
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('인증번호가 전송되었습니다.'),
-              duration: Duration(seconds: 2),
+              content: const Text('인증번호가 전송되었습니다.'),
+              duration: const Duration(seconds: 2),
               backgroundColor: Colors.grey[800],
             ),
           );

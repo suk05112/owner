@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/user.dart' as my_app;
 import 'package:owner/common/provier/dashboard_stats_provider.dart';
+import 'package:owner/common/provier/mock_dashboard_stats_provider.dart';
+import 'package:owner/common/provier/mock_store_provider.dart';
 import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
+import 'package:owner/flavors.dart';
 import 'package:owner/screen/Account/account_management_page.dart';
 import 'package:owner/screen/Settlement/settlement_page.dart';
 import 'package:owner/screen/Store/cafe_detail_page.dart';
@@ -39,21 +42,37 @@ class _DashboardPageState extends State<DashboardPage> {
     setState(() => _isLoading = true);
     try {
       user = Provider.of<UserProvider>(context, listen: false).user;
-      final storeProvider = Provider.of<SelectedStoreProvider>(context, listen: false);
-      final statsProvider = Provider.of<DashboardStatsProvider>(context, listen: false);
+      final storeProvider =
+          Provider.of<SelectedStoreProvider>(context, listen: false);
 
       if (user != null && user!.owner_id > 0) {
-        final storeListResponse = await Api().client.getStoreList(user!.owner_id);
-        final stores = storeListResponse.store;
-        storeProvider.setStores(stores);
-        statsProvider.clearIfDifferentStore(storeProvider.selectedStoreId);
-        final selectedStoreId = storeProvider.selectedStoreId;
-        if (selectedStoreId != null) {
-          await statsProvider.refreshStats(selectedStoreId);
+        List<Store> stores;
+        if (F.isMock) {
+          stores = await Provider.of<MockStoreProvider>(context, listen: false)
+              .getStoreList(user!.owner_id);
+          storeProvider.setStores(stores);
+          final statsProvider =
+              Provider.of<MockDashboardStatsProvider>(context, listen: false);
+          final selectedStoreId = storeProvider.selectedStoreId;
+          if (selectedStoreId != null) {
+            await statsProvider.refreshStats(selectedStoreId);
+          }
+        } else {
+          final storeListResponse =
+              await Api().client.getStoreList(user!.owner_id);
+          stores = storeListResponse.store;
+          storeProvider.setStores(stores);
+          final statsProvider =
+              Provider.of<DashboardStatsProvider>(context, listen: false);
+          statsProvider.clearIfDifferentStore(storeProvider.selectedStoreId);
+          final selectedStoreId = storeProvider.selectedStoreId;
+          if (selectedStoreId != null) {
+            await statsProvider.refreshStats(selectedStoreId);
+          }
         }
       }
     } catch (e) {
-      print("Error loading dashboard data: $e");
+      debugPrint("Error loading dashboard data: $e");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -102,7 +121,8 @@ class _DashboardPageState extends State<DashboardPage> {
                                       color: const Color(0xFFFFEDE0),
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                          color: const Color(0xFFF27213).withOpacity(0.3)),
+                                          color: const Color(0xFFF27213)
+                                              .withOpacity(0.3)),
                                     ),
                                     child: const Text(
                                       "등록된 매장이 없습니다.\n'매장관리' 메뉴에서 매장을 추가해주세요.",
@@ -121,29 +141,43 @@ class _DashboardPageState extends State<DashboardPage> {
                                   stores: stores,
                                   onSelected: (Store s) {
                                     storeProvider.setSelectedStore(s);
-                                    final statsProvider = Provider.of<DashboardStatsProvider>(context, listen: false);
-                                    statsProvider.clearIfDifferentStore(s.store_id);
+                                    final statsProvider =
+                                        Provider.of<DashboardStatsProvider>(
+                                            context,
+                                            listen: false);
+                                    statsProvider
+                                        .clearIfDifferentStore(s.store_id);
                                   },
                                 ),
                                 const SizedBox(height: 20),
                               ],
                               // 통계 카드들 (QR 사용 시에만 API로 갱신된 값 표시)
-                              Consumer<DashboardStatsProvider>(
-                                builder: (context, statsProvider, _) =>
-                                    _buildStatsSection(
-                                  issuedCount: statsProvider.issuedCount,
-                                  usedCount: statsProvider.usedCount,
-                                  unusedCount: statsProvider.unusedCount,
+                              if (F.isMock)
+                                Consumer<MockDashboardStatsProvider>(
+                                  builder: (context, statsProvider, _) =>
+                                      _buildStatsSection(
+                                    issuedCount: statsProvider.issuedCount,
+                                    usedCount: statsProvider.usedCount,
+                                    unusedCount: statsProvider.unusedCount,
+                                  ),
+                                )
+                              else
+                                Consumer<DashboardStatsProvider>(
+                                  builder: (context, statsProvider, _) =>
+                                      _buildStatsSection(
+                                    issuedCount: statsProvider.issuedCount,
+                                    usedCount: statsProvider.usedCount,
+                                    unusedCount: statsProvider.unusedCount,
+                                  ),
                                 ),
-                              ),
                               const SizedBox(height: 24),
                               _buildQuickMenuSection(storeProvider),
                             ],
                           ),
                         ),
                       ),
-                ),
               ),
+            ),
           ],
         );
       },
@@ -284,7 +318,7 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.store,
                 title: "매장 관리",
                 onTap: () {
-                  if (hasNoStores || selectedStoreId == null) {
+                  if (selectedStoreId == null) {
                     _showNoStoreMessage();
                     return;
                   }
@@ -448,7 +482,8 @@ class _StoreDropdown extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                const Icon(Icons.keyboard_arrow_down, size: 20, color: _textColor),
+                const Icon(Icons.keyboard_arrow_down,
+                    size: 20, color: _textColor),
               ],
             ),
           ),
@@ -459,11 +494,13 @@ class _StoreDropdown extends StatelessWidget {
 
   void _showMenu(BuildContext context) {
     final RenderBox button = context.findRenderObject()! as RenderBox;
-    final RenderBox overlay = Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
+    final RenderBox overlay =
+        Navigator.of(context).overlay!.context.findRenderObject()! as RenderBox;
     final RelativeRect position = RelativeRect.fromRect(
       Rect.fromPoints(
         button.localToGlobal(Offset.zero, ancestor: overlay),
-        button.localToGlobal(button.size.bottomRight(Offset.zero), ancestor: overlay),
+        button.localToGlobal(button.size.bottomRight(Offset.zero),
+            ancestor: overlay),
       ),
       Offset.zero & overlay.size,
     );

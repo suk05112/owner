@@ -53,19 +53,19 @@ class _InquiryPageState extends State<InquiryPage>
                   FocusScope.of(context).unfocus();
                 },
                 child: Container(
-                    margin: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                    margin: const EdgeInsets.fromLTRB(10, 5, 10, 10),
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment
                             .start, // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
+                          SizedBox(
                             height: kToolbarHeight - 8.0,
                             child: getTabBarWidget(),
                           ),
                           Expanded(
                             child: TabBarView(
                               controller: _tabController,
-                              physics: NeverScrollableScrollPhysics(),
+                              physics: const NeverScrollableScrollPhysics(),
                               children: <Widget>[InquiryForm(), InquiryList()],
                             ),
                           )
@@ -84,12 +84,12 @@ class _InquiryPageState extends State<InquiryPage>
         Container(
           alignment: Alignment.center,
           // width: (MediaQuery.of(context).size.width) / 2,
-          child: Tab(text: '문의하기'),
+          child: const Tab(text: '문의하기'),
         ),
         Container(
             alignment: Alignment.center,
             // width: (MediaQuery.of(context).size.width),
-            child: Text(
+            child: const Text(
               "나의 문의내역 보기",
             )),
       ],
@@ -103,7 +103,7 @@ class _InquiryPageState extends State<InquiryPage>
     return Scaffold(
         body: Column(
       children: [
-        SizedBox(
+        const SizedBox(
           height: 5,
         ),
         TextFormField(

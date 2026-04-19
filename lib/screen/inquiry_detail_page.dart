@@ -29,12 +29,12 @@ class _InquiryDetailPageState extends State<InquiryDetailPage>
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("나의 문의내역"),
+          title: const Text("나의 문의내역"),
           centerTitle: true,
         ),
         body: SafeArea(
             child: Container(
-                margin: EdgeInsets.fromLTRB(10, 5, 10, 10),
+                margin: const EdgeInsets.fromLTRB(10, 5, 10, 10),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment
                         .start, // mainAxisAlignment: MainAxisAlignment.spaceBetween,

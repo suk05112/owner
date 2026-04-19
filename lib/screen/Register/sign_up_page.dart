@@ -37,8 +37,8 @@ class _BasicInfoInputPageState extends State<BasicInfoInputPage>
           //FocusManager.instance.primaryFocus?.unfocus();
           FocusScope.of(context).unfocus();
         },
-        child: Scaffold(
-          appBar: const CommonAppBar(title: "가입하기"),
+        child: const Scaffold(
+          appBar: CommonAppBar(title: "가입하기"),
           backgroundColor: Colors.white,
           body: BasicInfoFormWidget(),
         ));
@@ -273,7 +273,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                               }
 
                               // Firebase UserCredential이 최종적으로 설정되었는지 확인
-                              if (userCredential?.user == null) {
+                              if (userCredential.user == null) {
                                 setState(() {
                                   _isLoading = false;
                                 });
@@ -300,7 +300,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                         email ?? "");
 
                                 OwnerRegisterPost owner = OwnerRegisterPost(
-                                    uid: userCredential!.user!.uid,
+                                    uid: userCredential.user!.uid,
                                     phone_number: formattedPhone,
                                     name: name ?? "",
                                     email: formattedEmail);
@@ -600,7 +600,8 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
 
 class InputInfoWidget extends StatefulWidget {
   InputInfoWidget(
-      {required this.title,
+      {super.key,
+      required this.title,
       required this.hintText,
       required this.validator,
       required this.onChanged,
@@ -644,7 +645,7 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
             obscureText: _hidePassword == null ? false : _hidePassword!,
             keyboardType: TextInputType.text,
             decoration: InputDecoration(
-                    border: UnderlineInputBorder(),
+                    border: const UnderlineInputBorder(),
                     suffixIcon: _hidePassword == null
                         ? null
                         : IconButton(
@@ -668,7 +669,8 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         ]);
   }
 
-  final inputDecoration = InputDecoration(border: UnderlineInputBorder());
+  static const inputDecoration =
+      InputDecoration(border: UnderlineInputBorder());
 }
 
 final inputDecoration = InputDecoration(
@@ -712,7 +714,8 @@ void signUpWithEmail(String email, String password) async {
 class IDVerificationWidget extends StatefulWidget {
   final Function(String) onEmailChanged; // 이메일 변경 시 호출되는 콜백
   final GlobalKey<FormState> formKey;
-  IDVerificationWidget({required this.onEmailChanged, required this.formKey});
+  const IDVerificationWidget(
+      {super.key, required this.onEmailChanged, required this.formKey});
 
   @override
   State<IDVerificationWidget> createState() => _IDVerificationWidgetState();
@@ -800,7 +803,7 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
     }
   }
 
-  final inputDecoration = InputDecoration(
+  static const inputDecoration = InputDecoration(
     // isDense: true,
     border: UnderlineInputBorder(
         // borderRadius: BorderRadius.circular(8.0),

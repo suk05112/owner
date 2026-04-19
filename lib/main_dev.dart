@@ -17,13 +17,13 @@ Future<void> main() async {
   // 특정 이름으로 초기화하여 중복 방지
   try {
     await Firebase.initializeApp(
-      name: 'Cafe_Owner',
       options: DefaultFirebaseOptions.currentPlatform,
     );
     print('✅ Firebase 초기화 완료');
   } catch (e) {
     // 이미 초기화된 경우 무시
-    if (e.toString().contains('duplicate-app')) {
+    if (e.toString().contains('duplicate-app') ||
+        e.toString().contains('[core/duplicate-app]')) {
       print('✅ Firebase 이미 초기화됨 (중복 무시)');
     } else {
       print('⚠️ Firebase 초기화 오류: $e');
@@ -44,7 +44,7 @@ Future<void> main() async {
 
     // 토큰 가져오기는 백그라운드에서 시도 (실패해도 계속 진행)
     // 실제로 토큰이 필요할 때만 가져오도록 API 호출 시점에 처리
-    Future.delayed(Duration(seconds: 3), () async {
+    Future.delayed(const Duration(seconds: 3), () async {
       try {
         final token = await FirebaseAppCheck.instance.getToken();
         if (token != null) {

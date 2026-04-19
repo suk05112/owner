@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/api/ApiClient.dart';
+import 'package:owner/common/api/MockApiClient.dart';
 import 'package:owner/config.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -29,12 +30,18 @@ class Api {
   }
 
   Future<void> _initializeClients() async {
+    // mock 모드에서는 네트워크 클라이언트 초기화 없이 MockApiClient 사용
+    if (F.isMock) {
+      dio = Dio(); // 사용되지 않지만 late 필드이므로 초기화 필요
+      client = MockApiClient();
+      return;
+    }
     final headers = await _getHeaders();
     final options = BaseOptions(
       baseUrl: AppConfig.baseUrl,
       headers: headers,
-      connectTimeout: Duration(seconds: 15),
-      receiveTimeout: Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
     );
     dio = Dio(options)..interceptors.add(CustomLogInterceptor());
     client = ApiClient(Dio(options)..interceptors.add(CustomLogInterceptor()));
@@ -101,6 +108,11 @@ class Api {
 
   /// App Check Token을 가져오는 공통 함수 (재시도 및 캐싱 포함)
   static Future<String?> _getAppCheckToken({bool forceRefresh = false}) async {
+    // Mock 모드에서는 App Check 토큰을 가져오지 않음
+    if (F.isMock) {
+      return null;
+    }
+
     // 캐시된 토큰이 있고 아직 유효하면 반환
     if (!forceRefresh &&
         _cachedAppCheckToken != null &&
@@ -205,9 +217,9 @@ class Api {
     Dio dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       headers: headers,
-      connectTimeout: Duration(seconds: 15),
-      receiveTimeout: Duration(seconds: 15),
-      sendTimeout: Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
     ))
       ..interceptors.add(CustomLogInterceptor());
 
@@ -217,6 +229,11 @@ class Api {
   /// 이 함수가 호출 된 이후,
   /// Api().client 의 baseURL 은 변경됩니다.
   Future<ApiClient> setBaseClient(String baseUrl) async {
+    // mock 모드에서는 네트워크 클라이언트 교체 없이 MockApiClient 유지
+    if (F.isMock) {
+      client = MockApiClient();
+      return client;
+    }
     String? idToken;
     String? appCheckToken;
     try {
@@ -244,9 +261,9 @@ class Api {
     Dio dio = Dio(BaseOptions(
       baseUrl: baseUrl,
       headers: headers,
-      connectTimeout: Duration(seconds: 15),
-      receiveTimeout: Duration(seconds: 15),
-      sendTimeout: Duration(seconds: 15),
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
     ))
       ..interceptors.add(CustomLogInterceptor())
       ..interceptors.add(AuthInterceptor());
@@ -369,9 +386,9 @@ class AuthInterceptor extends Interceptor {
         Dio dio = Dio(BaseOptions(
           baseUrl: requestOptions.baseUrl, // 원래 baseUrl 사용
           headers: headers,
-          connectTimeout: Duration(seconds: 15),
-          receiveTimeout: Duration(seconds: 15),
-          sendTimeout: Duration(seconds: 15),
+          connectTimeout: const Duration(seconds: 15),
+          receiveTimeout: const Duration(seconds: 15),
+          sendTimeout: const Duration(seconds: 15),
         ));
 
         print('[401 interceptor] 재요청');

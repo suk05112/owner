@@ -30,7 +30,7 @@ Future<File> resizeImage(File originalFile, int maxWidth, int maxHeight) async {
 
 class PhotoUploadePage extends StatefulWidget {
   const PhotoUploadePage(
-      {Key? key, required this.savedImageUrl, required this.storeImage});
+      {super.key, required this.savedImageUrl, required this.storeImage});
   final List<String> savedImageUrl;
   final List<File> storeImage;
 
@@ -113,7 +113,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     final response = await http.get(Uri.parse(imageUrl));
     final bytes = response.bodyBytes;
     final tempFile =
-        File('${(await getTemporaryDirectory()).path}/image_${idx}.jpeg');
+        File('${(await getTemporaryDirectory()).path}/image_$idx.jpeg');
     await tempFile.writeAsBytes(bytes);
     return tempFile;
   }
@@ -217,7 +217,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     }
 
     Widget selectedImg(path, index) {
-      void _deleteImage(int index) {
+      void deleteImage(int index) {
         print("run _deleteImage");
 
         setState(() {
@@ -243,7 +243,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
               child: GestureDetector(
                 onTap: () {
                   print("touch delete icon");
-                  _deleteImage(index);
+                  deleteImage(index);
                 },
                 child: Container(
                   width: 24,
@@ -376,7 +376,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
+                                    const Icon(
                                       Icons.add_a_photo,
                                       size: 32,
                                       color: ColorAssset.mainColor,
@@ -432,7 +432,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                       print("pop될 이미지");
                       print(selectedImages);
                       final storageRef = FirebaseStorage.instance.ref();
-                      print("su1>>${selectedImages}");
+                      print("su1>>$selectedImages");
 
                       Navigator.pop(context, selectedImages);
                     },
@@ -463,11 +463,11 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
 
   final buttonStyle = ButtonStyle(
       foregroundColor:
-          MaterialStateProperty.all<Color>(Color.fromARGB(255, 0, 0, 0)),
-      backgroundColor:
-          MaterialStateProperty.all<Color>(Color.fromARGB(255, 154, 152, 152)),
-      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
+          WidgetStateProperty.all<Color>(const Color.fromARGB(255, 0, 0, 0)),
+      backgroundColor: WidgetStateProperty.all<Color>(
+          const Color.fromARGB(255, 154, 152, 152)),
+      shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+          const RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
               side: BorderSide(color: Color.fromARGB(255, 255, 255, 255)))));
 }

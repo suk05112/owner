@@ -40,7 +40,7 @@ import 'dart:async';
 
 class RegisterStorePage extends StatefulWidget {
   const RegisterStorePage(
-      {Key? key, required this.isRegister, required this.store, this.account});
+      {super.key, required this.isRegister, required this.store, this.account});
   final bool isRegister;
   final Store? store;
   final Account? account;
@@ -85,7 +85,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
           ? ""
           : "${_store?.store_description}";
       savedStoreImage = _store?.store_photo_urls;
-      print("savedStoreImage ${savedStoreImage}");
+      print("savedStoreImage $savedStoreImage");
     } else {
       savedStoreImage = null;
     }
@@ -273,7 +273,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                                   showToast("매장 로고를 업로드 해주세요.");
                                   return;
                                 }
-                                if (_storeImage.length == 0) {
+                                if (_storeImage.isEmpty) {
                                   showToast("매장 사진을 최소 1장 이상 업로드 해주세요.");
                                   return;
                                 }
@@ -282,7 +282,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                                 Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (context) => Home()),
+                                      builder: (context) => const Home()),
                                   (route) => false, // 모든 기존 경로 제거
                                 );
                                 // Navigator.push(
@@ -345,15 +345,15 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
     await Api().client.registerStore(_store!).then((response) async {
       var storeId = response.store_id;
-      var store_logo_url = response.store_logo_url;
-      final store_photo_urls = response.store_photo_urls;
-      final bankBook_put_url = response.bankBook_put_url;
-      final business_put_url = response.business_put_url;
+      var storeLogoUrl = response.store_logo_url;
+      final storePhotoUrls = response.store_photo_urls;
+      final bankbookPutUrl = response.bankBook_put_url;
+      final businessPutUrl = response.business_put_url;
 
-      uploadLogoImage(store_logo_url);
-      uploadStoreImages(store_photo_urls);
-      if (business_put_url != null) {
-        uploadBusinessImage(bankBook_put_url, business_put_url);
+      uploadLogoImage(storeLogoUrl);
+      uploadStoreImages(storePhotoUrls);
+      if (businessPutUrl != null) {
+        uploadBusinessImage(bankbookPutUrl, businessPutUrl);
       }
 
       if (widget.account != null) {
@@ -362,11 +362,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
             .client
             .registerAccount(storeId, widget.account!)
             .then((response) async {
-          print("계좌 등록성공" + storeId.toString());
+          print("계좌 등록성공$storeId");
           showToast("매장 등록이 완료되었습니다.");
         }).onError((error, stackTrace) {
           DioException dioError = error as DioException;
-          print("계좌 등록 실패 ${error}");
+          print("계좌 등록 실패 $error");
           if (dioError.response?.statusCode == 404) {
             // showToastMsg(Strings.error_network);
           } else {
@@ -377,7 +377,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
       // ApiServiceImpl().uploadImage();
     }).onError((error, stackTrace) {
-      DioError dioError = error as DioError;
+      DioException dioError = error as DioException;
       // print("등록 실패" + dioError.message);
       if (dioError.response?.statusCode == 404) {
         // showToastMsg(Strings.error_network);
@@ -401,16 +401,16 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         .client
         .updateStore(_store!.store_id, _store!)
         .then((response) async {
-      final store_photo_urls = response.store_photo_urls;
+      final storePhotoUrls = response.store_photo_urls;
 
-      print("su>> store_photo_urls: ${store_photo_urls}");
+      print("su>> store_photo_urls: $storePhotoUrls");
       _store?.store_photo_urls = response.store_photo_get_urls;
 
       if (isClickedPhotoUploadPage == true) {
-        uploadStoreImages(store_photo_urls);
+        uploadStoreImages(storePhotoUrls);
       }
     }).onError((error, stackTrace) {
-      if (error is DioError) {
+      if (error is DioException) {
         print('DioError (fallback): $error.message}');
       } else {
         print('Unknown error: ${error.runtimeType} - $error');
@@ -427,10 +427,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   }
 
   //매장 로고 업로드
-  Future<void> uploadLogoImage(store_logo_url) async {
+  Future<void> uploadLogoImage(storeLogoUrl) async {
     try {
       http.Response response = await http.put(
-        Uri.parse(store_logo_url),
+        Uri.parse(storeLogoUrl),
         body: await _logoImage?.readAsBytes(),
         headers: {
           // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
@@ -450,17 +450,17 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   }
 
   //매장 사진 업로드
-  Future<void> uploadStoreImages(store_photo_urls) async {
-    print("store_photo_urls, ${store_photo_urls}");
-    print("su>>${_storeImage}");
+  Future<void> uploadStoreImages(storePhotoUrls) async {
+    print("store_photo_urls, $storePhotoUrls");
+    print("su>>$_storeImage");
 
-    store_photo_urls.asMap().forEach((idx, store_photo_url) async {
+    storePhotoUrls.asMap().forEach((idx, storePhotoUrl) async {
       try {
         final response = await http.put(
-          Uri.parse(store_photo_url),
+          Uri.parse(storePhotoUrl),
           body: await _storeImage[idx].readAsBytes(),
         );
-        await Future.delayed(Duration(seconds: 1));
+        await Future.delayed(const Duration(seconds: 1));
 
         if (response.statusCode == 200) {
           // 이미지 업로드 성공
@@ -478,15 +478,15 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   }
 
   //통장사본, 사업자등록증 업로드
-  Future<void> uploadBusinessImage(bankBook_put_url, business_put_url) async {
+  Future<void> uploadBusinessImage(bankbookPutUrl, businessPutUrl) async {
     try {
       http.Response response = await http.put(
-        Uri.parse(bankBook_put_url),
+        Uri.parse(bankbookPutUrl),
         body: await _store?.bank_book?.readAsBytes(),
       );
 
       http.Response response2 = await http.put(
-        Uri.parse(business_put_url),
+        Uri.parse(businessPutUrl),
         body: await _store?.business_registration?.readAsBytes(),
       );
 
@@ -508,7 +508,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   final inputDecoration = InputDecoration(
     hintStyle: TextAssset.placeholder,
     border:
-        UnderlineInputBorder(borderSide: new BorderSide(style: BorderStyle.none)
+        UnderlineInputBorder(borderSide: const BorderSide(style: BorderStyle.none)
             // borderRadius: BorderRadius.circular(8.0),
 
             // border: OutlineInputBorder(
@@ -519,7 +519,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
             // ),
             ),
     isDense: true,
-    contentPadding: EdgeInsets.fromLTRB(0, 10, 21, 10),
+    contentPadding: const EdgeInsets.fromLTRB(0, 10, 21, 10),
     // contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
     // contentPadding: EdgeInsets.symmetric(vertical: 5), // <-- SEE HERE
     // contentPadding:
@@ -528,11 +528,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   final buttonStyle = ButtonStyle(
       foregroundColor:
-          WidgetStateProperty.all<Color>(Color.fromARGB(255, 0, 0, 0)),
+          WidgetStateProperty.all<Color>(const Color.fromARGB(255, 0, 0, 0)),
       backgroundColor:
-          WidgetStateProperty.all<Color>(Color.fromARGB(255, 154, 152, 152)),
+          WidgetStateProperty.all<Color>(const Color.fromARGB(255, 154, 152, 152)),
       shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
+          const RoundedRectangleBorder(
               borderRadius: BorderRadius.zero,
               side: BorderSide(color: Color.fromARGB(255, 255, 255, 255)))));
 
@@ -540,13 +540,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     print("StoreImagesGridview:: 함수 진입");
     // print(savedStoreImage);
 
-    print("su3>>${_storeImage}");
+    print("su3>>$_storeImage");
 
     List<Widget> itemWidgets = [];
 
-    if (_storeImage == null) {
-      _storeImage = [];
-    }
+    _storeImage ??= [];
 
     // if (savedStoreImage == null || savedStoreImage!.isEmpty) {
     //photo uplopad page에서 저장버튼을 누르지 않고 back한경우 or 처음 화면 진입했을 때
@@ -599,7 +597,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         return Container(
           width: 100,
           height: 100,
-          margin: EdgeInsets.fromLTRB(0, 2, 2, 0),
+          margin: const EdgeInsets.fromLTRB(0, 2, 2, 0),
           child: ClipRRect(
               borderRadius: BorderRadius.circular(5.0),
               child: Image.file(

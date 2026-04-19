@@ -33,7 +33,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   late Store _store;
   bool _isChecked = false;
   File? _logoImage;
-  List<File> _storeImages = [];
+  final List<File> _storeImages = [];
   File? _businessRegistration;
   String? uploadedBusinessRegistrationFilename;
 
@@ -408,16 +408,16 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                                     fit: BoxFit.cover,
                                   ),
                                 )
-                              : Column(
+                              : const Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Icon(
+                                    Icon(
                                       Icons.add,
                                       color: Color(0xFF808080),
                                       size: 24,
                                     ),
-                                    const SizedBox(height: 4),
-                                    const Text(
+                                    SizedBox(height: 4),
+                                    Text(
                                       "추가",
                                       style: TextStyle(
                                         fontSize: 12,

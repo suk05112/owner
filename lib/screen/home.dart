@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/provier/dashboard_stats_provider.dart';
+import 'package:owner/common/provier/mock_dashboard_stats_provider.dart';
 import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:owner/flavors.dart';
 import 'package:owner/screen/Setting/setting_page.dart';
 import 'package:owner/screen/dashboard_page.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
@@ -71,12 +73,15 @@ class _HomeState extends State<Home> {
 
                   if (qrResult == 0) {
                     print("0 걸림");
-                    // QR로 기프티콘 사용 완료 시에만 통계 API 호출
+                    // QR로 기프티콘 사용 완료 시에만 통계 갱신
                     final storeProvider = Provider.of<SelectedStoreProvider>(context, listen: false);
-                    final statsProvider = Provider.of<DashboardStatsProvider>(context, listen: false);
                     final storeId = storeProvider.selectedStoreId;
                     if (storeId != null) {
-                      statsProvider.refreshStats(storeId);
+                      if (F.isMock) {
+                        Provider.of<MockDashboardStatsProvider>(context, listen: false).refreshStats(storeId);
+                      } else {
+                        Provider.of<DashboardStatsProvider>(context, listen: false).refreshStats(storeId);
+                      }
                     }
                     CommonDialog.show(
                         context: context,
@@ -324,13 +329,13 @@ class _MainState extends State<Main> {
   String qrResult = '';
 
   final PageStorageBucket bucket = PageStorageBucket();
-  Widget currentScreen = CafeDetailScreen(
+  Widget currentScreen = const CafeDetailScreen(
     storeId: 1,
   );
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Text(
           '홈 화면',

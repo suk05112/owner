@@ -31,7 +31,7 @@ class _SettingOpeningDatePageState extends State<SettingOpeningDatePage> {
             // SizedBox(),
             Container(
               height: 40,
-              margin: EdgeInsets.fromLTRB(10, 100, 30, 0),
+              margin: const EdgeInsets.fromLTRB(10, 100, 30, 0),
               // color: Colors.red,
             ),
             Container(
@@ -41,34 +41,34 @@ class _SettingOpeningDatePageState extends State<SettingOpeningDatePage> {
                     // mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                  Text(
+                  const Text(
                     "영업 개시일 설정",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 40),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   RadioListTile(
                     groupValue: radioItem,
-                    title: Text('승인 후 즉시'),
+                    title: const Text('승인 후 즉시'),
                     value: 'Item 1',
                     onChanged: (val) {
                       setState(() {
                         _isVisible = false;
                         // radioItem = val!;
-                        print("이거 불림?1 ${_isVisible}");
+                        print("이거 불림?1 $_isVisible");
                       });
                     },
                   ),
                   RadioListTile(
                     groupValue: radioItem,
-                    title: Text('날짜 선택'),
+                    title: const Text('날짜 선택'),
                     value: 'Item 2',
                     onChanged: (val) {
-                      Text('adfds');
+                      const Text('adfds');
                       // _selectDate(context);
                       setState(() {
                         _isVisible = true;
                         // radioItem = val!;
-                        print("이거 불림?1 ${_isVisible}");
+                        print("이거 불림?1 $_isVisible");
                       });
                     },
                   ),
@@ -90,17 +90,17 @@ class _SettingOpeningDatePageState extends State<SettingOpeningDatePage> {
                             mode: CupertinoDatePickerMode.date,
                           ),
                         )
-                      : SizedBox(height: 150)
+                      : const SizedBox(height: 150)
                 ])),
             Container(
-              margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
+              margin: const EdgeInsets.fromLTRB(10, 10, 10, 0),
               child: Column(children: [
                 SizedBox(
                   width: double.infinity, // <-- Your width
                   height: 50,
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 151, 125, 253),
+                      backgroundColor: const Color.fromARGB(255, 151, 125, 253),
                       // minimumSize: const Size.fromHeight(50), // NEW
                     ),
                     onPressed: () {
@@ -108,14 +108,14 @@ class _SettingOpeningDatePageState extends State<SettingOpeningDatePage> {
                           context,
                           MaterialPageRoute(
                               builder: (context) =>
-                                  RegisterStoreCompletePage()));
+                                  const RegisterStoreCompletePage()));
                     },
-                    child: Text('확인'),
+                    child: const Text('확인'),
                   ),
                 ),
               ]),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
           ],
         ),
       ),

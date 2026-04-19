@@ -1,0 +1,49 @@
+{
+  "settlements": [
+    {
+      "settlement_id": 5,
+      "expected_amount": 312000,
+      "expected_payout_date": "2026-05-01T00:00:00.000Z",
+      "cycle_id": 1,
+      "status": "PENDING",
+      "period_start": "2026-04-01",
+      "period_end": "2026-04-15"
+    },
+    {
+      "settlement_id": 4,
+      "expected_amount": 278500,
+      "expected_payout_date": "2026-04-16T00:00:00.000Z",
+      "cycle_id": 2,
+      "status": "COMPLETED",
+      "period_start": "2026-03-16",
+      "period_end": "2026-03-31"
+    },
+    {
+      "settlement_id": 3,
+      "expected_amount": 195000,
+      "expected_payout_date": "2026-04-01T00:00:00.000Z",
+      "cycle_id": 1,
+      "status": "COMPLETED",
+      "period_start": "2026-03-01",
+      "period_end": "2026-03-15"
+    },
+    {
+      "settlement_id": 2,
+      "expected_amount": 87000,
+      "expected_payout_date": "2026-03-16T00:00:00.000Z",
+      "cycle_id": 2,
+      "status": "FAILED",
+      "period_start": "2026-02-16",
+      "period_end": "2026-02-28"
+    },
+    {
+      "settlement_id": 1,
+      "expected_amount": 135000,
+      "expected_payout_date": "2026-03-01T00:00:00.000Z",
+      "cycle_id": 1,
+      "status": "COMPLETED",
+      "period_start": "2026-02-01",
+      "period_end": "2026-02-15"
+    }
+  ]
+}

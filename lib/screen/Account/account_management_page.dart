@@ -7,7 +7,8 @@ import 'package:provider/provider.dart';
 
 /// 계좌관리: 캐시된 계좌 표시(최초 1회 API), 계좌 변경 후에만 재요청
 class AccountManagementPage extends StatefulWidget {
-  const AccountManagementPage({Key? key, required this.storeId}) : super(key: key);
+  const AccountManagementPage({Key? key, required this.storeId})
+      : super(key: key);
   final int storeId;
 
   @override
@@ -33,10 +34,10 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
         }
 
         if (!hasCache) {
-          return Scaffold(
-            appBar: const CommonAppBar(title: "계좌관리"),
+          return const Scaffold(
+            appBar: CommonAppBar(title: "계좌관리"),
             backgroundColor: Colors.white,
-            body: const Center(child: CircularProgressIndicator()),
+            body: Center(child: CircularProgressIndicator()),
           );
         }
 

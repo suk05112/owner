@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:owner/flavors.dart';
 
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/account_provider.dart';
@@ -10,8 +12,14 @@ import 'package:owner/common/provier/dashboard_stats_provider.dart';
 import 'package:owner/common/provier/gifticon_provider.dart';
 import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/provier/mock_user_provider.dart';
+import 'package:owner/common/provier/mock_auth_provider.dart';
+import 'package:owner/common/provier/mock_store_provider.dart';
+import 'package:owner/common/provier/mock_dashboard_stats_provider.dart';
+import 'package:owner/common/provier/mock_account_provider.dart';
+import 'package:owner/common/provier/mock_gifticon_provider.dart';
 import 'package:owner/screen/home.dart';
-import 'common/provier/store_provider.dart';
+import 'package:owner/common/provier/store_provider.dart';
 import 'screen/LoginPage.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/utils/network_utils.dart';
@@ -19,6 +27,8 @@ import 'package:owner/config.dart';
 
 FutureOr<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await _ensureFlavor();
+  print('최종 Flavor: ${F.appFlavor}');
 
   // 세로 모드만 허용 (가로 회전 방지)
   await SystemChrome.setPreferredOrientations([
@@ -36,6 +46,44 @@ FutureOr<void> main() async {
   runApp(const MyApp());
 }
 
+Future<void> _ensureFlavor() async {
+  final env =
+      const String.fromEnvironment('ENV', defaultValue: '').toLowerCase();
+  final envFlavor = _flavorFromString(env);
+  if (envFlavor != null) {
+    F.appFlavor = envFlavor;
+  }
+
+  // iOS MockDebug safety-net:
+  // if app bundle/app name contains "mock", force mock flavor
+  // even when the wrong entrypoint was selected.
+  try {
+    final info = await PackageInfo.fromPlatform();
+    final marker = '${info.packageName} ${info.appName}'.toLowerCase();
+    if (marker.contains('mock')) {
+      F.appFlavor = Flavor.mock;
+    }
+  } catch (_) {
+    // Keep already resolved flavor.
+  }
+
+  F.appFlavor ??= Flavor.prod;
+}
+
+Flavor? _flavorFromString(String value) {
+  switch (value) {
+    case 'dev':
+      return Flavor.dev;
+    case 'prod':
+    case 'production':
+      return Flavor.prod;
+    case 'mock':
+      return Flavor.mock;
+    default:
+      return null;
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
@@ -47,11 +95,19 @@ class MyApp extends StatelessWidget {
         canPop: false,
         child: MultiProvider(
           providers: [
+            ChangeNotifierProvider(create: (context) => MockStoreProvider()),
+            ChangeNotifierProvider(
+                create: (context) => MockDashboardStatsProvider()),
+            ChangeNotifierProvider(create: (context) => MockAccountProvider()),
+            ChangeNotifierProvider(create: (context) => MockGifticonProvider()),
             ChangeNotifierProvider(create: (context) => StoreProvider()),
-            ChangeNotifierProvider(create: (context) => SelectedStoreProvider()),
-            ChangeNotifierProvider(create: (context) => DashboardStatsProvider()),
+            ChangeNotifierProvider(
+                create: (context) => SelectedStoreProvider()),
+            ChangeNotifierProvider(
+                create: (context) => DashboardStatsProvider()),
             ChangeNotifierProvider(create: (context) => GifticonProvider()),
-            ChangeNotifierProvider(create: (context) => UserProvider()),
+            ChangeNotifierProvider(create: (context) => MockUserProvider()),
+            ChangeNotifierProvider(create: (_) => UserProvider()),
             ChangeNotifierProvider(create: (context) => AccountProvider()),
           ],
 
@@ -59,14 +115,18 @@ class MyApp extends StatelessWidget {
             builder: (context, userProvider, child) {
               User? user = userProvider.user;
 
+              // mock 모드: provider 생성 시 이미 mock 유저가 주입되어 있으므로 바로 Home
+              // real 모드: 스토리지에서 유저 로드 완료 여부에 따라 Login/Home 분기
+              final Widget homeWidget = (F.isMock || user != null)
+                  ? const Home()
+                  : const LoginScreen();
+
               return MaterialApp(
                 title: 'Flutter Demo',
                 theme: ThemeData(
                   primarySwatch: Colors.blue,
                 ),
-                home: _NetworkFirstRunCheck(
-                  child: user == null ? const LoginScreen() : const Home(),
-                ),
+                home: _NetworkFirstRunCheck(child: homeWidget),
                 debugShowCheckedModeBanner: false,
               );
             },
@@ -97,9 +157,11 @@ class _NetworkFirstRunCheckState extends State<_NetworkFirstRunCheck> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      NetworkUtils.checkOnFirstLaunchAndShowDialogIfOffline(context);
-    });
+    if (!F.isMock) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        NetworkUtils.checkOnFirstLaunchAndShowDialogIfOffline(context);
+      });
+    }
   }
 
   @override
@@ -145,7 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // MaterialPageRoute(builder: (context) => CafeList()));
                 // MaterialPageRoute(builder: (context) => EmployeeScreen()));
               },
-              child: Text("회원가입"),
+              child: const Text("회원가입"),
             ),
           ],
         ),

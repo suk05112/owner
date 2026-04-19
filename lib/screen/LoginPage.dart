@@ -3,8 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/provier/user_provider.dart';
+import 'package:owner/common/provier/mock_user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:provider/provider.dart';
+import 'package:owner/flavors.dart';
 
 import 'Register/sign_up_page.dart';
 import 'Register/find_password_page.dart';
@@ -53,7 +55,9 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleEmailLogin() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    // Only show validation error in non-mock mode for testing purposes
+    if (!F.isMock &&
+        (_emailController.text.isEmpty || _passwordController.text.isEmpty)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("이메일과 비밀번호를 입력해주세요.")),
       );
@@ -69,44 +73,75 @@ class _LoginScreenState extends State<LoginScreen> {
     print("로그인 시도 $emailWithDomain");
 
     try {
-      final userCredential = await _auth.signInWithEmailAndPassword(
-        email: emailWithDomain,
-        password: _passwordController.text,
-      );
+      if (F.isMock) {
+        // Mock mode: bypass Firebase auth and use mock providers
+        print('Mock mode: bypassing Firebase authentication');
 
-      if (userCredential.user != null) {
-        user.email = emailWithDomain;
-        await login(userCredential.user!.uid);
-        // login 함수가 완료되면 _loading은 login 함수 내에서 false로 설정됨
+        // Simulate network delay
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Use mock fixture user first so assets/mock/user.json changes are reflected.
+        final mockUser = await _resolveMockUser(emailInput);
+
+        user = mockUser;
+
+        // Set user in mock provider
+        Provider.of<MockUserProvider>(context, listen: false).setUser(mockUser);
+
+        // Also set in regular UserProvider for compatibility
+        Provider.of<UserProvider>(context, listen: false).setUser(mockUser);
+
+        print('Mock login success');
       } else {
-        setState(() {
-          _loading = false;
-        });
-        CommonDialog.show(
-            context: context,
-            title: "로그인 실패",
-            content: "입력된 정보가 올바르지 않습니다. 다시 입력해주세요",
-            buttonText: "확인",
-            onPressed: () {});
+        // Normal mode: use Firebase authentication
+        final userCredential = await _auth.signInWithEmailAndPassword(
+          email: emailWithDomain,
+          password: _passwordController.text,
+        );
+
+        if (userCredential.user != null) {
+          user.email = emailWithDomain;
+          await login(userCredential.user!.uid);
+          // login 함수가 완료되면 _loading은 login 함수 내에서 false로 설정됨
+        } else {
+          setState(() {
+            _loading = false;
+          });
+          CommonDialog.show(
+              context: context,
+              title: "로그인 실패",
+              content: "입력된 정보가 올바르지 않습니다. 다시 입력해주세요",
+              buttonText: "확인",
+              onPressed: () {});
+        }
       }
     } on FirebaseAuthException catch (e) {
-      String errorMessage = "로그인에 실패했습니다.";
-      if (e.code == 'user-not-found') {
-        errorMessage = "등록되지 않은 이메일입니다.";
-      } else if (e.code == 'wrong-password') {
-        errorMessage = "비밀번호가 잘못되었습니다.";
-      } else if (e.code == 'invalid-email') {
-        errorMessage = "이메일 형식이 올바르지 않습니다.";
-      } else if (e.code == 'invalid-credential') {
-        errorMessage = "아이디 또는 비밀번호가 잘못되었습니다.";
+      // Only show Firebase errors in non-mock mode
+      if (!F.isMock) {
+        String errorMessage = "로그인에 실패했습니다.";
+        if (e.code == 'user-not-found') {
+          errorMessage = "등록되지 않은 이메일입니다.";
+        } else if (e.code == 'wrong-password') {
+          errorMessage = "비밀번호가 잘못되었습니다.";
+        } else if (e.code == 'invalid-email') {
+          errorMessage = "이메일 형식이 올바르지 않습니다.";
+        } else if (e.code == 'invalid-credential') {
+          errorMessage = "아이디 또는 비밀번호가 잘못되었습니다.";
+        }
+        print("로그인 실패 ${e.code}");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(errorMessage)),
+        );
+      } else {
+        // In mock mode, treat Firebase errors as unexpected
+        print('Mock mode: Unexpected Firebase error: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("로그인 중 오류가 발생했습니다.")),
+        );
       }
-      print("로그인 실패 ${e.code}");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage)),
-      );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("로그인 중 오류가 발생했습니다.")),
+        const SnackBar(content: Text("로그인 중 오류가 발생했습니다.")),
       );
     } finally {
       setState(() {
@@ -130,17 +165,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: SingleChildScrollView(
                   child: Container(
                     color: Colors.white,
-                    margin: EdgeInsets.symmetric(horizontal: 0),
+                    margin: const EdgeInsets.symmetric(horizontal: 0),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: 40),
-                          SizedBox(height: 50),
+                          const SizedBox(height: 40),
+                          const SizedBox(height: 50),
                           // 상단 제목 영역
-                          SizedBox(height: 8),
-                          Text(
+                          const SizedBox(height: 8),
+                          const Text(
                             '로그인',
                             style: TextStyle(
                               fontSize: 24,
@@ -148,7 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.black,
                             ),
                           ),
-                          SizedBox(height: 40),
+                          const SizedBox(height: 40),
                           // 이메일 입력 필드
                           TextField(
                             controller: _emailController,
@@ -164,13 +199,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderSide:
                                     BorderSide(color: Colors.grey[300]!),
                               ),
-                              focusedBorder: UnderlineInputBorder(
+                              focusedBorder: const UnderlineInputBorder(
                                 borderSide:
                                     BorderSide(color: Colors.black, width: 2),
                               ),
                             ),
                           ),
-                          SizedBox(height: 20),
+                          const SizedBox(height: 20),
                           // 비밀번호 입력 필드
                           TextField(
                             controller: _passwordController,
@@ -186,7 +221,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderSide:
                                     BorderSide(color: Colors.grey[300]!),
                               ),
-                              focusedBorder: UnderlineInputBorder(
+                              focusedBorder: const UnderlineInputBorder(
                                 borderSide:
                                     BorderSide(color: Colors.black, width: 2),
                               ),
@@ -206,7 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
 
-                          SizedBox(height: 50),
+                          const SizedBox(height: 50),
                           // 이메일로 로그인 버튼
                           SizedBox(
                             width: double.infinity,
@@ -222,7 +257,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 elevation: 0,
                               ),
                               child: _loading
-                                  ? SizedBox(
+                                  ? const SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
@@ -232,7 +267,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                                 Colors.white),
                                       ),
                                     )
-                                  : Text(
+                                  : const Text(
                                       '아이디로 로그인',
                                       style: TextStyle(
                                         fontSize: 16,
@@ -241,7 +276,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                           ),
-                          SizedBox(height: 24),
+                          const SizedBox(height: 24),
                           // 회원가입 | 아이디 찾기 | 비밀번호 찾기
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -252,17 +287,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                     context,
                                     MaterialPageRoute(
                                         builder: (context) =>
-                                            BasicInfoInputPage()),
+                                            const BasicInfoInputPage()),
                                   );
                                 },
                                 style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   minimumSize: Size.zero,
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: Text(
+                                child: const Text(
                                   '회원가입',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -280,17 +315,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (_) => FindUserIDPage()),
+                                        builder: (_) => const FindUserIDPage()),
                                   );
                                 },
                                 style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   minimumSize: Size.zero,
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: Text(
+                                child: const Text(
                                   '아이디 찾기',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -308,17 +343,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (_) => FindPasswordPage()),
+                                        builder: (_) =>
+                                            const FindPasswordPage()),
                                   );
                                 },
                                 style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(
+                                  padding: const EdgeInsets.symmetric(
                                       horizontal: 8, vertical: 4),
                                   minimumSize: Size.zero,
                                   tapTargetSize:
                                       MaterialTapTargetSize.shrinkWrap,
                                 ),
-                                child: Text(
+                                child: const Text(
                                   '비밀번호 찾기',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -328,7 +364,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 50),
+                          const SizedBox(height: 50),
                         ],
                       ),
                     ),
@@ -349,77 +385,60 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> login(String uid) async {
-    print("로그인 함수 호출 ${uid}");
+    print("로그인 함수 호출 $uid");
 
     try {
-      var response = await Api().client.login(uid);
+      if (F.isMock) {
+        // Mock mode: bypass API call and simulate successful login
+        print('Mock mode: bypassing API login call');
 
-      if (response.owner_id != null) {
-        print(
-            "로그인 성공 ${response.owner_id}, ${response.name}, ${response.phone_number}");
-        user.owner_id = response.owner_id ?? 0;
-        user.phone_number = response.phone_number;
-        user.name = response.name;
+        // Simulate network delay
+        await Future.delayed(const Duration(milliseconds: 500));
 
+        // Keep consistency with fixture-based mock user.
+        final resolvedMockUser = await _resolveMockUser(user.email);
+        user.owner_id = resolvedMockUser.owner_id;
+        user.phone_number = resolvedMockUser.phone_number;
+        user.name = resolvedMockUser.name;
+        user.email = resolvedMockUser.email;
+
+        // Ensure user is set in providers
+        Provider.of<MockUserProvider>(context, listen: false).setUser(user);
         Provider.of<UserProvider>(context, listen: false).setUser(user);
 
-        // Push token 등록 (백그라운드에서 실행, 실패해도 로그인은 계속 진행)
-        _registerPushToken(response.owner_id!).catchError((error) {
-          print('Push token 등록 실패 (무시): $error');
-        });
-
-        // 로딩 상태 해제
-        if (mounted) {
-          setState(() {
-            _loading = false;
-          });
-        }
-
-        // returnToPrevious가 true면 이전 페이지로 돌아가기, false면 Home으로 이동
-        if (widget.returnToPrevious && Navigator.canPop(context)) {
-          Navigator.pop(context);
-        } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => Home()),
-          );
-        }
+        print('Mock login success');
       } else {
-        // owner_id가 null인 경우
-        if (mounted) {
-          setState(() {
-            _loading = false;
+        // Normal mode: use actual API
+        var response = await Api().client.login(uid);
+
+        if (response.owner_id != null) {
+          print(
+              "로그인 성공 ${response.owner_id}, ${response.name}, ${response.phone_number}");
+          user.owner_id = response.owner_id ?? 0;
+          user.phone_number = response.phone_number;
+          user.name = response.name;
+
+          Provider.of<UserProvider>(context, listen: false).setUser(user);
+
+          // Push token 등록 (백그라운드에서 실행, 실패해도 로그인은 계속 진행)
+          _registerPushToken(response.owner_id!).catchError((error) {
+            print('Push token 등록 실패 (무시): $error');
           });
-          CommonDialog.show(
-              context: context,
-              title: "로그인 실패",
-              content: "로그인 정보를 확인할 수 없습니다.",
-              buttonText: "확인",
-              onPressed: () {});
-        }
-      }
-    } on DioException catch (e) {
-      String errorMsg = "";
-      if (e.response != null) {
-        // 서버에서 받은 상태 코드에 따른 처리
-        if (e.response!.statusCode == 401) {
-          // 인증 실패
-          print("인증 실패: ${e.response!.data}");
-          errorMsg = "[401]인증에 실패했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
-        } else if (e.response!.statusCode == 500) {
-          // 서버 오류
-          print("서버 오류: ${e.response!.data}");
-          errorMsg =
-              "[500]서버에 오류가 발행했습니다.잠시 후 다시 실행해주세요.\n ${e.response!.data}";
         } else {
-          // 기타 오류
-          print("기타 오류: ${e.response!.data}");
-          errorMsg = "오류가 발생했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
+          // owner_id가 null인 경우
+          if (mounted) {
+            setState(() {
+              _loading = false;
+            });
+            CommonDialog.show(
+                context: context,
+                title: "로그인 실패",
+                content: "로그인 정보를 확인할 수 없습니다.",
+                buttonText: "확인",
+                onPressed: () {});
+          }
+          return; // Exit early to avoid navigation
         }
-      } else {
-        // 네트워크 연결 실패 등
-        print("네트워크 오류: ${e.message}");
-        errorMsg = "네트워크 오류가 발생했습니다. 잠시 후 다시 실행해주세요.\n ${e.message}";
       }
 
       // 로딩 상태 해제
@@ -427,12 +446,69 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _loading = false;
         });
-        CommonDialog.show(
-            context: context,
-            title: "로그인 실패",
-            content: errorMsg,
-            buttonText: "확인",
-            onPressed: () {});
+      }
+
+      // returnToPrevious가 true면 이전 페이지로 돌아가기, false면 Home으로 이동
+      if (widget.returnToPrevious && Navigator.canPop(context)) {
+        Navigator.pop(context);
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
+      }
+    } on DioException catch (e) {
+      // Only show detailed errors in non-mock mode
+      if (!F.isMock) {
+        String errorMsg = "";
+        if (e.response != null) {
+          // 서버에서 받은 상태 코드에 따른 처리
+          if (e.response!.statusCode == 401) {
+            // 인증 실패
+            print("인증 실패: ${e.response!.data}");
+            errorMsg = "[401]인증에 실패했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
+          } else if (e.response!.statusCode == 500) {
+            // 서버 오류
+            print("서버 오류: ${e.response!.data}");
+            errorMsg =
+                "[500]서버에 오류가 발행했습니다.잠시 후 다시 실행해주세요.\n ${e.response!.data}";
+          } else {
+            // 기타 오류
+            print("기타 오류: ${e.response!.data}");
+            errorMsg = "오류가 발생했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
+          }
+        } else {
+          // 네트워크 연결 실패 등
+          print("네트워크 오류: ${e.message}");
+          errorMsg = "네트워크 오류가 발생했습니다. 잠시 후 다시 실행해주세요.\n ${e.message}";
+        }
+
+        // 로딩 상태 해제
+        if (mounted) {
+          setState(() {
+            _loading = false;
+          });
+          CommonDialog.show(
+              context: context,
+              title: "로그인 실패",
+              content: errorMsg,
+              buttonText: "확인",
+              onPressed: () {});
+        }
+      } else {
+        // In mock mode, show generic error
+        print('Mock mode: API call failed: $e');
+        if (mounted) {
+          setState(() {
+            _loading = false;
+          });
+          CommonDialog.show(
+              context: context,
+              title: "로그인 실패",
+              content: "로그인 중 오류가 발생했습니다.",
+              buttonText: "확인",
+              onPressed: () {});
+        }
       }
     } catch (e) {
       // 기타 예외 처리
@@ -440,12 +516,21 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() {
           _loading = false;
         });
-        CommonDialog.show(
-            context: context,
-            title: "로그인 실패",
-            content: "알 수 없는 오류가 발생했습니다.",
-            buttonText: "확인",
-            onPressed: () {});
+        if (F.isMock) {
+          CommonDialog.show(
+              context: context,
+              title: "로그인 실패",
+              content: "알 수 없는 오류가 발생했습니다.",
+              buttonText: "확인",
+              onPressed: () {});
+        } else {
+          CommonDialog.show(
+              context: context,
+              title: "로그인 실패",
+              content: "알 수 없는 오류가 발생했습니다.",
+              buttonText: "확인",
+              onPressed: () {});
+        }
       }
     }
   }
@@ -475,5 +560,24 @@ class _LoginScreenState extends State<LoginScreen> {
       print('Push token 등록 실패: $e');
       // 실패해도 로그인은 계속 진행되므로 에러를 throw하지 않음
     }
+  }
+
+  Future<my_app.User> _resolveMockUser(String emailInput) async {
+    final provider = Provider.of<MockUserProvider>(context, listen: false);
+    final fromAsset = await provider.fetchUser();
+    final fallback = fromAsset ??
+        my_app.User(
+          owner_id: 12345,
+          name: '김철수',
+          email: 'chulsu@gifnut.com',
+          phone_number: '010-1234-5678',
+        );
+
+    return my_app.User(
+      owner_id: fallback.owner_id,
+      name: fallback.name,
+      email: emailInput.isNotEmpty ? emailInput : fallback.email,
+      phone_number: fallback.phone_number,
+    );
   }
 }

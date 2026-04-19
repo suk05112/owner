@@ -25,8 +25,8 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   final firebaseAuth = FirebaseAuth.instance;
   TextEditingController inputIDController = TextEditingController();
   TextEditingController inputPhoneNumbfController = TextEditingController();
-  bool _emailExists = false;
-  bool _phoneExists = false;
+  final bool _emailExists = false;
+  final bool _phoneExists = false;
 
   final inputDecoration = InputDecoration(
       border: UnderlineInputBorder(
@@ -41,19 +41,19 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("비밀번호 찾기"),
+          title: const Text("비밀번호 찾기"),
         ),
         body: Container(
-            margin: EdgeInsets.fromLTRB(27, 0, 27, 21),
+            margin: const EdgeInsets.fromLTRB(27, 0, 27, 21),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text("아이디(이메일) 입력"),
+              const Text("아이디(이메일) 입력"),
               TextFormField(
                 controller: inputIDController,
                 keyboardType: TextInputType.text,
                 decoration: inputDecoration.copyWith(hintText: "이름"),
               ),
-              Text("전화번호 입력"),
+              const Text("전화번호 입력"),
               TextFormField(
                 controller: inputPhoneNumbfController,
                 keyboardType: TextInputType.text,
@@ -74,12 +74,14 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
                   ),
                   onPressed: () async {
                     // 이메일에 @gifnut.com 추가
-                    String formattedEmail = PhoneUtils.formatEmailForServer(inputIDController.text);
+                    String formattedEmail =
+                        PhoneUtils.formatEmailForServer(inputIDController.text);
                     // 전화번호를 서버 형식으로 변환
-                    String formattedPhone = PhoneUtils.formatForServer(inputPhoneNumbfController.text);
-                    
-                    bool emailExists = await checkEmailExists(
-                        formattedEmail, formattedPhone);
+                    String formattedPhone = PhoneUtils.formatForServer(
+                        inputPhoneNumbfController.text);
+
+                    bool emailExists =
+                        await checkEmailExists(formattedEmail, formattedPhone);
 
                     if (emailExists) {
                       await firebaseAuth.sendPasswordResetEmail(
@@ -98,16 +100,16 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
                           onPressed: () {});
                     }
                   },
-                  child: Text("확인"),
+                  child: const Text("확인"),
                 ),
               ),
             ])));
   }
 
-  Future<bool> checkEmailExists(String email, String phone_number) async {
+  Future<bool> checkEmailExists(String email, String phoneNumber) async {
     try {
       final response = await Api().client.findOwnerPw(
-            OwnerFindPw(email: email, phone_number: phone_number),
+            OwnerFindPw(email: email, phone_number: phoneNumber),
           );
       final Map<String, dynamic> data = jsonDecode(response);
       if (data['msg'] == "success") {
@@ -171,18 +173,20 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
 //아이디 입력 -> 전화번호 인증 완료 -> 확인 버튼 -> complete Phoneverification&checkEmail -> alert
 
 class SuccessResetPWPage extends StatelessWidget {
+  const SuccessResetPWPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: SafeArea(
             child: Container(
-                margin: EdgeInsets.fromLTRB(21, 0, 21, 21),
+                margin: const EdgeInsets.fromLTRB(21, 0, 21, 21),
                 child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Spacer(),
-                      Text("비밀번호 재발급을 위한 메일이 전송되었습니다. \n메일을 확인해 주세요."),
-                      Spacer(),
+                      const Spacer(),
+                      const Text("비밀번호 재발급을 위한 메일이 전송되었습니다. \n메일을 확인해 주세요."),
+                      const Spacer(),
                       SizedBox(
                         width: double.infinity, // <-- match_parent
                         height: 50, // <-- match-parent
@@ -196,12 +200,12 @@ class SuccessResetPWPage extends StatelessWidget {
                             Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => LoginScreen()));
+                                    builder: (context) => const LoginScreen()));
                           },
-                          child: Text("로그인 하러가기"),
+                          child: const Text("로그인 하러가기"),
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 81,
                       )
                     ]))));

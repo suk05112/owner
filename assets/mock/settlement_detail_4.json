@@ -1,0 +1,87 @@
+{
+  "settlement": {
+    "settlement_id": 4,
+    "store_id": 1,
+    "cycle_id": 2,
+    "period_start": "2026-03-16",
+    "period_end": "2026-03-31",
+    "total_sales_amount": 321500,
+    "total_fee_amount": 43000,
+    "net_payout_amount": 278500,
+    "status": "COMPLETED",
+    "payout_date": "2026-04-16",
+    "failure_reason": null
+  },
+  "details": [
+    {
+      "id": 24,
+      "gifticon_id": 294,
+      "menu_name": "카페 라떼",
+      "used_at": "2026-03-31T17:20:00.000Z",
+      "amount": 5500,
+      "fee_amount": 733,
+      "settlement_amount": 4767,
+      "status": "USED"
+    },
+    {
+      "id": 23,
+      "gifticon_id": 293,
+      "menu_name": "아이스 아메리카노",
+      "used_at": "2026-03-31T10:50:00.000Z",
+      "amount": 4500,
+      "fee_amount": 600,
+      "settlement_amount": 3900,
+      "status": "USED"
+    },
+    {
+      "id": 22,
+      "gifticon_id": 292,
+      "menu_name": "바닐라 라떼",
+      "used_at": "2026-03-28T14:15:00.000Z",
+      "amount": 5800,
+      "fee_amount": 773,
+      "settlement_amount": 5027,
+      "status": "USED"
+    },
+    {
+      "id": 21,
+      "gifticon_id": 291,
+      "menu_name": "아이스 아메리카노",
+      "used_at": "2026-03-25T09:40:00.000Z",
+      "amount": 4500,
+      "fee_amount": 600,
+      "settlement_amount": 3900,
+      "status": "USED"
+    },
+    {
+      "id": 20,
+      "gifticon_id": 290,
+      "menu_name": "카푸치노",
+      "used_at": "2026-03-22T16:00:00.000Z",
+      "amount": 5500,
+      "fee_amount": 733,
+      "settlement_amount": 4767,
+      "status": "USED"
+    },
+    {
+      "id": 19,
+      "gifticon_id": 289,
+      "menu_name": "아이스 아메리카노",
+      "used_at": "2026-03-19T11:30:00.000Z",
+      "amount": 4500,
+      "fee_amount": 600,
+      "settlement_amount": 3900,
+      "status": "USED"
+    },
+    {
+      "id": 18,
+      "gifticon_id": 288,
+      "menu_name": "녹차 라떼",
+      "used_at": "2026-03-17T13:45:00.000Z",
+      "amount": 5800,
+      "fee_amount": 773,
+      "settlement_amount": 5027,
+      "status": "USED"
+    }
+  ]
+}

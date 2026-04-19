@@ -50,19 +50,19 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBtFLsEuL770bVt6HQ0dbOgo5hDkNaoYqs',
-    appId: '1:299419302046:android:0dac4e0605c6038d31a38f',
-    messagingSenderId: '299419302046',
-    projectId: 'cafe-owner',
-    storageBucket: 'cafe-owner.appspot.com',
+    apiKey: 'AIzaSyDGb1Z77BbL5bUOFLrfUDAp3tkmLIQiGVQ',
+    appId: '1:1061431508687:android:74ef6fdc4a6d922e72c1ba',
+    messagingSenderId: '1061431508687',
+    projectId: 'cafe-owner-dev',
+    storageBucket: 'cafe-owner-dev.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBqwPQocNYiSEqlZNkAGDCtuj-N7QaQDoA',
-    appId: '1:299419302046:ios:b053be5dde0c51eb31a38f',
-    messagingSenderId: '299419302046',
-    projectId: 'cafe-owner',
-    storageBucket: 'cafeplatform.firebasestorage.app',
+    apiKey: 'AIzaSyAoD8j7p9iB3N0UBJRc75IWaQ6Otrog7IU',
+    appId: '1:1061431508687:ios:40df6772320188d372c1ba',
+    messagingSenderId: '1061431508687',
+    projectId: 'cafe-owner-dev',
+    storageBucket: 'cafe-owner-dev.firebasestorage.app',
     iosBundleId: 'com.gifnut.owner.dev',
   );
 }

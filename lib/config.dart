@@ -4,11 +4,8 @@ class AppConfig {
   static const String devBaseUrl = "https://www.502company.com/dev";
   static const String prodBaseUrl = "https://www.502company.com/prod";
 
-  static const String env = String.fromEnvironment('ENV', defaultValue: 'prod');
-
   // 환경에 따른 baseUrl 반환
   static String get baseUrl {
-    print("AppConfig:: $env");
     switch (F.appFlavor) {
       case Flavor.dev:
       case Flavor.mock:

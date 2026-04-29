@@ -11,6 +11,7 @@ import 'package:owner/flavors.dart';
 import 'package:owner/screen/Account/account_management_page.dart';
 import 'package:owner/screen/Settlement/settlement_page.dart';
 import 'package:owner/screen/Store/cafe_detail_page.dart';
+import 'package:owner/screen/Store/cafe_list_page.dart';
 import 'package:owner/screen/Store/MenuManagementPage.dart';
 import 'package:provider/provider.dart';
 import '../../common/api/request/store/store.dart';
@@ -34,7 +35,13 @@ class _DashboardPageState extends State<DashboardPage> {
   @override
   void initState() {
     super.initState();
-    _loadDashboardData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final storeProvider =
+          Provider.of<SelectedStoreProvider>(context, listen: false);
+      if (storeProvider.stores.isEmpty) {
+        _loadDashboardData();
+      }
+    });
   }
 
   /// 매장 목록 로드 후 선택 매장 기준으로 대시보드 통계 API 호출 (앱 최초 실행·당겨서 새로고침 시)
@@ -288,7 +295,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Widget _buildQuickMenuSection(SelectedStoreProvider storeProvider) {
-    final hasNoStores = _isLoading || storeProvider.hasNoStores;
+    final hasNoStores = storeProvider.hasNoStores;
     final selectedStoreId = storeProvider.selectedStoreId;
 
     return Column(
@@ -318,10 +325,16 @@ class _DashboardPageState extends State<DashboardPage> {
                 icon: Icons.store,
                 title: "매장 관리",
                 onTap: () {
-                  if (hasNoStores || selectedStoreId == null) {
-                    _showNoStoreMessage();
+                  if (hasNoStores) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CafeList(),
+                      ),
+                    );
                     return;
                   }
+                  if (selectedStoreId == null) return;
                   Navigator.push(
                     context,
                     MaterialPageRoute(

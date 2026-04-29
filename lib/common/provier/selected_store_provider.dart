@@ -5,16 +5,19 @@ import 'package:owner/common/api/request/store/store.dart';
 class SelectedStoreProvider extends ChangeNotifier {
   List<Store> _stores = [];
   Store? _selectedStore;
+  bool _isLoaded = false;
 
   List<Store> get stores => List.unmodifiable(_stores);
   Store? get selectedStore => _selectedStore;
   int? get selectedStoreId => _selectedStore?.store_id;
+  bool get isLoaded => _isLoaded;
 
   bool get hasStores => _stores.isNotEmpty;
   bool get hasNoStores => _stores.isEmpty;
 
   void setStores(List<Store> stores) {
     _stores = stores;
+    _isLoaded = true;
     if (stores.isEmpty) {
       _selectedStore = null;
     } else {

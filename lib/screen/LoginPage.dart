@@ -14,6 +14,7 @@ import 'Register/find_userId_page.dart';
 import 'home.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/model/user.dart' as my_app;
@@ -548,7 +549,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       print('FCM token 획득: $fcmToken');
 
-      final pushTokenRequest = OwnerPushTokenPost(push_token: fcmToken);
+      final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+      final pushTokenRequest = OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType);
       final response = await Api().client.registerOwnerPushToken(
             ownerId,
             pushTokenRequest,

@@ -10,6 +10,7 @@ import 'package:owner/screen/dashboard_page.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
@@ -76,9 +77,10 @@ class _HomeState extends State<Home> {
       final fcmToken = await FirebaseMessaging.instance.getToken();
       if (fcmToken == null || fcmToken.isEmpty) return;
 
+      final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
       await Api().client.registerOwnerPushToken(
             ownerId,
-            OwnerPushTokenPost(push_token: fcmToken),
+            OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType),
           );
       await prefs.setBool('push_token_registered', true);
       print('Push token 재등록 성공');

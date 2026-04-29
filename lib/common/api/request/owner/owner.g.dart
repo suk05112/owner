@@ -77,12 +77,14 @@ Map<String, dynamic> _$OwnerLoginResponseToJson(OwnerLoginResponse instance) =>
 
 OwnerPushTokenPost _$OwnerPushTokenPostFromJson(Map<String, dynamic> json) =>
     OwnerPushTokenPost(
-      push_token: json['push_token'] as String,
+      fcm_token: json['fcm_token'] as String,
+      device_type: json['device_type'] as String,
     );
 
 Map<String, dynamic> _$OwnerPushTokenPostToJson(OwnerPushTokenPost instance) =>
     <String, dynamic>{
-      'push_token': instance.push_token,
+      'fcm_token': instance.fcm_token,
+      'device_type': instance.device_type,
     };
 
 OwnerPushTokenResponse _$OwnerPushTokenResponseFromJson(

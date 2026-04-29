@@ -550,8 +550,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
       final pushTokenRequest = OwnerPushTokenPost(push_token: fcmToken);
       final response = await Api().client.registerOwnerPushToken(
-            owner_id: ownerId,
-            pushToken: pushTokenRequest,
+            ownerId,
+            pushTokenRequest,
           );
 
       print(

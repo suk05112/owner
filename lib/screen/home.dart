@@ -9,6 +9,11 @@ import 'package:owner/screen/Setting/setting_page.dart';
 import 'package:owner/screen/dashboard_page.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:owner/common/api/API.dart';
+import 'package:owner/common/api/request/owner/owner.dart';
 
 import 'QRScanPage.dart';
 import 'Store/cafe_detail_page.dart';
@@ -50,6 +55,46 @@ class _HomeState extends State<Home> {
         );
       },
     );
+
+    if (!F.isMock) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _retryPushTokenIfNeeded();
+        _listenTokenRefresh();
+      });
+    }
+  }
+
+  Future<void> _retryPushTokenIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final registered = prefs.getBool('push_token_registered') ?? false;
+    if (registered) return;
+
+    if (!mounted) return;
+    final ownerId = Provider.of<UserProvider>(context, listen: false).user?.owner_id;
+    if (ownerId == null) return;
+
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null || fcmToken.isEmpty) return;
+
+      final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+      await Api().client.registerOwnerPushToken(
+            ownerId,
+            OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType),
+          );
+      await prefs.setBool('push_token_registered', true);
+      print('Push token 재등록 성공');
+    } catch (e) {
+      print('Push token 재등록 실패: $e');
+    }
+  }
+
+  void _listenTokenRefresh() {
+    FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('push_token_registered', false);
+      print('FCM 토큰 갱신됨 — 다음 앱 실행 시 재등록 예정');
+    });
   }
 
   @override

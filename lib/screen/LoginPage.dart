@@ -14,10 +14,12 @@ import 'Register/find_userId_page.dart';
 import 'home.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/model/user.dart' as my_app;
 import 'package:owner/common/utils/phone_utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   final bool returnToPrevious;
@@ -538,7 +540,6 @@ class _LoginScreenState extends State<LoginScreen> {
   /// Push token을 서버에 등록하는 함수
   Future<void> _registerPushToken(int ownerId) async {
     try {
-      // Firebase Messaging에서 FCM token 가져오기
       final fcmToken = await FirebaseMessaging.instance.getToken();
 
       if (fcmToken == null || fcmToken.isEmpty) {
@@ -548,11 +549,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
       print('FCM token 획득: $fcmToken');
 
-      final pushTokenRequest = OwnerPushTokenPost(push_token: fcmToken);
+      final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+      final pushTokenRequest = OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType);
       final response = await Api().client.registerOwnerPushToken(
-            owner_id: ownerId,
-            pushToken: pushTokenRequest,
+            ownerId,
+            pushTokenRequest,
           );
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('push_token_registered', true);
 
       print(
           'Push token 등록 성공: ${response.message}, owner_id: ${response.owner_id}');

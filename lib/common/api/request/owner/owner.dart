@@ -76,9 +76,10 @@ class OwnerLoginResponse {
 
 @JsonSerializable()
 class OwnerPushTokenPost {
-  String push_token;
+  String fcm_token;
+  String device_type;
 
-  OwnerPushTokenPost({required this.push_token});
+  OwnerPushTokenPost({required this.fcm_token, required this.device_type});
 
   factory OwnerPushTokenPost.fromJson(Map<String, dynamic> json) =>
       _$OwnerPushTokenPostFromJson(json);

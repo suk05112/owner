@@ -38,8 +38,10 @@ class _DashboardPageState extends State<DashboardPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final storeProvider =
           Provider.of<SelectedStoreProvider>(context, listen: false);
-      if (storeProvider.stores.isEmpty) {
+      if (!storeProvider.isLoaded) {
         _loadDashboardData();
+      } else {
+        setState(() => _isLoading = false);
       }
     });
   }

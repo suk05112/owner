@@ -10,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/APIDioClient.dart';
 import 'package:owner/common/api/request/store/store.dart';
@@ -109,13 +110,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
           FocusScope.of(context).unfocus();
         },
         child: Scaffold(
-          appBar: AppBar(
-            title: _isRegister
-                ? const Text("매장정보 입력하기(3/3)")
-                : const Text("매장 수정하기"),
-            elevation: 0,
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+          appBar: CommonAppBar(
+            title: _isRegister ? "매장정보 입력하기(3/3)" : "매장 수정하기",
           ),
           backgroundColor: Colors.white,
           body: Form(

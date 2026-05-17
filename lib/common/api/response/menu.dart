@@ -66,19 +66,21 @@ class MenuDeleteResponse {
 @JsonSerializable()
 class Menu {
   int menu_id;
-  int store_id;
+  int? store_id;
+  @JsonKey(name: 'menu_name')
   String name;
   int price;
-  String menu_image_url;
+  @JsonKey(name: 'menu_photo')
+  String? menu_image_url;
   String description;
-  int status;
+  String status;
 
   Menu(
       {required this.menu_id,
-      required this.store_id,
+      this.store_id,
       required this.name,
       required this.price,
-      required this.menu_image_url,
+      this.menu_image_url,
       required this.description,
       required this.status});
 

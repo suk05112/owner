@@ -454,7 +454,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                   child: Row(
                     children: [
                       StoreImage(
-                        url: menu.menu_image_url,
+                        url: menu.menu_image_url ?? '',
                         width: 56,
                         height: 56,
                         fit: BoxFit.cover,

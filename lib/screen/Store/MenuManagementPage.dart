@@ -15,6 +15,7 @@ class MenuManagementPage extends StatefulWidget {
 
 class _MenuManagementPagetate extends State<MenuManagementPage> {
   List<Menu>? menu;
+  String? _error;
   late int _storeId;
 
   static const Color _borderColor = Color(0xFFE6E6E6);
@@ -30,9 +31,17 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   }
 
   Future<void> _initRetrieval() async {
-    await Api().client.getMenuList(_storeId).then((value) => setState(() {
-          menu = value.menuList;
-        }));
+    try {
+      final value = await Api().client.getMenuList(_storeId);
+      setState(() {
+        menu = value.menuList;
+        _error = null;
+      });
+    } catch (e) {
+      setState(() {
+        _error = '메뉴를 불러오지 못했습니다. 다시 시도해 주세요.';
+      });
+    }
   }
 
   Future<void> _navigateToEdit({Menu? menu, int? menuId}) async {
@@ -68,17 +77,44 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
     return Scaffold(
       appBar: const CommonAppBar(title: "메뉴 관리"),
       backgroundColor: Colors.white,
-      body: menu == null
-          ? const Center(
-              child: SizedBox(
-                width: 30,
-                height: 30,
-                child: CircularProgressIndicator(color: _primary),
-              ),
-            )
-          : menu!.isEmpty
-              ? _buildEmpty()
-              : _buildList(),
+      body: _error != null
+          ? _buildError()
+          : menu == null
+              ? const Center(
+                  child: SizedBox(
+                    width: 30,
+                    height: 30,
+                    child: CircularProgressIndicator(color: _primary),
+                  ),
+                )
+              : menu!.isEmpty
+                  ? _buildEmpty()
+                  : _buildList(),
+    );
+  }
+
+  Widget _buildError() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.error_outline, size: 48, color: _hintColor),
+          const SizedBox(height: 12),
+          Text(
+            _error!,
+            style: const TextStyle(fontSize: 14, color: _hintColor),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          TextButton(
+            onPressed: () {
+              setState(() => _error = null);
+              _initRetrieval();
+            },
+            child: const Text('다시 시도', style: TextStyle(color: _primary)),
+          ),
+        ],
+      ),
     );
   }
 
@@ -150,7 +186,7 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
       child: Row(
         children: [
           StoreImage(
-            url: item.menu_image_url,
+            url: item.menu_image_url ?? '',
             width: 72,
             height: 72,
             fit: BoxFit.cover,

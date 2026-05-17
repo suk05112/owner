@@ -93,7 +93,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   Future<void> _getLogoImage() async {
     final picker = ImagePicker();
-    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery, imageQuality: 90);
 
     if (pickedImage != null) {
       setState(() {

@@ -243,7 +243,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                   //메뉴 등록
                   Api()
                       .client
-                      .addMenu(newMenu.store_id, newMenu)
+                      .addMenu(widget.storeId, newMenu)
                       .then((response) async => {
                             await uploadMenuImage(response.menu_put_url),
                             newMenu.menu_image_url = response.menu_get_url,
@@ -366,7 +366,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
   void pickMenuImage() async {
     final picker = ImagePicker();
-    final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery, imageQuality: 90);
 
     if (pickedImage != null) {
       print("pick image is not null");

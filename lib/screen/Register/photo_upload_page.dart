@@ -12,21 +12,6 @@ import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:exif/exif.dart';
 
-Future<File> resizeImage(File originalFile, int maxWidth, int maxHeight) async {
-  Uint8List imageBytes = await originalFile.readAsBytes();
-  img.Image? decodedImage = img.decodeImage(imageBytes);
-
-  if (decodedImage == null) {
-    throw Exception("Failed to decode image");
-  }
-
-  img.Image resizedImage =
-      img.copyResize(decodedImage, width: maxWidth, height: maxHeight);
-  File resizedFile = File(originalFile.path);
-  resizedFile.writeAsBytesSync(img.encodeJpg(resizedImage, quality: 85));
-
-  return resizedFile;
-}
 
 class PhotoUploadePage extends StatefulWidget {
   const PhotoUploadePage(
@@ -79,8 +64,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
       widget.savedImageUrl.asMap().entries.map((e) async {
         var idx = e.key;
         var url = e.value;
-        var imageFile = await getImageFileFromUrl(url, idx);
-        return await resizeImage(imageFile, 500, 500);
+        return await getImageFileFromUrl(url, idx);
       }),
     );
 
@@ -124,10 +108,8 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     });
 
     final pickedFile = await picker.pickMultiImage(
-      imageQuality: 50, // To set quality of images
-      // maxHeight: 1000, // To set maxheight of images that you want in your app
-      // maxWidth: 1000
-    ); // To set maxheight of images that you want in your app
+      imageQuality: 90,
+    );
     List<XFile> xfilePick = pickedFile;
 
     print("image 선택됨");
@@ -202,7 +184,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     // or jpg with some compression
     // I choose jpg with 100% quality
     final fixedFile =
-        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 50));
+        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 90));
 
     return fixedFile;
   }

@@ -219,8 +219,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                     menu_id: -1,
                     description: menuDescInputController.text,
                     price: int.parse(menuPriceInputController.text),
-                    menu_image_url: "",
-                    status: 1);
+                    status: 'ACTIVE');
 
                 if (isUpdated) {
                   //메뉴 수정
@@ -230,8 +229,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                       menu_id: widget.menu!.menu_id,
                       description: menuDescInputController.text,
                       price: int.parse(menuPriceInputController.text),
-                      menu_image_url: "",
-                      status: 1);
+                      status: 'ACTIVE');
 
                   Api()
                       .client
@@ -472,7 +470,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
     // or jpg with some compression
     // I choose jpg with 100% quality
     final fixedFile =
-        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 50));
+        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 90));
 
     return fixedFile;
   }

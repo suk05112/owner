@@ -575,8 +575,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                   child: Image.network(item,
                       width: 90,
                       height: 90,
-                      cacheWidth: 100,
-                      cacheHeight: 100,
                       fit: BoxFit.fill,
                       errorBuilder: (context, error, stackTrace) {
                     return const Image(
@@ -600,8 +598,6 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 File(item.path),
                 width: 90,
                 height: 90,
-                cacheWidth: 100,
-                cacheHeight: 100,
                 fit: BoxFit.fill,
               )),
         );

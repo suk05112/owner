@@ -557,7 +557,7 @@ class _LoginScreenState extends State<LoginScreen> {
           );
 
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('push_token_registered', true);
+      await prefs.setString('registered_fcm_token', fcmToken);
 
       print(
           'Push token 등록 성공: ${response.message}, owner_id: ${response.owner_id}');

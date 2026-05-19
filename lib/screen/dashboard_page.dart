@@ -87,11 +87,7 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     } catch (e) {
       debugPrint("Error loading dashboard data: $e");
-      if (e is DioException &&
-          (e.type == DioExceptionType.connectionTimeout ||
-              e.type == DioExceptionType.receiveTimeout ||
-              e.type == DioExceptionType.sendTimeout ||
-              e.type == DioExceptionType.connectionError)) {
+      if (e is DioException) {
         if (mounted) setState(() => _hasNetworkError = true);
       }
     } finally {

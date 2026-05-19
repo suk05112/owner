@@ -162,12 +162,6 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                     maxLength: 200,
                                     decoration: inputDecoration.copyWith(
                                         hintText: "메뉴설명을 입력해 주세요(200자 이내)"),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return "메뉴설명을 입력해 주세요";
-                                      }
-                                      return null;
-                                    },
                                   ),
                                   Container(
                                     height: 10,
@@ -202,15 +196,6 @@ class _EditMenuPageState extends State<EditMenuPage> {
                 // minimumSize: const Size.fromHeight(50), // NEW
                 ),
             onPressed: () {
-              if (_image == null) {
-                CommonDialog.show(
-                    context: context,
-                    title: "이미지를 등록해주세요",
-                    content: "",
-                    buttonText: "확인",
-                    onPressed: () {});
-                return;
-              }
               if (_formKey.currentState!.validate()) {
                 //메뉴 새로 등록
                 var newMenu = Menu(
@@ -235,8 +220,11 @@ class _EditMenuPageState extends State<EditMenuPage> {
                       .client
                       .updateMenu(newMenu.menu_id, newMenu)
                       .then((response) async => {
-                            await uploadMenuImage(response.menu_put_url),
-                            newMenu.menu_image_url = response.menu_get_url,
+                            if (_image != null)
+                              await uploadMenuImage(response.menu_put_url),
+                            newMenu.menu_image_url = _image != null
+                                ? response.menu_get_url
+                                : widget.menu?.menu_image_url,
                             Navigator.pop(context, newMenu)
                           });
                 } else {
@@ -245,8 +233,10 @@ class _EditMenuPageState extends State<EditMenuPage> {
                       .client
                       .addMenu(widget.storeId, newMenu)
                       .then((response) async => {
-                            await uploadMenuImage(response.menu_put_url),
-                            newMenu.menu_image_url = response.menu_get_url,
+                            if (_image != null)
+                              await uploadMenuImage(response.menu_put_url),
+                            if (_image != null)
+                              newMenu.menu_image_url = response.menu_get_url,
                             Navigator.pop(context, newMenu)
                           });
                 }

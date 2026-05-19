@@ -22,7 +22,7 @@ Map<String, dynamic> _$MenuGetResponseToJson(MenuGetResponse instance) =>
 
 MenuPostResponse _$MenuPostResponseFromJson(Map<String, dynamic> json) =>
     MenuPostResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
+      statusCode: (json['statusCode'] as num?)?.toInt(),
       menu_id: (json['menu_id'] as num).toInt(),
       menu_put_url: json['menu_put_url'] as String,
       menu_get_url: json['menu_get_url'] as String,
@@ -38,8 +38,8 @@ Map<String, dynamic> _$MenuPostResponseToJson(MenuPostResponse instance) =>
 
 MenuUpdateResponse _$MenuUpdateResponseFromJson(Map<String, dynamic> json) =>
     MenuUpdateResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
-      msg: json['msg'] as String,
+      statusCode: (json['statusCode'] as num?)?.toInt(),
+      msg: json['msg'] as String?,
       menu_put_url: json['menu_put_url'] as String,
       menu_get_url: json['menu_get_url'] as String,
     );

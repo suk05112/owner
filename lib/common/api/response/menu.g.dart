@@ -77,9 +77,9 @@ Menu _$MenuFromJson(Map<String, dynamic> json) => Menu(
 Map<String, dynamic> _$MenuToJson(Menu instance) => <String, dynamic>{
       'menu_id': instance.menu_id,
       'store_id': instance.store_id,
-      'menu_name': instance.name,
+      'name': instance.name,
       'price': instance.price,
       'menu_photo': instance.menu_image_url,
       'description': instance.description,
-      'status': instance.status,
+      'status': instance.status == 'ACTIVE' ? 1 : 0,
     };

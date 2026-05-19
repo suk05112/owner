@@ -6,6 +6,7 @@ import 'flavors.dart';
 import 'firebase_options_dev.dart';
 
 import 'main.dart' as runner;
+import 'main.dart' show initializeFCM;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -62,6 +63,8 @@ Future<void> main() async {
     print('⚠️ Firebase App Check 활성화 실패 (무시 가능): $e');
     print('💡 개발 모드에서는 App Check 없이도 정상 동작합니다.');
   }
+
+  await initializeFCM();
 
   // runner.main()을 호출하여 앱 실행
   // runApp()은 즉시 반환되지만 await를 사용하여 초기화가 완료되도록 보장

@@ -7,6 +7,7 @@ import 'flavors.dart';
 import 'firebase_options_prod.dart';
 
 import 'main.dart' as runner;
+import 'main.dart' show initializeFCM;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -45,5 +46,6 @@ Future<void> main() async {
         webProvider:
             ReCaptchaV3Provider("6LeuC04sAAAAALXiv1CX_UsbOj1Vpo1zR1DAvd8d"));
   }
+  await initializeFCM();
   await runner.main();
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -25,6 +26,12 @@ import 'package:owner/common/api/API.dart';
 import 'package:owner/common/utils/network_utils.dart';
 import 'package:owner/config.dart';
 
+// 백그라운드/종료 상태에서 FCM 메시지 수신 (top-level 함수 필수)
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('백그라운드 메시지 수신: ${message.messageId}');
+}
+
 FutureOr<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await _ensureFlavor();
@@ -44,6 +51,32 @@ FutureOr<void> main() async {
 
   // debugInvertOversizedImages = true;
   runApp(const MyApp());
+}
+
+Future<void> initializeFCM() async {
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  final messaging = FirebaseMessaging.instance;
+
+  // iOS 알림 권한 요청
+  final settings = await messaging.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+  print('FCM 알림 권한 상태: ${settings.authorizationStatus}');
+
+  // iOS 포그라운드에서도 배너/소리/배지 표시
+  await messaging.setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  // 포그라운드 메시지 수신
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print('포그라운드 메시지 수신: ${message.notification?.title}');
+  });
 }
 
 Future<void> _ensureFlavor() async {

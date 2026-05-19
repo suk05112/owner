@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/user.dart' as my_app;
@@ -31,6 +32,7 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   my_app.User? user;
   bool _isLoading = true;
+  bool _hasNetworkError = false;
 
   @override
   void initState() {
@@ -48,7 +50,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
   /// 매장 목록 로드 후 선택 매장 기준으로 대시보드 통계 API 호출 (앱 최초 실행·당겨서 새로고침 시)
   Future<void> _loadDashboardData() async {
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _hasNetworkError = false;
+    });
     try {
       user = Provider.of<UserProvider>(context, listen: false).user;
       final storeProvider =
@@ -82,6 +87,13 @@ class _DashboardPageState extends State<DashboardPage> {
       }
     } catch (e) {
       debugPrint("Error loading dashboard data: $e");
+      if (e is DioException &&
+          (e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.sendTimeout ||
+              e.type == DioExceptionType.connectionError)) {
+        if (mounted) setState(() => _hasNetworkError = true);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -119,8 +131,47 @@ class _DashboardPageState extends State<DashboardPage> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
+                              // 서버 연결 오류 안내
+                              if (_hasNetworkError)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFEEEE),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: const Color(0xFFE53935)
+                                              .withOpacity(0.3)),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(Icons.wifi_off,
+                                            color: Color(0xFFE53935), size: 18),
+                                        const SizedBox(width: 8),
+                                        const Expanded(
+                                          child: Text(
+                                            "서버에 연결할 수 없습니다.\n네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Color(0xFF101010),
+                                              height: 1.4,
+                                            ),
+                                          ),
+                                        ),
+                                        TextButton(
+                                          onPressed: _loadDashboardData,
+                                          child: const Text("재시도",
+                                              style: TextStyle(
+                                                  color: Color(0xFFE53935))),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
                               // 매장 없을 때 안내
-                              if (hasNoStores)
+                              if (!_hasNetworkError && hasNoStores)
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 16),
                                   child: Container(

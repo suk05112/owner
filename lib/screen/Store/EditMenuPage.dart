@@ -224,6 +224,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                         final response = await Api()
                             .client
                             .addMenu(widget.storeId, newMenu);
+                        newMenu.menu_id = response.menu_id;
                         if (_image != null) {
                           await uploadMenuImage(response.menu_put_url);
                           newMenu.menu_image_url = response.menu_get_url;

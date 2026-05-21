@@ -67,11 +67,11 @@ Map<String, dynamic> _$MenuDeleteResponseToJson(MenuDeleteResponse instance) =>
 Menu _$MenuFromJson(Map<String, dynamic> json) => Menu(
       menu_id: (json['menu_id'] as num).toInt(),
       store_id: (json['store_id'] as num?)?.toInt(),
-      name: json['menu_name'] as String,
+      name: json['name'] as String,
       price: (json['price'] as num).toInt(),
       menu_image_url: json['menu_photo'] as String?,
       description: json['description'] as String,
-      status: json['status'] as String,
+      status: json['status'] as String? ?? 'ACTIVE',
     );
 
 Map<String, dynamic> _$MenuToJson(Menu instance) => <String, dynamic>{
@@ -81,5 +81,5 @@ Map<String, dynamic> _$MenuToJson(Menu instance) => <String, dynamic>{
       'price': instance.price,
       'menu_photo': instance.menu_image_url,
       'description': instance.description,
-      'status': instance.status == 'ACTIVE' ? 1 : 0,
+      'status': instance.status,
     };

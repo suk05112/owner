@@ -67,13 +67,14 @@ class MenuDeleteResponse {
 class Menu {
   int menu_id;
   int? store_id;
-  @JsonKey(name: 'menu_name')
   String name;
   int price;
   @JsonKey(name: 'menu_photo')
   String? menu_image_url;
   String description;
   String status;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  bool? delete_image;
 
   Menu(
       {required this.menu_id,
@@ -82,8 +83,13 @@ class Menu {
       required this.price,
       this.menu_image_url,
       required this.description,
-      required this.status});
+      this.status = 'ACTIVE',
+      this.delete_image});
 
   factory Menu.fromJson(Map<String, dynamic> json) => _$MenuFromJson(json);
-  Map<String, dynamic> toJson() => _$MenuToJson(this);
+  Map<String, dynamic> toJson() {
+    final map = _$MenuToJson(this);
+    if (delete_image == true) map['delete_image'] = true;
+    return map;
+  }
 }

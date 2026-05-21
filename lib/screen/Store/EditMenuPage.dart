@@ -36,6 +36,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
   TextEditingController menuDescInputController = TextEditingController();
   TextEditingController menuPriceInputController = TextEditingController();
   File? _image;
+  bool _imageRemoved = false;
   bool _isMenuImageLoading = false;
   bool _isSubmitting = false;
 
@@ -109,7 +110,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                     decoration: inputDecoration.copyWith(
                                         hintText: "메뉴명을 입력해 주세요"),
                                     validator: (value) {
-                                      if (value == null || value.isEmpty) {
+                                      if (value == null || value.trim().isEmpty) {
                                         return "메뉴명을 입력해 주세요";
                                       }
                                       return null;
@@ -143,6 +144,9 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                       final price = int.tryParse(value);
                                       if (price == null) {
                                         return "숫자만 입력 가능합니다";
+                                      }
+                                      if (price < 100) {
+                                        return "메뉴 금액은 100원 이상이어야 합니다";
                                       }
                                       if (price > 50000) {
                                         return "메뉴 금액은 50,000원 이하만 가능합니다";
@@ -211,12 +215,15 @@ class _EditMenuPageState extends State<EditMenuPage> {
                           status: 'ACTIVE');
 
                       if (isUpdated) {
+                        if (_imageRemoved) newMenu.delete_image = true;
                         final response = await Api()
                             .client
                             .updateMenu(newMenu.menu_id, newMenu);
-                        if (_image != null) {
+                        if (_image != null && !_imageRemoved) {
                           await uploadMenuImage(response.menu_put_url);
                           newMenu.menu_image_url = response.menu_get_url;
+                        } else if (_imageRemoved) {
+                          newMenu.menu_image_url = null;
                         } else {
                           newMenu.menu_image_url = widget.menu?.menu_image_url;
                         }
@@ -289,51 +296,77 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
   Widget menuImage() {
     bool isUpdated = widget.menuId != null;
+    final hasImage = _image != null ||
+        (isUpdated && !_imageRemoved && (widget.menu?.menu_image_url ?? '').isNotEmpty);
 
-    return GestureDetector(
-      onTap: () async {
-        pickMenuImage();
-      },
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF7F7F7),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: _borderColor),
-              ),
-              child: _image != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        _image!,
-                        fit: BoxFit.cover,
-                        width: 200,
-                        height: 200,
-                      ),
-                    )
-                  : isUpdated
-                      ? StoreImage(
-                          url: widget.menu?.menu_image_url ?? "",
-                          width: 200,
-                          height: 200,
-                          fit: BoxFit.cover,
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Stack(
+            children: [
+              GestureDetector(
+                onTap: pickMenuImage,
+                child: Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF7F7F7),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _borderColor),
+                  ),
+                  child: _image != null
+                      ? ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          errorWidget: _emptyImagePlaceholder(),
+                          child: Image.file(
+                            _image!,
+                            fit: BoxFit.cover,
+                            width: 200,
+                            height: 200,
+                          ),
                         )
-                      : _emptyImagePlaceholder(),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              "이미지를 터치해 선택하세요.",
-              style: TextStyle(fontSize: 13, color: _hintColor),
-            ),
-          ],
-        ),
+                      : isUpdated && !_imageRemoved
+                          ? StoreImage(
+                              url: widget.menu?.menu_image_url ?? "",
+                              width: 200,
+                              height: 200,
+                              fit: BoxFit.cover,
+                              borderRadius: BorderRadius.circular(12),
+                              errorWidget: _emptyImagePlaceholder(),
+                            )
+                          : _emptyImagePlaceholder(),
+                ),
+              ),
+              if (hasImage)
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _image = null;
+                        _imageRemoved = true;
+                      });
+                    },
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, size: 16, color: Colors.white),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "이미지를 터치해 선택하세요.",
+            style: TextStyle(fontSize: 13, color: _hintColor),
+          ),
+        ],
       ),
     );
   }

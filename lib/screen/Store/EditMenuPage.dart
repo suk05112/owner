@@ -16,8 +16,6 @@ import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:exif/exif.dart';
 
-import 'package:path/path.dart';
-import 'package:path_provider/path_provider.dart';
 
 class EditMenuPage extends StatefulWidget {
   const EditMenuPage({Key? key, required this.storeId, this.menu, this.menuId})
@@ -52,16 +50,6 @@ class _EditMenuPageState extends State<EditMenuPage> {
       menuNameInputController.text = widget.menu!.name;
       menuPriceInputController.text = widget.menu!.price.toString();
       menuDescInputController.text = widget.menu!.description;
-
-      // asset: 접두어 URL은 로컬 파일로 다운로드하지 않고 StoreImage 위젯이 직접 렌더링
-      final url = widget.menu?.menu_image_url ?? '';
-      if (!url.startsWith('asset:')) {
-        _fileFromImageUrl().then((value) => {
-              setState(() {
-                _image = value;
-              })
-            });
-      }
     }
   }
 
@@ -278,10 +266,22 @@ class _EditMenuPageState extends State<EditMenuPage> {
                     content: "",
                     buttonText: "확인",
                     cancel: true,
-                    onPressed: () {
-                      Api().client.deleteMenu(widget.menu!.menu_id).then(
-                          (response) =>
-                              {Navigator.pop(context, widget.menu!.menu_id)});
+                    onPressed: () async {
+                      try {
+                        await Api().client.deleteMenu(widget.menu!.menu_id);
+                        if (context.mounted) Navigator.pop(context, widget.menu!.menu_id);
+                      } catch (e) {
+                        if (context.mounted) {
+                          CommonDialog.show(
+                            context: context,
+                            title: "삭제 실패",
+                            content: "메뉴 삭제에 실패했습니다.\n다시 시도해 주세요.",
+                            buttonText: "확인",
+                            cancel: false,
+                            onPressed: () {},
+                          );
+                        }
+                      }
                     });
               },
               child: const Text('메뉴 삭제'),
@@ -435,17 +435,6 @@ class _EditMenuPageState extends State<EditMenuPage> {
     } catch (e) {
       print('Error: $e');
     }
-  }
-
-  Future<File> _fileFromImageUrl() async {
-    final response =
-        await http.get(Uri.parse('${widget.menu?.menu_image_url}'));
-
-    final documentDirectory = await getApplicationDocumentsDirectory();
-    final file = File(join(documentDirectory.path, 'menu.png'));
-    file.writeAsBytesSync(response.bodyBytes);
-
-    return file;
   }
 
   Future<File> fixExifRotation(String imagePath) async {

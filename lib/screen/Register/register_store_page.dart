@@ -334,7 +334,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     print("register store 호출");
 
     _store!.store_telephone = telePhoneController.text;
-    _store!.store_photo_cnt = _storeImage.length;
+    _store!.image_count = _storeImage.length;
     // _store!.store_address = addrController.text + detailAddrController.text;
     // _store!.store_photo = "photo";
     _store!.store_description = introController.text;
@@ -342,12 +342,13 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     await Api().client.registerStore(_store!).then((response) async {
       var storeId = response.store_id;
       var storeLogoUrl = response.store_logo_url;
-      final storePhotoUrls = response.store_photo_urls;
+      final storePhotoPutUrls =
+          response.store_photos.map((p) => p.put_url).toList();
       final bankbookPutUrl = response.bankBook_put_url;
       final businessPutUrl = response.business_put_url;
 
       uploadLogoImage(storeLogoUrl);
-      uploadStoreImages(storePhotoUrls);
+      uploadStoreImages(storePhotoPutUrls);
       if (businessPutUrl != null) {
         uploadBusinessImage(bankbookPutUrl, businessPutUrl);
       }
@@ -387,23 +388,19 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   Future<void> updateStore() async {
     _store?.store_telephone = telePhoneController.text;
     _store?.store_description = introController.text;
-    if (isClickedPhotoUploadPage == false) {
-      _store!.store_photo_cnt = -1;
-    } else {
-      _store!.store_photo_cnt = _storeImage.length;
-    }
+    _store!.image_count = isClickedPhotoUploadPage ? _storeImage.length : null;
 
     await Api()
         .client
         .updateStore(_store!.store_id, _store!)
         .then((response) async {
-      final storePhotoUrls = response.store_photo_urls;
+      final storePhotoPutUrls =
+          response.store_photos.map((p) => p.put_url).toList();
 
-      print("su>> store_photo_urls: $storePhotoUrls");
       _store?.store_photo_urls = response.store_photo_get_urls;
 
-      if (isClickedPhotoUploadPage == true) {
-        uploadStoreImages(storePhotoUrls);
+      if (isClickedPhotoUploadPage) {
+        uploadStoreImages(storePhotoPutUrls);
       }
     }).onError((error, stackTrace) {
       if (error is DioException) {
@@ -630,7 +627,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                   } else {
                     _storeImage = result;
                     isClickedPhotoUploadPage = true;
-                    _store?.store_photo_cnt = _storeImage.length;
+                    _store?.image_count = _storeImage.length;
                   }
                 });
               },

@@ -648,7 +648,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
     });
 
     try {
-      _store.store_photo_cnt = widget.storeImages?.length ?? 0;
+      _store.image_count = widget.storeImages?.length ?? 0;
 
       // region_code와 district_code가 null인 경우 기본값 설정
       if (_store.region_code == null || _store.district_code == null) {

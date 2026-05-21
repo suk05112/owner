@@ -33,11 +33,15 @@ class _DashboardPageState extends State<DashboardPage> {
   my_app.User? user;
   bool _isLoading = true;
   bool _hasNetworkError = false;
+  bool _loadStarted = false;
 
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final currentUser = Provider.of<UserProvider>(context).user;
+    // user가 채워진 순간 한 번만 로드 시작
+    if (currentUser != null && !_loadStarted) {
+      _loadStarted = true;
       final storeProvider =
           Provider.of<SelectedStoreProvider>(context, listen: false);
       if (!storeProvider.isLoaded) {
@@ -45,7 +49,7 @@ class _DashboardPageState extends State<DashboardPage> {
       } else {
         setState(() => _isLoading = false);
       }
-    });
+    }
   }
 
   /// 매장 목록 로드 후 선택 매장 기준으로 대시보드 통계 API 호출 (앱 최초 실행·당겨서 새로고침 시)

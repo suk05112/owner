@@ -54,14 +54,14 @@ Map<String, dynamic> _$MenuUpdateResponseToJson(MenuUpdateResponse instance) =>
 
 MenuDeleteResponse _$MenuDeleteResponseFromJson(Map<String, dynamic> json) =>
     MenuDeleteResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
-      msg: json['msg'] as String,
+      statusCode: (json['statusCode'] as num?)?.toInt() ?? 200,
+      msg: json['message'] as String? ?? '',
     );
 
 Map<String, dynamic> _$MenuDeleteResponseToJson(MenuDeleteResponse instance) =>
     <String, dynamic>{
       'statusCode': instance.statusCode,
-      'msg': instance.msg,
+      'message': instance.msg,
     };
 
 Menu _$MenuFromJson(Map<String, dynamic> json) => Menu(

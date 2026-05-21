@@ -53,7 +53,9 @@ class MenuUpdateResponse {
 
 @JsonSerializable()
 class MenuDeleteResponse {
+  @JsonKey(defaultValue: 200)
   int statusCode;
+  @JsonKey(name: 'message', defaultValue: '')
   String msg;
 
   MenuDeleteResponse({required this.statusCode, required this.msg});

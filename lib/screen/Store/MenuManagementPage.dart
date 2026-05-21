@@ -30,12 +30,19 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
     _initRetrieval();
   }
 
-  Future<void> _initRetrieval() async {
+  Future<void> _initRetrieval({bool clearCache = false}) async {
+    setState(() {
+      menu = null;
+      _error = null;
+    });
     try {
       final value = await Api().client.getMenuList(_storeId);
+      if (clearCache) {
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
+      }
       setState(() {
         menu = value.menuList;
-        _error = null;
       });
     } catch (e) {
       setState(() {
@@ -56,19 +63,8 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
       ),
     );
 
-    if (result.runtimeType == Menu) {
-      setState(() {
-        if (menuId != null) {
-          final index = this.menu!.indexWhere((m) => m.menu_id == menuId);
-          if (index != -1) this.menu![index] = result;
-        } else {
-          this.menu!.add(result);
-        }
-      });
-    } else if (result.runtimeType == int) {
-      setState(() {
-        this.menu!.removeWhere((item) => item.menu_id == result);
-      });
+    if (result != null) {
+      await _initRetrieval(clearCache: result is Menu);
     }
   }
 

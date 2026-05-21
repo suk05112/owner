@@ -66,35 +66,41 @@ class _HomeState extends State<Home> {
 
   Future<void> _retryPushTokenIfNeeded() async {
     final prefs = await SharedPreferences.getInstance();
-    final registered = prefs.getBool('push_token_registered') ?? false;
-    if (registered) return;
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    if (fcmToken == null || fcmToken.isEmpty) return;
+
+    final savedToken = prefs.getString('registered_fcm_token');
+    if (savedToken == fcmToken) return;
 
     if (!mounted) return;
     final ownerId = Provider.of<UserProvider>(context, listen: false).user?.owner_id;
     if (ownerId == null) return;
 
-    try {
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      if (fcmToken == null || fcmToken.isEmpty) return;
-
-      final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
-      await Api().client.registerOwnerPushToken(
-            ownerId,
-            OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType),
-          );
-      await prefs.setBool('push_token_registered', true);
-      print('Push token 재등록 성공');
-    } catch (e) {
-      print('Push token 재등록 실패: $e');
-    }
+    await _registerPushToken(ownerId, fcmToken, prefs);
   }
 
   void _listenTokenRefresh() {
     FirebaseMessaging.instance.onTokenRefresh.listen((newToken) async {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('push_token_registered', false);
-      print('FCM 토큰 갱신됨 — 다음 앱 실행 시 재등록 예정');
+      if (!mounted) return;
+      final ownerId = Provider.of<UserProvider>(context, listen: false).user?.owner_id;
+      if (ownerId == null) return;
+      await _registerPushToken(ownerId, newToken, prefs);
     });
+  }
+
+  Future<void> _registerPushToken(int ownerId, String fcmToken, SharedPreferences prefs) async {
+    try {
+      final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+      await Api().client.registerOwnerPushToken(
+            ownerId,
+            OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType),
+          );
+      await prefs.setString('registered_fcm_token', fcmToken);
+      print('Push token 등록 성공');
+    } catch (e) {
+      print('Push token 등록 실패: $e');
+    }
   }
 
   @override

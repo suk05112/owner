@@ -17,13 +17,13 @@ class MenuGetResponse {
 
 @JsonSerializable()
 class MenuPostResponse {
-  int statusCode;
+  int? statusCode;
   int menu_id;
   String menu_put_url;
   String menu_get_url;
 
   MenuPostResponse(
-      {required this.statusCode,
+      {this.statusCode,
       required this.menu_id,
       required this.menu_put_url,
       required this.menu_get_url});
@@ -35,14 +35,14 @@ class MenuPostResponse {
 
 @JsonSerializable()
 class MenuUpdateResponse {
-  int statusCode;
-  String msg;
+  int? statusCode;
+  String? msg;
   String menu_put_url;
   String menu_get_url;
 
   MenuUpdateResponse(
-      {required this.statusCode,
-      required this.msg,
+      {this.statusCode,
+      this.msg,
       required this.menu_put_url,
       required this.menu_get_url});
 

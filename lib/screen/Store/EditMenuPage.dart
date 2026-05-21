@@ -37,6 +37,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
   TextEditingController menuPriceInputController = TextEditingController();
   File? _image;
   bool _isMenuImageLoading = false;
+  bool _isSubmitting = false;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -162,12 +163,6 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                     maxLength: 200,
                                     decoration: inputDecoration.copyWith(
                                         hintText: "메뉴설명을 입력해 주세요(200자 이내)"),
-                                    validator: (value) {
-                                      if (value == null || value.isEmpty) {
-                                        return "메뉴설명을 입력해 주세요";
-                                      }
-                                      return null;
-                                    },
                                   ),
                                   Container(
                                     height: 10,
@@ -201,58 +196,55 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
                 // minimumSize: const Size.fromHeight(50), // NEW
                 ),
-            onPressed: () {
-              if (_image == null) {
-                CommonDialog.show(
-                    context: context,
-                    title: "이미지를 등록해주세요",
-                    content: "",
-                    buttonText: "확인",
-                    onPressed: () {});
-                return;
-              }
-              if (_formKey.currentState!.validate()) {
-                //메뉴 새로 등록
-                var newMenu = Menu(
-                    store_id: widget.storeId,
-                    name: menuNameInputController.text,
-                    menu_id: -1,
-                    description: menuDescInputController.text,
-                    price: int.parse(menuPriceInputController.text),
-                    status: 'ACTIVE');
+            onPressed: _isSubmitting
+                ? null
+                : () async {
+                    if (!_formKey.currentState!.validate()) return;
+                    setState(() => _isSubmitting = true);
+                    try {
+                      var newMenu = Menu(
+                          store_id: widget.storeId,
+                          name: menuNameInputController.text,
+                          menu_id: isUpdated ? widget.menu!.menu_id : -1,
+                          description: menuDescInputController.text,
+                          price: int.parse(menuPriceInputController.text),
+                          status: 'ACTIVE');
 
-                if (isUpdated) {
-                  //메뉴 수정
-                  newMenu = Menu(
-                      store_id: widget.storeId,
-                      name: menuNameInputController.text,
-                      menu_id: widget.menu!.menu_id,
-                      description: menuDescInputController.text,
-                      price: int.parse(menuPriceInputController.text),
-                      status: 'ACTIVE');
-
-                  Api()
-                      .client
-                      .updateMenu(newMenu.menu_id, newMenu)
-                      .then((response) async => {
-                            await uploadMenuImage(response.menu_put_url),
-                            newMenu.menu_image_url = response.menu_get_url,
-                            Navigator.pop(context, newMenu)
-                          });
-                } else {
-                  //메뉴 등록
-                  Api()
-                      .client
-                      .addMenu(widget.storeId, newMenu)
-                      .then((response) async => {
-                            await uploadMenuImage(response.menu_put_url),
-                            newMenu.menu_image_url = response.menu_get_url,
-                            Navigator.pop(context, newMenu)
-                          });
-                }
-              }
-            },
-            child: const Text('확인'),
+                      if (isUpdated) {
+                        final response = await Api()
+                            .client
+                            .updateMenu(newMenu.menu_id, newMenu);
+                        if (_image != null) {
+                          await uploadMenuImage(response.menu_put_url);
+                          newMenu.menu_image_url = response.menu_get_url;
+                        } else {
+                          newMenu.menu_image_url = widget.menu?.menu_image_url;
+                        }
+                      } else {
+                        final response = await Api()
+                            .client
+                            .addMenu(widget.storeId, newMenu);
+                        newMenu.menu_id = response.menu_id;
+                        if (_image != null) {
+                          await uploadMenuImage(response.menu_put_url);
+                          newMenu.menu_image_url = response.menu_get_url;
+                        }
+                      }
+                      if (mounted) Navigator.pop(context, newMenu);
+                    } catch (e) {
+                      if (mounted) setState(() => _isSubmitting = false);
+                    }
+                  },
+            child: _isSubmitting
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : const Text('확인'),
           ),
         ),
         const SizedBox(width: double.infinity, height: 5),

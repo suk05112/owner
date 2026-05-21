@@ -22,7 +22,7 @@ Map<String, dynamic> _$MenuGetResponseToJson(MenuGetResponse instance) =>
 
 MenuPostResponse _$MenuPostResponseFromJson(Map<String, dynamic> json) =>
     MenuPostResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
+      statusCode: (json['statusCode'] as num?)?.toInt(),
       menu_id: (json['menu_id'] as num).toInt(),
       menu_put_url: json['menu_put_url'] as String,
       menu_get_url: json['menu_get_url'] as String,
@@ -38,8 +38,8 @@ Map<String, dynamic> _$MenuPostResponseToJson(MenuPostResponse instance) =>
 
 MenuUpdateResponse _$MenuUpdateResponseFromJson(Map<String, dynamic> json) =>
     MenuUpdateResponse(
-      statusCode: (json['statusCode'] as num).toInt(),
-      msg: json['msg'] as String,
+      statusCode: (json['statusCode'] as num?)?.toInt(),
+      msg: json['msg'] as String?,
       menu_put_url: json['menu_put_url'] as String,
       menu_get_url: json['menu_get_url'] as String,
     );
@@ -77,9 +77,9 @@ Menu _$MenuFromJson(Map<String, dynamic> json) => Menu(
 Map<String, dynamic> _$MenuToJson(Menu instance) => <String, dynamic>{
       'menu_id': instance.menu_id,
       'store_id': instance.store_id,
-      'menu_name': instance.name,
+      'name': instance.name,
       'price': instance.price,
       'menu_photo': instance.menu_image_url,
       'description': instance.description,
-      'status': instance.status,
+      'status': instance.status == 'ACTIVE' ? 1 : 0,
     };

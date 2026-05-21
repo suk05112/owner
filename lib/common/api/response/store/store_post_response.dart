@@ -3,12 +3,24 @@ import 'package:json_annotation/json_annotation.dart';
 part 'store_post_response.g.dart';
 
 @JsonSerializable()
+class StorePhoto {
+  String image_key;
+  String put_url;
+
+  StorePhoto({required this.image_key, required this.put_url});
+
+  factory StorePhoto.fromJson(Map<String, dynamic> json) =>
+      _$StorePhotoFromJson(json);
+  Map<String, dynamic> toJson() => _$StorePhotoToJson(this);
+}
+
+@JsonSerializable()
 class StorePostResponse {
   @JsonKey(defaultValue: 200)
   int statusCode;
   int store_id;
   String store_logo_url;
-  List<String> store_photo_urls;
+  List<StorePhoto> store_photos;
   PresignedUrl? presignedUrl;
   String bankBook_put_url;
   String? business_put_url;
@@ -17,7 +29,7 @@ class StorePostResponse {
       {required this.statusCode,
       required this.store_id,
       required this.store_logo_url,
-      required this.store_photo_urls,
+      required this.store_photos,
       required this.bankBook_put_url,
       this.business_put_url});
 
@@ -28,15 +40,16 @@ class StorePostResponse {
 
 @JsonSerializable()
 class StoreUpdateResponse {
+  @JsonKey(defaultValue: 200)
   int statusCode;
   String msg;
-  List<String> store_photo_urls;
+  List<StorePhoto> store_photos;
   List<String> store_photo_get_urls;
 
   StoreUpdateResponse(
       {required this.statusCode,
       required this.msg,
-      required this.store_photo_urls,
+      required this.store_photos,
       required this.store_photo_get_urls});
 
   factory StoreUpdateResponse.fromJson(Map<String, dynamic> json) =>

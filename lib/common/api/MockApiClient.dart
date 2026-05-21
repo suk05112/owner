@@ -73,7 +73,7 @@ class MockApiClient implements ApiClient {
         statusCode: 200,
         store_id: 1,
         store_logo_url: '',
-        store_photo_urls: [],
+        store_photos: [],
         bankBook_put_url: '',
       );
 
@@ -82,7 +82,7 @@ class MockApiClient implements ApiClient {
       StoreUpdateResponse(
         statusCode: 200,
         msg: 'ok',
-        store_photo_urls: [],
+        store_photos: [],
         store_photo_get_urls: [],
       );
 

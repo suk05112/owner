@@ -17,7 +17,7 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
               ?.map((e) => e as String)
               .toList() ??
           const [],
-      store_photo_cnt: (json['store_photo_cnt'] as num?)?.toInt() ?? 0,
+      image_count: (json['image_count'] as num?)?.toInt(),
       store_address: json['store_address'] as String? ?? "",
       store_lat: (json['store_lat'] as num?)?.toDouble() ?? 0,
       store_lng: (json['store_lng'] as num?)?.toDouble() ?? 0,
@@ -46,7 +46,7 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'store_telephone': instance.store_telephone,
       'store_description': instance.store_description,
       'store_photo_urls': instance.store_photo_urls,
-      'store_photo_cnt': instance.store_photo_cnt,
+      'image_count': instance.image_count,
       'store_address': instance.store_address,
       'store_lat': instance.store_lat,
       'store_lng': instance.store_lng,

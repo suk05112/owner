@@ -13,7 +13,7 @@ class Store {
   String store_telephone;
   String store_description;
   List<String> store_photo_urls;
-  int store_photo_cnt;
+  int? image_count;
   String store_address;
   double store_lat, store_lng;
   String? region_code;
@@ -42,7 +42,7 @@ class Store {
       this.store_telephone = "",
       this.store_description = "",
       this.store_photo_urls = const [],
-      this.store_photo_cnt = 0,
+      this.image_count,
       this.store_address = "",
       this.store_lat = 0,
       this.store_lng = 0,

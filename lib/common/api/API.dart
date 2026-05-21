@@ -360,38 +360,38 @@ class AuthInterceptor extends Interceptor {
 
       // print('[401 interceptor] refresh token $refreshToken');
 
-      // refresh access token
+      // Firebase ID Token 강제 갱신 후 재요청
+      // 갱신 실패(세션 만료/삭제)이면 강제 로그아웃
       try {
-        print('[401 interceptor] call auth/refresh start');
-        // For now, we'll skip the actual refresh token logic as it depends on secure storage
-        // In a production app, you would implement proper refresh token handling here
-
-        print('[401 interceptor] call auth/refresh success (skipped actual refresh for now)');
-
-        // request 재요청
         final user = FirebaseAuth.instance.currentUser;
-        final idToken = await user?.getIdToken(); // Firebase ID Token
+        if (user == null) {
+          print('[401 interceptor] Firebase 세션 없음 → 강제 로그아웃');
+          await FirebaseAuth.instance.signOut(); // authStateChanges()가 null을 방출 → LoginScreen으로 전환
+          handler.next(err);
+          return;
+        }
 
-        // App Check 토큰 가져오기 (공통 함수 사용, 401 에러 시에는 캐시 무시)
+        // forceRefresh: true 로 Firebase Refresh Token을 이용해 새 ID Token 발급
+        final idToken = await user.getIdToken(true);
+        print('[401 interceptor] Firebase ID Token 갱신 성공 → 재요청');
+
         final appCheckToken = await Api._getAppCheckToken(forceRefresh: true);
-
-        RequestOptions requestOptions = err.requestOptions;
         final baseHeaders = await Api._getHeaders();
         final headers = <String, dynamic>{
           ...baseHeaders,
-          if (idToken != null) 'Authorization': 'Bearer $idToken',
+          'Authorization': 'Bearer $idToken',
           if (appCheckToken != null && appCheckToken.isNotEmpty)
             "X-Firebase-AppCheck": appCheckToken,
         };
+
+        RequestOptions requestOptions = err.requestOptions;
         Dio dio = Dio(BaseOptions(
-          baseUrl: requestOptions.baseUrl, // 원래 baseUrl 사용
+          baseUrl: requestOptions.baseUrl,
           headers: headers,
           connectTimeout: const Duration(seconds: 15),
           receiveTimeout: const Duration(seconds: 15),
           sendTimeout: const Duration(seconds: 15),
         ));
-
-        print('[401 interceptor] 재요청');
 
         handler.resolve(await dio.request(
           requestOptions.path,
@@ -401,48 +401,13 @@ class AuthInterceptor extends Interceptor {
           data: requestOptions.data,
           queryParameters: requestOptions.queryParameters,
         ));
-
-/*
-        if (authRefreshResponse.response.statusCode == 200) {
-          print('[401 interceptor] call auth/refresh statuscode 200');
-
-          String accessToken = authRefreshResponse.data.access_token;
-          String refreshToken = authRefreshResponse.data.refresh_token;
-
-          Api().setBaseClient(Api.STAGING_URL_V2, accessToken);
-          await LoplatSecureStorage.write(
-              LoplatSecureStorage.keyRefreshToken, refreshToken);
-          await LoplatSecureStorage.write(
-              LoplatSecureStorage.keyAccessToken, accessToken);
-
-          // request 재요청
-          RequestOptions requestOptions = err.requestOptions;
-          Dio dio = Dio(BaseOptions(
-            baseUrl: Api.STAGING_URL_V2,
-            headers: {
-              'Authorization': 'Bearer $accessToken',
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-          ));
-
-          print('[401 interceptor] 재요청');
-
-          handler.resolve(await dio.request(
-            requestOptions.path,
-            options: Options(method: requestOptions.method),
-            cancelToken: requestOptions.cancelToken,
-            onReceiveProgress: requestOptions.onReceiveProgress,
-            data: requestOptions.data,
-            queryParameters: requestOptions.queryParameters,
-          ));
-        } else {
-          print(err);
-          handler.next(err);
-        }
-        */
+      } on FirebaseAuthException catch (e) {
+        // Refresh Token도 만료된 경우 → 강제 로그아웃
+        print('[401 interceptor] Firebase 토큰 갱신 실패 ($e) → 강제 로그아웃');
+        await FirebaseAuth.instance.signOut();
+        handler.next(err);
       } on DioException catch (e) {
-        print('auth interceptor error');
-        print(e);
+        print('[401 interceptor] 재요청 실패: $e');
         handler.next(err);
       }
     }

@@ -11,7 +11,6 @@ import 'package:owner/flavors.dart';
 import 'Register/sign_up_page.dart';
 import 'Register/find_password_page.dart';
 import 'Register/find_userId_page.dart';
-import 'home.dart';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -450,14 +449,10 @@ class _LoginScreenState extends State<LoginScreen> {
         });
       }
 
-      // returnToPrevious가 true면 이전 페이지로 돌아가기, false면 Home으로 이동
-      if (widget.returnToPrevious && Navigator.canPop(context)) {
+      // authStateChanges()가 Firebase 세션 변화를 감지하여 자동으로 Home으로 전환함
+      // returnToPrevious 케이스(설정 화면 등에서 재로그인)는 수동 처리
+      if (mounted && widget.returnToPrevious && Navigator.canPop(context)) {
         Navigator.pop(context);
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const Home()),
-        );
       }
     } on DioException catch (e) {
       // Only show detailed errors in non-mock mode

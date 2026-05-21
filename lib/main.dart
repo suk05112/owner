@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -120,10 +122,19 @@ Flavor? _flavorFromString(String value) {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
+  Widget _buildApp(BuildContext context, Widget home) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: _NetworkFirstRunCheck(child: home),
+      debugShowCheckedModeBanner: false,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // User? user = Provider.of<UserProvider>(context).user;
     return PopScope(
         canPop: false,
         child: MultiProvider(
@@ -143,36 +154,36 @@ class MyApp extends StatelessWidget {
             ChangeNotifierProvider(create: (_) => UserProvider()),
             ChangeNotifierProvider(create: (context) => AccountProvider()),
           ],
+          child: F.isMock
+              ? _buildApp(context, const Home())
+              : StreamBuilder<firebase_auth.User?>(
+                  stream: FirebaseAuth.instance.authStateChanges(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const MaterialApp(
+                        home: Scaffold(
+                          body: Center(child: CircularProgressIndicator()),
+                        ),
+                        debugShowCheckedModeBanner: false,
+                      );
+                    }
 
-          child: Consumer<UserProvider>(
-            builder: (context, userProvider, child) {
-              User? user = userProvider.user;
+                    final firebaseUser = snapshot.data;
+                    if (firebaseUser != null) {
+                      Provider.of<UserProvider>(context, listen: false)
+                          .loadProfileIfSignedIn();
+                    } else {
+                      Provider.of<UserProvider>(context, listen: false)
+                          .clearUser();
+                    }
 
-              // mock 모드: provider 생성 시 이미 mock 유저가 주입되어 있으므로 바로 Home
-              // real 모드: 스토리지에서 유저 로드 완료 여부에 따라 Login/Home 분기
-              final Widget homeWidget = (F.isMock || user != null)
-                  ? const Home()
-                  : const LoginScreen();
+                    final Widget homeWidget = firebaseUser != null
+                        ? const Home()
+                        : const LoginScreen();
 
-              return MaterialApp(
-                title: 'Flutter Demo',
-                theme: ThemeData(
-                  primarySwatch: Colors.blue,
+                    return _buildApp(context, homeWidget);
+                  },
                 ),
-                home: _NetworkFirstRunCheck(child: homeWidget),
-                debugShowCheckedModeBanner: false,
-              );
-            },
-          ),
-          // routes: {
-          //   '/': (context) => const LoginScreen(),
-          //   // '/': (context) => const MyHomePage(
-          //   //       title: 'my page',
-          //   //     ),
-          //   '/add': (context) => const CafeList(),
-          //   '/edit': (context) => const DocumentGuidePage(),
-          // },
-          // home: const MyHomePage(title: 'Flutter Demo Home Page'),
         ));
   }
 }

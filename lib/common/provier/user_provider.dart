@@ -11,13 +11,18 @@ class UserProvider with ChangeNotifier {
 
   User? get user => _user;
 
-  // Constructor: Initialize UserProvider and load user from storage
   UserProvider() {
     if (F.isMock) {
       _loadMockUserFromAsset();
-    } else {
-      _loadUserFromStorage();
     }
+    // real 모드에서는 authStateChanges()가 세션을 관리하므로 여기서 로드하지 않음
+    // loadProfileIfSignedIn()은 main.dart의 StreamBuilder에서 호출됨
+  }
+
+  /// Firebase 세션이 살아있을 때 SecureStorage에서 프로필을 복원
+  Future<void> loadProfileIfSignedIn() async {
+    if (F.isMock) return;
+    await _loadUserFromStorage();
   }
 
   /// mock 모드 전용: 스토리지 저장 없이 메모리에만 유저 세팅

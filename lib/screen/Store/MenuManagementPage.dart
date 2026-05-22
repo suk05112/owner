@@ -6,8 +6,13 @@ import 'package:owner/screen/Store/EditMenuPage.dart';
 import '../../common/api/response/menu.dart';
 
 class MenuManagementPage extends StatefulWidget {
-  const MenuManagementPage({super.key, required this.storeId});
+  const MenuManagementPage({
+    super.key,
+    required this.storeId,
+    this.initialMenus,
+  });
   final int storeId;
+  final List<Menu>? initialMenus;
 
   @override
   State<MenuManagementPage> createState() => _MenuManagementPagetate();
@@ -27,7 +32,11 @@ class _MenuManagementPagetate extends State<MenuManagementPage> {
   void initState() {
     super.initState();
     _storeId = widget.storeId;
-    _initRetrieval();
+    if (widget.initialMenus != null) {
+      menu = widget.initialMenus;
+    } else {
+      _initRetrieval();
+    }
   }
 
   Future<void> _initRetrieval({bool clearCache = false}) async {

@@ -396,7 +396,10 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                     context,
                     MaterialPageRoute(
                       builder: (context) =>
-                          MenuManagementPage(storeId: _storeId),
+                          MenuManagementPage(
+                            storeId: _storeId,
+                            initialMenus: menuList,
+                          ),
                     ),
                   );
                 },

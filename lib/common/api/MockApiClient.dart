@@ -87,8 +87,11 @@ class MockApiClient implements ApiClient {
       );
 
   @override
-  Future<StoreStatisticsResponse> getStoreStatistics(int storeId) => _load(
-      'assets/mock/dashboard_stats.json', StoreStatisticsResponse.fromJson);
+  Future<String> getStoreStatistics(int storeId) async {
+    final data = await _load(
+        'assets/mock/dashboard_stats.json', StoreStatisticsResponse.fromJson);
+    return jsonEncode(data.toJson());
+  }
 
   // ── 메뉴 ──────────────────────────────────────────────────────────────────
 

@@ -74,7 +74,7 @@ class _ApiClient implements ApiClient {
 
   @override
   Future<OwnerPushTokenResponse> registerOwnerPushToken(
-    int owner_id,
+    int ownerId,
     OwnerPushTokenPost pushToken,
   ) async {
     final _extra = <String, dynamic>{};
@@ -86,7 +86,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/owner/push-token/${owner_id}',
+            '/owner/push-token/${ownerId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -104,7 +104,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<StoreResponse> getStoreDetailInfo(int store_Id) async {
+  Future<StoreResponse> getStoreDetailInfo(int storeId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -113,7 +113,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/store/info/${store_Id}',
+            '/store/info/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -131,7 +131,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<StoreListResponse> getStoreList(int owner_id) async {
+  Future<StoreListResponse> getStoreList(int ownerId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -140,7 +140,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/owner/list/${owner_id}',
+            '/owner/list/${ownerId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -186,7 +186,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<StoreUpdateResponse> updateStore(int menu_id, Store store) async {
+  Future<StoreUpdateResponse> updateStore(int menuId, Store store) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -196,7 +196,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/store/update/${menu_id}',
+            '/store/update/${menuId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -270,7 +270,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<MenuGetResponse> getMenuList(int store_Id) async {
+  Future<MenuGetResponse> getMenuList(int storeId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -279,7 +279,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/menu/list/${store_Id}',
+            '/menu/list/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -297,7 +297,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<MenuPostResponse> addMenu(int store_id, Menu menu) async {
+  Future<MenuPostResponse> addMenu(int storeId, Menu menu) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -307,7 +307,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/menu/add/${store_id}',
+            '/menu/add/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -325,7 +325,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<MenuUpdateResponse> updateMenu(int menu_id, Menu menu) async {
+  Future<MenuUpdateResponse> updateMenu(int menuId, Menu menu) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -335,7 +335,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/menu/update/${menu_id}',
+            '/menu/update/${menuId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -353,7 +353,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<MenuDeleteResponse> deleteMenu(int menu_id) async {
+  Future<MenuDeleteResponse> deleteMenu(int menuId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -362,7 +362,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'DELETE', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/menu/delete/${menu_id}',
+            '/menu/delete/${menuId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -380,7 +380,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<GifticonPatchResponse> useGifticon(int gifticon_id) async {
+  Future<GifticonPatchResponse> useGifticon(int gifticonId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -389,7 +389,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'PATCH', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/gifticon/use/${gifticon_id}',
+            '/gifticon/use/${gifticonId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -408,7 +408,7 @@ class _ApiClient implements ApiClient {
 
   @override
   Future<InquiryPostResponse> subjectInquiry(
-    int owner_id,
+    int ownerId,
     Inquiry inquiry,
   ) async {
     final _extra = <String, dynamic>{};
@@ -420,7 +420,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/owner/inquiry/${owner_id}',
+            '/owner/inquiry/${ownerId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -438,7 +438,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<InquiryListResponse> getInquiry(int owner_id) async {
+  Future<InquiryListResponse> getInquiry(int ownerId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -447,7 +447,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/owner/inquiry/${owner_id}',
+            '/owner/inquiry/${ownerId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -466,11 +466,11 @@ class _ApiClient implements ApiClient {
 
   @override
   Future<SettlementList> getSettlementListByStore(
-    int store_id,
-    int? past_months,
+    int storeId,
+    int? pastMonths,
   ) async {
     final _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'past_months': past_months};
+    final queryParameters = <String, dynamic>{r'past_months': pastMonths};
     queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
@@ -478,7 +478,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/owner/settlement/${store_id}',
+            '/owner/settlement/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -497,7 +497,7 @@ class _ApiClient implements ApiClient {
 
   @override
   Future<SettlementDetailResponse> getDetailSettlements(
-    int settlement_id,
+    int settlementId,
   ) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
@@ -507,7 +507,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/owner/settlement/detail/${settlement_id}',
+            '/owner/settlement/detail/${settlementId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -525,7 +525,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<String> registerAccount(int store_id, Account account) async {
+  Future<String> registerAccount(int storeId, Account account) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -535,7 +535,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'POST', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/settlement/register/${store_id}',
+            '/settlement/register/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -553,7 +553,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<UsedGifticonList> getUsedGifticon(int store_id) async {
+  Future<UsedGifticonList> getUsedGifticon(int storeId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -562,7 +562,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/gifticon/used/${store_id}',
+            '/gifticon/used/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -580,7 +580,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<OwnerStoreList> getOwnerStoreList(int owner_id) async {
+  Future<OwnerStoreList> getOwnerStoreList(int ownerId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -589,7 +589,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/store/owner/list/${owner_id}',
+            '/store/owner/list/${ownerId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -607,25 +607,25 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<StoreStatisticsResponse> getStoreStatistics(int store_id) async {
+  Future<String> getStoreStatistics(int storeId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
-    final _options = _setStreamType<StoreStatisticsResponse>(
+    final _options = _setStreamType<String>(
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            'owner/statistics/${store_id}',
+            '/owner/statistics/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )
           .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
     );
-    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
-    late StoreStatisticsResponse _value;
+    final _result = await _dio.fetch<String>(_options);
+    late String _value;
     try {
-      _value = StoreStatisticsResponse.fromJson(_result.data!);
+      _value = _result.data!;
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;
@@ -634,7 +634,7 @@ class _ApiClient implements ApiClient {
   }
 
   @override
-  Future<GetAccountResponse> getAccount(int store_id) async {
+  Future<GetAccountResponse> getAccount(int storeId) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -643,7 +643,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'GET', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/owner/account/${store_id}',
+            '/owner/account/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )
@@ -662,7 +662,7 @@ class _ApiClient implements ApiClient {
 
   @override
   Future<UpdateAccountResponse> updateAccount(
-    int store_id,
+    int storeId,
     Account account,
   ) async {
     final _extra = <String, dynamic>{};
@@ -674,7 +674,7 @@ class _ApiClient implements ApiClient {
       Options(method: 'PUT', headers: _headers, extra: _extra)
           .compose(
             _dio.options,
-            '/owner/account/${store_id}',
+            '/owner/account/${storeId}',
             queryParameters: queryParameters,
             data: _data,
           )

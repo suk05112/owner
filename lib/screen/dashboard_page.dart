@@ -121,7 +121,7 @@ class _DashboardPageState extends State<DashboardPage> {
               child: Container(
                 color: Colors.white,
                 child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFFFE7831)))
                     : RefreshIndicator(
                         onRefresh: _loadDashboardData,
                         child: SingleChildScrollView(

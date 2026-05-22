@@ -26,6 +26,7 @@ import 'package:owner/screen/home.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../common/Style/TextAsset.dart';
+import '../../common/widget/store_image.dart';
 import 'operating_hours_setting_Page.dart';
 import 'SettingOpeningDatePage.dart';
 import '../Store/cafe_detail_page.dart';
@@ -66,6 +67,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   List<String>? savedStoreImage; //기존 저장된 매장 사진
   File? _imageFile;
   bool isClickedPhotoUploadPage = false;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -220,55 +222,93 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
-                child: SizedBox(
-                  height: 48,
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF27213),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                child: Column(
+                  children: [
+                    if (_isLoading)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: LinearProgressIndicator(
+                          color: const Color(0xFFFE7831),
+                          backgroundColor: const Color(0x33FE7831),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    SizedBox(
+                      height: 48,
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFF27213),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: _isLoading
+                            ? null
+                            : () async {
+                                if (_formKey.currentState!.validate()) {
+                                  if (_isRegister) {
+                                    if (_logoImage == null) {
+                                      showToast("매장 로고를 업로드 해주세요.");
+                                      return;
+                                    }
+                                    if (_storeImage.isEmpty) {
+                                      showToast("매장 사진을 최소 1장 이상 업로드 해주세요.");
+                                      return;
+                                    }
+                                    await registerStore();
+                                  } else {
+                                    if (_store != null) {
+                                      await updateStore();
+                                    }
+                                  }
+                                }
+                              },
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : Text(
+                                _isRegister ? '다음' : '저장',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        if (_isRegister) {
-                          if (_logoImage == null) {
-                            showToast("매장 로고를 업로드 해주세요.");
-                            return;
-                          }
-                          if (_storeImage.isEmpty) {
-                            showToast("매장 사진을 최소 1장 이상 업로드 해주세요.");
-                            return;
-                          }
-                          registerStore();
-                          Navigator.pushAndRemoveUntil(
-                            context,
-                            MaterialPageRoute(builder: (context) => const Home()),
-                            (route) => false,
-                          );
-                        } else {
-                          if (_store != null) {
-                            await updateStore().then((value) => Navigator.pop(context, _store));
-                          }
-                        }
-                      }
-                    },
-                    child: Text(
-                      _isRegister ? '다음' : '저장',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _imageErrorBox() {
+    return Container(
+      width: 100,
+      height: 100,
+      color: const Color(0xFFF7F7F7),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.broken_image_outlined, size: 32, color: Color(0xFFB0B0B0)),
+          SizedBox(height: 4),
+          Text(
+            "불러오기 실패",
+            style: TextStyle(fontSize: 10, color: Color(0xFFB0B0B0)),
+          ),
+        ],
       ),
     );
   }
@@ -321,16 +361,17 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     });
   }
 
-  void registerStore() async {
+  Future<void> registerStore() async {
     print("register store 호출");
+
+    setState(() => _isLoading = true);
 
     _store!.store_telephone = telePhoneController.text;
     _store!.image_count = _storeImage.length;
-    // _store!.store_address = addrController.text + detailAddrController.text;
-    // _store!.store_photo = "photo";
     _store!.store_description = introController.text;
 
-    await Api().client.registerStore(_store!).then((response) async {
+    try {
+      final response = await Api().client.registerStore(_store!);
       var storeId = response.store_id;
       var storeLogoUrl = response.store_logo_url;
       final storePhotoPutUrls =
@@ -346,68 +387,76 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
       if (widget.account != null) {
         print("Account ${widget.account}");
-        await Api()
-            .client
-            .registerAccount(storeId, widget.account!)
-            .then((response) async {
+        try {
+          await Api().client.registerAccount(storeId, widget.account!);
           print("계좌 등록성공$storeId");
-          showToast("매장 등록이 완료되었습니다.");
-        }).onError((error, stackTrace) {
-          DioException dioError = error as DioException;
-          print("계좌 등록 실패 $error");
-          if (dioError.response?.statusCode == 404) {
-            // showToastMsg(Strings.error_network);
-          } else {
-            // showToastMsg("Error : [${dioError.message}]");
-          }
-        });
+        } catch (e) {
+          print("계좌 등록 실패 $e");
+        }
       }
 
-      // ApiServiceImpl().uploadImage();
-    }).onError((error, stackTrace) {
-      DioException dioError = error as DioException;
-      // print("등록 실패" + dioError.message);
-      if (dioError.response?.statusCode == 404) {
-        // showToastMsg(Strings.error_network);
-      } else {
-        // showToastMsg("Error : [${dioError.message}]");
+      if (mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const Home()),
+          (route) => false,
+        );
       }
-      // result = false;
-    });
+    } catch (error) {
+      print('매장 등록 실패: $error');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('매장 등록에 실패했습니다. 다시 시도해주세요.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> updateStore() async {
-    _store?.store_telephone = telePhoneController.text;
-    _store?.store_description = introController.text;
+    setState(() => _isLoading = true);
+
+    _store!.store_telephone = telePhoneController.text;
+    _store!.store_description = introController.text;
     _store!.image_count = isClickedPhotoUploadPage ? _storeImage.length : null;
 
-    await Api()
-        .client
-        .updateStore(_store!.store_id, _store!)
-        .then((response) async {
+    try {
+      final response =
+          await Api().client.updateStore(_store!.store_id, _store!);
       final storePhotoPutUrls =
           response.store_photos.map((p) => p.put_url).toList();
 
-      _store?.store_photo_urls = response.store_photo_get_urls;
-
       if (isClickedPhotoUploadPage) {
-        uploadStoreImages(storePhotoPutUrls);
+        await uploadStoreImages(storePhotoPutUrls);
       }
-    }).onError((error, stackTrace) {
+
+      final updatedStore = Store.fromJson(_store!.toJson())
+        ..store_telephone = telePhoneController.text
+        ..store_description = introController.text
+        ..store_photo_urls = response.store_photo_get_urls;
+
+      if (mounted) Navigator.pop(context, updatedStore);
+    } catch (error) {
       if (error is DioException) {
-        print('DioError (fallback): $error.message}');
+        print('DioError: ${error.message}');
       } else {
         print('Unknown error: ${error.runtimeType} - $error');
       }
-      // DioError dioError = error as DioError;
-      // print("등록 실패" + dioError.message);
-      // if (dioError.response?.statusCode == 404) {
-      //   // showToastMsg(Strings.error_network);
-      // } else {
-      //   // showToastMsg("Error : [${dioError.message}]");
-      // }
-      // result = false;
-    });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('매장 정보 저장에 실패했습니다. 다시 시도해주세요.'),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   //매장 로고 업로드
@@ -434,31 +483,21 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   }
 
   //매장 사진 업로드
-  Future<void> uploadStoreImages(storePhotoUrls) async {
-    print("store_photo_urls, $storePhotoUrls");
-    print("su>>$_storeImage");
-
-    storePhotoUrls.asMap().forEach((idx, storePhotoUrl) async {
+  Future<void> uploadStoreImages(List<dynamic> storePhotoUrls) async {
+    final entries = storePhotoUrls.asMap().entries.toList();
+    await Future.wait(entries.map((e) async {
       try {
         final response = await http.put(
-          Uri.parse(storePhotoUrl),
-          body: await _storeImage[idx].readAsBytes(),
+          Uri.parse(e.value as String),
+          body: await _storeImage[e.key].readAsBytes(),
         );
-        await Future.delayed(const Duration(seconds: 1));
-
-        if (response.statusCode == 200) {
-          // 이미지 업로드 성공
-          print('store_photo uploaded successfully.');
-        } else {
-          // 이미지 업로드 실패
-          print(
-              'store_photo upload failed. Status code: ${response.statusCode}');
+        if (response.statusCode != 200) {
+          print('store_photo upload failed. Status code: ${response.statusCode}');
         }
       } catch (e) {
-        // 오류 처리
         print('Error uploading store_photo: $e');
       }
-    });
+    }));
   }
 
   //통장사본, 사업자등록증 업로드
@@ -555,22 +594,20 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         //기존 저장된 매장 사진 있을 경우(매장 수정)
         itemWidgets = savedStoreImage!.map((item) {
           return Container(
-              width: 100,
-              height: 100,
-              margin: const EdgeInsets.fromLTRB(0, 2, 2, 0),
-              child: ClipRRect(
-                  borderRadius: BorderRadius.circular(5.0),
-                  child: Image.network(item,
-                      width: 90,
-                      height: 90,
-                      fit: BoxFit.fill,
-                      errorBuilder: (context, error, stackTrace) {
-                    return const Image(
-                        image: AssetImage('assets/logo.jpeg'),
-                        width: 90,
-                        height: 90,
-                        fit: BoxFit.fill);
-                  })));
+            width: 100,
+            height: 100,
+            margin: const EdgeInsets.fromLTRB(0, 2, 2, 0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(5.0),
+              child: StoreImage(
+                url: item,
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+                errorWidget: _imageErrorBox(),
+              ),
+            ),
+          );
         }).toList();
       }
     } else {
@@ -581,13 +618,15 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
           height: 100,
           margin: const EdgeInsets.fromLTRB(0, 2, 2, 0),
           child: ClipRRect(
-              borderRadius: BorderRadius.circular(5.0),
-              child: Image.file(
-                File(item.path),
-                width: 90,
-                height: 90,
-                fit: BoxFit.fill,
-              )),
+            borderRadius: BorderRadius.circular(5.0),
+            child: Image.file(
+              File(item.path),
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => _imageErrorBox(),
+            ),
+          ),
         );
       }).toList();
     }

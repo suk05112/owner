@@ -42,7 +42,7 @@ Future<void> main() async {
   } else {
     FirebaseAppCheck.instance.activate(
         androidProvider: AndroidProvider.playIntegrity,
-        appleProvider: AppleProvider.appAttest,
+        appleProvider: AppleProvider.appAttestWithDeviceCheckFallback,
         webProvider:
             ReCaptchaV3Provider("6LeuC04sAAAAALXiv1CX_UsbOj1Vpo1zR1DAvd8d"));
   }

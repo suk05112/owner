@@ -41,6 +41,8 @@
 
 /* Begin PBXFileReference section */
 		039FB6D02D115F3400099E2E /* Runner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.entitlements; sourceTree = "<group>"; };
+		039FB6D12D115F3400099E2F /* Runner.dev.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.dev.entitlements; sourceTree = "<group>"; };
+		039FB6D22D115F3400099E30 /* Runner.prod.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Runner.prod.entitlements; sourceTree = "<group>"; };
 		03A571192D3CDD3E00A72FC5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		03A5711A2D3CDD4000A72FC5 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		06366B492F91627A0045C357 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -201,6 +203,8 @@
 			isa = PBXGroup;
 			children = (
 				039FB6D02D115F3400099E2E /* Runner.entitlements */,
+				039FB6D12D115F3400099E2F /* Runner.dev.entitlements */,
+				039FB6D22D115F3400099E30 /* Runner.prod.entitlements */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
 				97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */,
 				97C147021CF9000F007C117D /* Info.plist */,
@@ -520,7 +524,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = C94302A21FA1347078A8372B /* devDebug.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -532,7 +536,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 25C7D51C35E9087F1C8C187D /* devProfile.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				PRODUCT_NAME = Runner;
@@ -543,7 +547,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 99360C1460737044537DC6C9 /* devRelease.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				PRODUCT_NAME = Runner;
@@ -554,7 +558,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = EE7CE8CC2F2FC44D81D7C999 /* prodDebug.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -566,7 +570,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 932E0B1335969E82AAFCC7C5 /* prodProfile.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.prod.entitlements;
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				PRODUCT_NAME = Runner;
@@ -577,7 +581,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 474000899686916908C699F1 /* prodRelease.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.prod.entitlements;
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				PRODUCT_NAME = Runner;
@@ -646,7 +650,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
@@ -726,7 +730,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.prod.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_BITCODE = NO;
@@ -1149,7 +1153,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.prod.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_BITCODE = NO;
@@ -1350,7 +1354,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
@@ -1378,7 +1382,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				CURRENT_PROJECT_VERSION = "$(FLUTTER_BUILD_NUMBER)";
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_BITCODE = NO;
@@ -1401,7 +1405,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AA0BB1CC2DD3EE4FF5AA0BB1 /* mockDebug.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1413,7 +1417,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AA0BB1CC2DD3EE4FF5AA0BB2 /* mockProfile.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				PRODUCT_NAME = Runner;
@@ -1424,7 +1428,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = AA0BB1CC2DD3EE4FF5AA0BB3 /* mockRelease.xcconfig */;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.dev.entitlements;
 				DEVELOPMENT_TEAM = F2YB4PBTB4;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				PRODUCT_NAME = Runner;

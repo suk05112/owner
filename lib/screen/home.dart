@@ -43,11 +43,13 @@ class _HomeState extends State<Home> {
   final PageStorageBucket bucket = PageStorageBucket();
   late Widget currentScreen;
 
+  late final Widget _dashboardPage;
+
   @override
   void initState() {
     super.initState();
-    // 대시보드 페이지를 기본 화면으로 설정 (매장관리는 push로 이동해 네비 바 숨김)
-    currentScreen = DashboardPage(
+    // DashboardPage를 한 번만 생성하여 탭 전환 시 재사용 (재생성 시 API 중복 호출 방지)
+    _dashboardPage = DashboardPage(
       onNavigateToStoreManagement: (context) {
         Navigator.push(
           context,
@@ -55,6 +57,7 @@ class _HomeState extends State<Home> {
         );
       },
     );
+    currentScreen = _dashboardPage;
 
     if (!F.isMock) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -202,15 +205,7 @@ class _HomeState extends State<Home> {
                       minWidth: 0,
                       onPressed: () {
                         setState(() {
-                          currentScreen = DashboardPage(
-                            onNavigateToStoreManagement: (context) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => const CafeList()),
-                              );
-                            },
-                          );
+                          currentScreen = _dashboardPage;
                           currentTab = 0;
                         });
                       },

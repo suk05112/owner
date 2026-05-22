@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/api/response/store/statistics_response.dart';
 
 /// 대시보드 통계. QR 스캔으로 기프티콘 사용 시에만 API 호출해 갱신.
 class DashboardStatsProvider extends ChangeNotifier {
@@ -13,13 +16,16 @@ class DashboardStatsProvider extends ChangeNotifier {
   int get unusedCount => _unusedCount;
   int? get lastFetchedStoreId => _lastFetchedStoreId;
 
-  /// 해당 매장 통계 API 호출 후 카운트 갱신 (QR 사용 완료 시에만 호출)
+  /// 해당 매장 통계 API 호출 후 카운트 갱신
   Future<void> refreshStats(int storeId) async {
     try {
-      final statistics = await Api().client.getStoreStatistics(storeId);
-      _issuedCount = statistics.total_issued as int;
-      _usedCount = statistics.total_used as int;
-      _unusedCount = statistics.total_unused as int;
+      final raw = await Api().client.getStoreStatistics(storeId);
+      final statistics = StoreStatisticsResponse.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
+      _issuedCount = statistics.total_issued;
+      _usedCount = statistics.total_used;
+      _unusedCount = statistics.total_unused;
       _lastFetchedStoreId = storeId;
       notifyListeners();
     } catch (e) {

@@ -136,8 +136,8 @@ abstract class ApiClient {
     @Path('owner_id') int ownerId,
   );
 
-  @GET("owner/statistics/{store_id}")
-  Future<StoreStatisticsResponse> getStoreStatistics(
+  @GET("/owner/statistics/{store_id}")
+  Future<String> getStoreStatistics(
     @Path('store_id') int storeId,
   );
 

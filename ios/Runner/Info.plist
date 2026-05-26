@@ -58,9 +58,11 @@
 	<key>NSAppTransportSecurity</key>
 	<dict/>
 	<key>NSCameraUsageDescription</key>
-	<string>카메라 써도 됩니까</string>
+	<string>기프티콘 바코드 및 QR코드를 빠르게 스캔하여 등록하기 위해 카메라 권한이 필요합니다.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>주변 매장을 지도에서 확인하기 위해 위치 접근 권한이 필요합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>사진을 업로드하기 위해 사진 보관함 접근 권한이 필요합니다.</string>
+	<string>매장 사진 및 메뉴 이미지를 등록하고 수정하기 위해 사진 접근 권한이 필요합니다.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Paperlogy-9Black.ttf</string>

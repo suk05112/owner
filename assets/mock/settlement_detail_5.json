@@ -10,7 +10,12 @@
     "net_payout_amount": 312000,
     "status": "PENDING",
     "payout_date": "2026-05-01",
-    "failure_reason": null
+    "failure_reason": null,
+    "base_fee_rate": 3.0,
+    "promo_fee_rate": 1.5,
+    "promo_discount_amount": 5400,
+    "supply_amount": 3818,
+    "vat_amount": 382
   },
   "details": [
     {

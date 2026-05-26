@@ -52,7 +52,7 @@ Map<String, dynamic> _$DetailSettlementToJson(DetailSettlement instance) =>
 SettlementDetailItem _$SettlementDetailItemFromJson(
         Map<String, dynamic> json) =>
     SettlementDetailItem(
-      id: (json['id'] as num).toInt(),
+      id: _optionalIntFromJson(json['id']),
       gifticon_id:
           json['gifticon_id'] == null ? 0 : _numToInt(json['gifticon_id']),
       menu_name: json['menu_name'] as String?,
@@ -128,6 +128,11 @@ SettlementSummary _$SettlementSummaryFromJson(Map<String, dynamic> json) =>
       status: json['status'] as String?,
       payout_date: json['payout_date'] as String?,
       failure_reason: json['failure_reason'] as String?,
+      base_fee_rate: (json['base_fee_rate'] as num?)?.toDouble(),
+      promo_fee_rate: (json['promo_fee_rate'] as num?)?.toDouble(),
+      promo_discount_amount: _optionalIntFromJson(json['promo_discount_amount']),
+      supply_amount: json['supply_amount'] == null ? 0 : _numToInt(json['supply_amount']),
+      vat_amount: json['vat_amount'] == null ? 0 : _numToInt(json['vat_amount']),
     );
 
 Map<String, dynamic> _$SettlementSummaryToJson(SettlementSummary instance) =>
@@ -143,6 +148,11 @@ Map<String, dynamic> _$SettlementSummaryToJson(SettlementSummary instance) =>
       'status': instance.status,
       'payout_date': instance.payout_date,
       'failure_reason': instance.failure_reason,
+      'base_fee_rate': instance.base_fee_rate,
+      'promo_fee_rate': instance.promo_fee_rate,
+      'promo_discount_amount': instance.promo_discount_amount,
+      'supply_amount': instance.supply_amount,
+      'vat_amount': instance.vat_amount,
     };
 
 SettlementDetailResponse _$SettlementDetailResponseFromJson(

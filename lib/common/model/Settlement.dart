@@ -67,7 +67,8 @@ class DetailSettlement {
 /// GET /settlement/detail/{id} 응답의 details[] 한 건: id, gifticon_id, menu_name, used_at, amount, fee_amount, settlement_amount, status
 @JsonSerializable()
 class SettlementDetailItem {
-  int id;
+  @JsonKey(fromJson: _optionalIntFromJson)
+  int? id;
   @JsonKey(name: 'gifticon_id', fromJson: _numToInt)
   int gifticon_id;
   @JsonKey(name: 'menu_name')
@@ -83,7 +84,7 @@ class SettlementDetailItem {
   String? status;
 
   SettlementDetailItem({
-    required this.id,
+    this.id,
     this.gifticon_id = 0,
     this.menu_name,
     this.used_at,
@@ -157,6 +158,16 @@ class SettlementSummary {
   String? payout_date;
   @JsonKey(name: 'failure_reason')
   String? failure_reason;
+  @JsonKey(name: 'base_fee_rate')
+  double? base_fee_rate;
+  @JsonKey(name: 'promo_fee_rate')
+  double? promo_fee_rate;
+  @JsonKey(name: 'promo_discount_amount', fromJson: _optionalIntFromJson)
+  int? promo_discount_amount;
+  @JsonKey(name: 'supply_amount', fromJson: _numToInt)
+  int supply_amount;
+  @JsonKey(name: 'vat_amount', fromJson: _numToInt)
+  int vat_amount;
 
   SettlementSummary({
     this.settlement_id,
@@ -170,6 +181,11 @@ class SettlementSummary {
     this.status,
     this.payout_date,
     this.failure_reason,
+    this.base_fee_rate,
+    this.promo_fee_rate,
+    this.promo_discount_amount,
+    this.supply_amount = 0,
+    this.vat_amount = 0,
   });
 
   factory SettlementSummary.fromJson(Map<String, dynamic> json) =>
@@ -182,15 +198,18 @@ class SettlementSummary {
 class SettlementDetailResponse {
   SettlementSummary settlement;
   List<SettlementDetailItem> details;
+  // 파싱 실패한 항목 수 (서버 응답은 있었으나 파싱 불가)
+  final int parseFailureCount;
 
-  SettlementDetailResponse({required this.settlement, required this.details});
+  SettlementDetailResponse({
+    required this.settlement,
+    required this.details,
+    this.parseFailureCount = 0,
+  });
 
   factory SettlementDetailResponse.fromJson(Map<String, dynamic>? json) {
     if (json == null) {
-      return SettlementDetailResponse(
-        settlement: SettlementSummary(),
-        details: [],
-      );
+      return SettlementDetailResponse(settlement: SettlementSummary(), details: []);
     }
     SettlementSummary s;
     try {
@@ -202,6 +221,7 @@ class SettlementDetailResponse {
       s = SettlementSummary();
     }
     List<SettlementDetailItem> list = [];
+    int failures = 0;
     try {
       final raw = json['details'] ?? json['detail_settlements'];
       if (raw is List) {
@@ -209,12 +229,18 @@ class SettlementDetailResponse {
           if (e is Map<String, dynamic>) {
             try {
               list.add(SettlementDetailItem.fromJson(e));
-            } catch (_) {}
+            } catch (_) {
+              failures++;
+            }
           }
         }
       }
     } catch (_) {}
-    return SettlementDetailResponse(settlement: s, details: list);
+    return SettlementDetailResponse(
+      settlement: s,
+      details: list,
+      parseFailureCount: failures,
+    );
   }
   Map<String, dynamic> toJson() => _$SettlementDetailResponseToJson(this);
 }

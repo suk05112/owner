@@ -89,6 +89,13 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                     periodStart: settlement.period_start,
                     periodEnd: settlement.period_end,
                     failureReason: settlement.failure_reason,
+                    totalSalesAmount: settlement.total_sales_amount,
+                    totalFeeAmount: settlement.total_fee_amount,
+                    baseFeeRate: settlement.base_fee_rate,
+                    promoFeeRate: settlement.promo_fee_rate,
+                    promoDiscountAmount: settlement.promo_discount_amount,
+                    supplyAmount: settlement.supply_amount,
+                    vatAmount: settlement.vat_amount,
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -101,6 +108,8 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  if (data.parseFailureCount > 0)
+                    _buildParseFailureWarning(data.parseFailureCount),
                   _buildDetailsList(details),
                 ],
               ),
@@ -180,6 +189,13 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
     String? periodStart,
     String? periodEnd,
     String? failureReason,
+    int totalSalesAmount = 0,
+    int totalFeeAmount = 0,
+    double? baseFeeRate,
+    double? promoFeeRate,
+    int? promoDiscountAmount,
+    int supplyAmount = 0,
+    int vatAmount = 0,
   }) {
     String periodText = '정산 기간';
     if (periodStart != null && periodEnd != null) {
@@ -190,19 +206,24 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
             "${start.year}년 ${start.month}월 ${start.day}일 ~ ${end.month}월 ${end.day}일";
       } catch (_) {}
     }
+
+    final hasPromo = promoFeeRate != null && promoDiscountAmount != null;
+    final baseFeeLabel = baseFeeRate != null
+        ? '수수료(${baseFeeRate.toStringAsFixed(1)}%)'
+        : '수수료';
+    final baseFeeTotal = supplyAmount + vatAmount + (promoDiscountAmount ?? 0);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xFFE6E6E6),
-          width: 1,
-        ),
+        border: Border.all(color: const Color(0xFFE6E6E6), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 기간 + 상태 배지
           Row(
             children: [
               Expanded(
@@ -220,6 +241,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
             ],
           ),
           const SizedBox(height: 12),
+          // 정산 금액 (대표 숫자)
           const Text(
             "정산 금액",
             style: TextStyle(
@@ -239,6 +261,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
               fontFamily: 'Inter',
             ),
           ),
+          // 실패 사유
           if (status?.toUpperCase() == 'FAILED' &&
               failureReason != null &&
               failureReason.trim().isNotEmpty) ...[
@@ -263,31 +286,200 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
               ),
             ),
           ],
+          // 수수료 내역 (baseFeeRate가 있을 때만 표시)
+          if (baseFeeRate != null) ...[
+            const SizedBox(height: 20),
+            const Divider(height: 1, color: Color(0xFFF0F0F0)),
+            const SizedBox(height: 16),
+            // (A) 매출액
+            _buildFeeRow(
+              label: '(A) 매출액',
+              value: formatCurrency(totalSalesAmount),
+            ),
+            const SizedBox(height: 10),
+            // (B) 수수료
+            if (hasPromo) ...[
+              // 취소선 수수료
+              Row(
+                children: [
+                  const Text(
+                    '(B) ',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF808080),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  Text(
+                    baseFeeLabel,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF808080),
+                      fontFamily: 'Inter',
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    formatCurrency(baseFeeTotal),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFFBBBBBB),
+                      fontFamily: 'Inter',
+                      decoration: TextDecoration.lineThrough,
+                      decorationColor: Color(0xFFBBBBBB),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // 프로모션 할인
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: Row(
+                  children: [
+                    Text(
+                      '프로모션 할인(${promoFeeRate.toStringAsFixed(1)}%)',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF34C759),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '-${formatCurrency(promoDiscountAmount)}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF34C759),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
+              // 실 수수료 (B')
+              Padding(
+                padding: const EdgeInsets.only(left: 16),
+                child: Row(
+                  children: [
+                    const Text(
+                      '→ 실 수수료(B\')',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF101010),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      formatCurrency(totalFeeAmount),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF101010),
+                        fontFamily: 'Inter',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ] else ...[
+              _buildFeeRow(
+                label: '(B) $baseFeeLabel',
+                value: formatCurrency(totalFeeAmount),
+              ),
+            ],
+            const SizedBox(height: 10),
+            // (C) 부가세
+            _buildFeeRow(
+              label: '(C) 부가세',
+              value: formatCurrency(vatAmount),
+            ),
+            const SizedBox(height: 14),
+            const Divider(height: 1, color: Color(0xFFE6E6E6)),
+            const SizedBox(height: 14),
+            // 정산총액
+            Row(
+              children: [
+                Text(
+                  hasPromo ? '정산총액  A - B\' - C' : '정산총액  A - B - C',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF101010),
+                    fontFamily: 'Inter',
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  formatCurrency(totalAmount),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFF27213),
+                    fontFamily: 'Inter',
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
 
-  /// used_at(ISO 문자열)에서 날짜 키 추출 (yyyy.MM.dd)
-  String _dateKeyFromUsedAt(String? usedAt) {
-    if (usedAt == null || usedAt.isEmpty) return '';
+  Widget _buildFeeRow({required String label, required String value}) {
+    return Row(
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF808080),
+            fontFamily: 'Inter',
+          ),
+        ),
+        const Spacer(),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            color: Color(0xFF101010),
+            fontFamily: 'Inter',
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// used_at 문자열 파싱 — "yyyy-MM-dd HH:mm" 또는 ISO 8601 모두 처리
+  DateTime? _parseUsedAt(String? usedAt) {
+    if (usedAt == null || usedAt.isEmpty) return null;
     try {
-      final dt = DateTime.parse(usedAt);
-      return '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return '';
-    }
+      return DateTime.parse(usedAt);
+    } catch (_) {}
+    // "yyyy-MM-dd HH:mm" 형식 fallback
+    try {
+      return DateTime.parse('${usedAt.trim()}:00');
+    } catch (_) {}
+    return null;
+  }
+
+  /// used_at에서 날짜 키 추출 (yyyy.MM.dd)
+  String _dateKeyFromUsedAt(String? usedAt) {
+    final dt = _parseUsedAt(usedAt);
+    if (dt == null) return '';
+    return '${dt.year}.${dt.month.toString().padLeft(2, '0')}.${dt.day.toString().padLeft(2, '0')}';
   }
 
   /// used_at에서 시간만 (HH:mm)
   String _timeFromUsedAt(String? usedAt) {
-    if (usedAt == null || usedAt.isEmpty) return '';
-    try {
-      final dt = DateTime.parse(usedAt);
-      return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
-    } catch (_) {
-      return '';
-    }
+    final dt = _parseUsedAt(usedAt);
+    if (dt == null) return '';
+    return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
   Widget _buildDetailsList(List<SettlementDetailItem> details) {
@@ -475,6 +667,35 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                 ],
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildParseFailureWarning(int count) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF3E0),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFF27213).withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.info_outline, size: 16, color: Color(0xFFF27213)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              '일부 주문 내역($count건)을 불러오지 못했습니다.\n잠시 후 다시 시도해주세요.',
+              style: const TextStyle(
+                fontSize: 13,
+                color: Color(0xFFF27213),
+                fontFamily: 'Inter',
+                height: 1.5,
+              ),
+            ),
           ),
         ],
       ),

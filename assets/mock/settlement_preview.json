@@ -10,7 +10,12 @@
     "net_payout_amount": 24199,
     "status": "PENDING",
     "payout_date": null,
-    "failure_reason": null
+    "failure_reason": null,
+    "base_fee_rate": 6.3,
+    "promo_fee_rate": null,
+    "promo_discount_amount": null,
+    "supply_amount": 1638,
+    "vat_amount": 164
   },
   "details": [
     {

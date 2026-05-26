@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/Settlement.dart';
+import 'package:owner/common/utils/api_error_utils.dart';
 import 'package:owner/screen/Settlement/detail_settlement_page.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:intl/intl.dart';
@@ -21,7 +22,15 @@ class _SettlementPageState extends State<SettlementPage> {
   void initState() {
     super.initState();
     _storeId = widget.storeId;
+    _load();
+  }
+
+  void _load() {
     futureSettlements = Api().client.getSettlementListByStore(_storeId, 3);
+  }
+
+  void _retry() {
+    setState(() => _load());
   }
 
   @override
@@ -41,16 +50,7 @@ class _SettlementPageState extends State<SettlementPage> {
               ),
             );
           } else if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                "Error: ${snapshot.error}",
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF808080),
-                  fontFamily: 'Inter',
-                ),
-              ),
-            );
+            return _buildErrorView(snapshot.error);
           } else if (snapshot.hasData) {
             List<Settlement> settlements = snapshot.data!.settlements;
             if (settlements.isNotEmpty) {
@@ -267,6 +267,52 @@ class _SettlementPageState extends State<SettlementPage> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorView(Object? error) {
+    final message = ApiErrorUtils.toUserMessage(error);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.wifi_off_rounded, size: 48, color: Color(0xFFCCCCCC)),
+            const SizedBox(height: 16),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF808080),
+                fontFamily: 'Inter',
+                height: 1.5,
+              ),
+            ),
+            const SizedBox(height: 20),
+            OutlinedButton(
+              onPressed: _retry,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFFF27213),
+                side: const BorderSide(color: Color(0xFFF27213)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+              child: const Text(
+                '다시 시도',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'Inter',
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

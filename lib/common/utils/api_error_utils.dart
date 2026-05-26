@@ -3,6 +3,10 @@ import 'package:dio/dio.dart';
 class ApiErrorUtils {
   static String toUserMessage(dynamic error) {
     if (error is DioException) {
+      final statusCode = error.response?.statusCode;
+      if (statusCode != null && statusCode >= 500) {
+        return '서버에 일시적인 문제가 발생했습니다.\n잠시 후 다시 시도해주세요.';
+      }
       final data = error.response?.data;
       final detail = _extractDetail(data);
       if (detail != null) {

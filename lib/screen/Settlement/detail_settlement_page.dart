@@ -8,14 +8,16 @@ import 'package:owner/common/widget/common_app_bar.dart';
 class DetailSettlementPage extends StatefulWidget {
   const DetailSettlementPage(
       {Key? key,
-      required this.settlement_id,
+      this.settlement_id,
+      this.store_id,
       required this.settlement_date,
       required this.settlement_period,
       this.status,
       this.period_start,
       this.period_end})
       : super(key: key);
-  final int settlement_id;
+  final int? settlement_id;
+  final int? store_id;
   final DateTime settlement_date;
   final int settlement_period;
   final String? status;
@@ -27,18 +29,24 @@ class DetailSettlementPage extends StatefulWidget {
 }
 
 class _DetailSettlementPageState extends State<DetailSettlementPage> {
-  late int _settlement_id;
   late Future<SettlementDetailResponse> futureDetailSettlements;
 
   @override
   void initState() {
     super.initState();
-    _settlement_id = widget.settlement_id;
     _load();
   }
 
   void _load() {
-    futureDetailSettlements = Api().client.getDetailSettlements(_settlement_id);
+    final settlementId = widget.settlement_id;
+    final storeId = widget.store_id;
+    if (settlementId != null) {
+      futureDetailSettlements = Api().client.getDetailSettlements(settlementId);
+    } else if (storeId != null) {
+      futureDetailSettlements = Api().client.getSettlementPreview(storeId);
+    } else {
+      futureDetailSettlements = Future.error('잘못된 접근입니다.');
+    }
   }
 
   void _retry() {

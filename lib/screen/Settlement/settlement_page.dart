@@ -198,13 +198,12 @@ class _SettlementPageState extends State<SettlementPage> {
       color: Colors.white,
       child: InkWell(
         onTap: () {
-          final id = settlement.settlement_id;
-          if (id == null) return;
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => DetailSettlementPage(
-                settlement_id: id,
+                settlement_id: settlement.settlement_id,
+                store_id: widget.storeId,
                 settlement_date: settlement.settlement_date,
                 settlement_period: settlement.settlement_period,
                 status: settlement.status,

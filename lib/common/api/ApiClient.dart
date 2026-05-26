@@ -120,6 +120,11 @@ abstract class ApiClient {
     @Path('settlement_id') int settlementId,
   );
 
+  @GET("/owner/settlement/preview/{store_id}")
+  Future<SettlementDetailResponse> getSettlementPreview(
+    @Path('store_id') int storeId,
+  );
+
   @POST("/settlement/register/{store_id}")
   Future<String> registerAccount(
     @Path('store_id') int storeId,

@@ -63,9 +63,6 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
           menuList = menus;
           isLoading = false;
         });
-        if (s.store_photo_urls.length > 1) {
-          precacheImage(NetworkImage(s.store_photo_urls[1]), context);
-        }
       }
     } catch (e) {
       if (mounted) setState(() => isLoading = false);
@@ -177,20 +174,12 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
       height: 220,
       child: Stack(
         children: [
-          PageView.builder(
+          PageView(
             controller: _pageController,
-            itemCount: urls.length,
-            onPageChanged: (i) {
-              setState(() => _currentPage = i);
-              if (i + 1 < urls.length) {
-                precacheImage(NetworkImage(urls[i + 1]), context);
-              }
-              if (i - 1 >= 0) {
-                precacheImage(NetworkImage(urls[i - 1]), context);
-              }
-            },
-            itemBuilder: (context, i) => StoreImage(
-              url: urls[i],
+            allowImplicitScrolling: true,
+            onPageChanged: (i) => setState(() => _currentPage = i),
+            children: urls.map((url) => StoreImage(
+              url: url,
               width: double.infinity,
               height: 220,
               fit: BoxFit.cover,
@@ -199,7 +188,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                 child: const Center(
                     child: Text("☕", style: TextStyle(fontSize: 48))),
               ),
-            ),
+            )).toList(),
           ),
           if (urls.length > 1)
             Positioned(

@@ -1,16 +1,56 @@
-# owner
+# Gifnut Owner App
 
-A new Flutter project.
+## 개발 실행
 
-## Getting Started
+```bash
+# dev flavor
+flutter run --flavor dev -t lib/main_dev.dart
 
-This project is a starting point for a Flutter application.
+# prod flavor
+flutter run --flavor prod -t lib/main_prod.dart
+```
 
-A few resources to get you started if this is your first Flutter project:
+## 배포 빌드
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### Android
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+# dev APK
+flutter build apk --flavor dev -t lib/main_dev.dart --release \
+  --obfuscate \
+  --split-debug-info=build/debug-info/android
+
+# prod APK
+flutter build apk --flavor prod -t lib/main_prod.dart --release \
+  --obfuscate \
+  --split-debug-info=build/debug-info/android
+
+# prod AAB (Play Store 업로드용)
+flutter build appbundle --flavor prod -t lib/main_prod.dart --release \
+  --obfuscate \
+  --split-debug-info=build/debug-info/android
+```
+
+### iOS
+
+```bash
+# dev IPA
+flutter build ipa --flavor dev -t lib/main_dev.dart --release \
+  --obfuscate \
+  --split-debug-info=build/debug-info/ios
+
+# prod IPA
+flutter build ipa --flavor prod -t lib/main_prod.dart --release \
+  --obfuscate \
+  --split-debug-info=build/debug-info/ios
+```
+
+> `--split-debug-info` 로 생성된 심볼 파일은 `build/debug-info/` 에 저장됩니다.
+> Firebase Crashlytics 스택 트레이스 복원에 필요하므로 배포 시 보관하세요.
+
+## 환경 변수
+
+| Flavor | API Base URL | Payletter |
+|--------|-------------|-----------|
+| dev | `https://www.502company.com/dev` | Sandbox (`https://testppay.payletter.com`) |
+| prod | `https://www.502company.com/prod` | Live (`https://ppay.payletter.com`) |

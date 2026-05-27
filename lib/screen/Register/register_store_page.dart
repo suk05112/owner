@@ -70,6 +70,13 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   bool _isLoading = false;
 
   @override
+  @override
+  void dispose() {
+    telePhoneController.dispose();
+    introController.dispose();
+    super.dispose();
+  }
+
   void initState() {
     _isRegister = widget.isRegister;
     if (widget.store != null) {
@@ -651,6 +658,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                           )),
                 );
 
+                if (result == null) return;
                 setState(() {
                   if (result.isEmpty) {
                     // _storeImage = savedStoreImage;

@@ -78,6 +78,18 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
     _store = Store(owner_id: user?.owner_id ?? 0);
   }
 
+  @override
+  void dispose() {
+    nameController.dispose();
+    storenNameController.dispose();
+    addrController.dispose();
+    detailAddrController.dispose();
+    telePhoneController.dispose();
+    introController.dispose();
+    businessNumberController.dispose();
+    super.dispose();
+  }
+
   Widget _buildLabel(String text) {
     return Text(
       text,

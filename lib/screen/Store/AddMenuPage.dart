@@ -16,6 +16,14 @@ class _AddMenuPageState extends State<AddMenuPage> {
   TextEditingController menuPriceInputController = TextEditingController();
 
   @override
+  void dispose() {
+    menuNameInputController.dispose();
+    menuDescInputController.dispose();
+    menuPriceInputController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(

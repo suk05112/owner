@@ -44,6 +44,13 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     _initRetrieval();
   }
 
+  @override
+  void dispose() {
+    idController.dispose();
+    pwController.dispose();
+    super.dispose();
+  }
+
   Future<void> _initRetrieval() async {
     // selectedImages = widget.savedImage;
     // widget.savedImageUrl.asMap().forEach((idx, url) async {

@@ -31,6 +31,13 @@ class _BasicInfoInputPageState extends State<BasicInfoInputPage>
   TextEditingController pwController = TextEditingController();
 
   @override
+  void dispose() {
+    idController.dispose();
+    pwController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
@@ -57,6 +64,13 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   TextEditingController pwController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   final formKey2 = GlobalKey<FormState>();
+
+  @override
+  void dispose() {
+    idController.dispose();
+    pwController.dispose();
+    super.dispose();
+  }
 
   String? name;
   String? email; // 이메일 값을 저장
@@ -543,6 +557,12 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
   }
 
   @override
+  void dispose() {
+    inputController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -638,6 +658,13 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
   TextEditingController idController = TextEditingController();
   // final _formKey = GlobalKey<FormState>();
   var hasRecipe = false;
+
+  @override
+  void dispose() {
+    idController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(

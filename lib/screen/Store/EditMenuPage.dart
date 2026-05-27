@@ -53,6 +53,14 @@ class _EditMenuPageState extends State<EditMenuPage> {
     }
   }
 
+  @override
+  void dispose() {
+    menuNameInputController.dispose();
+    menuDescInputController.dispose();
+    menuPriceInputController.dispose();
+    super.dispose();
+  }
+
   final inputDecoration = InputDecoration(
     hintStyle: TextAssset.placeholder,
     border: OutlineInputBorder(

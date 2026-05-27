@@ -28,6 +28,13 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   final bool _emailExists = false;
   final bool _phoneExists = false;
 
+  @override
+  void dispose() {
+    inputIDController.dispose();
+    inputPhoneNumbfController.dispose();
+    super.dispose();
+  }
+
   final inputDecoration = InputDecoration(
       border: UnderlineInputBorder(
           // borderRadius: BorderRadius.circular(8.0),

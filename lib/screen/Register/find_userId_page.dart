@@ -22,6 +22,13 @@ class _FindUserIDPageState extends State<FindUserIDPage> {
   TextEditingController inputIDController = TextEditingController();
   TextEditingController inputPhoneNumbfController = TextEditingController();
 
+  @override
+  void dispose() {
+    inputIDController.dispose();
+    inputPhoneNumbfController.dispose();
+    super.dispose();
+  }
+
   final inputDecoration = const InputDecoration(
       border: UnderlineInputBorder(
           // borderRadius: BorderRadius.circular(8.0),

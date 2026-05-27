@@ -48,6 +48,13 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
     account = Account();
   }
 
+  @override
+  void dispose() {
+    nameController.dispose();
+    accountController.dispose();
+    super.dispose();
+  }
+
   final inputDecoration = InputDecoration(
     hintStyle: const TextStyle(
       fontSize: 14,

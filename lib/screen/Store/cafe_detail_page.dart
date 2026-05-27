@@ -164,14 +164,14 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
     if (urls.isEmpty) {
       return Container(
         width: double.infinity,
-        height: 176,
+        height: 220,
         color: const Color(0xFFF7F7F7),
         child: const Center(child: Text("☕", style: TextStyle(fontSize: 48))),
       );
     }
     return SizedBox(
       width: double.infinity,
-      height: 176,
+      height: 220,
       child: Stack(
         children: [
           PageView.builder(
@@ -181,7 +181,7 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
             itemBuilder: (context, i) => StoreImage(
               url: urls[i],
               width: double.infinity,
-              height: 176,
+              height: 220,
               fit: BoxFit.cover,
               errorWidget: Container(
                 color: const Color(0xFFF7F7F7),

@@ -46,7 +46,7 @@ class _SettlementPageState extends State<SettlementPage> {
               child: SizedBox(
                 width: 30,
                 height: 30,
-                child: CircularProgressIndicator(),
+                child: CircularProgressIndicator(color: Color(0xFFF27213)),
               ),
             );
           } else if (snapshot.hasError) {

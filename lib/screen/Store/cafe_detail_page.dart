@@ -137,13 +137,13 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildStoreImage(),
+                      if (store!.inspection_status == 2)
+                        _buildInspectionMsg(store!.inspection_msg ?? ""),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (store!.inspection_status == 2)
-                              _buildInspectionMsg(store!.inspection_msg ?? ""),
                             _buildStoreInfo(),
                             _buildAddressPhone(),
                             _buildMenuSection(),
@@ -219,11 +219,12 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
 
   Widget _buildInspectionMsg(String msg) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFFECECEC),
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -284,15 +285,45 @@ class _CafeDetailScreenState extends State<CafeDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  store!.store_name,
-                  style: const TextStyle(
-                    fontFamily: 'Inter',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 24,
-                    color: Color(0xFF101010),
-                    height: 1.33,
-                  ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text(
+                        store!.store_name,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w700,
+                          fontSize: 24,
+                          color: Color(0xFF101010),
+                          height: 1.33,
+                        ),
+                      ),
+                    ),
+                    if (store!.inspection_status == 1 || store!.inspection_status == 0) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: store!.inspection_status == 1
+                              ? const Color(0xFFE6F4EA)
+                              : const Color(0xFFF7F7F7),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          store!.inspection_status == 1 ? "운영중" : "심사중",
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                            fontSize: 12,
+                            color: store!.inspection_status == 1
+                                ? const Color(0xFF2E7D32)
+                                : const Color(0xFF808080),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text(

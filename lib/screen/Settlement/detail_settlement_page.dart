@@ -211,7 +211,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
     final baseFeeLabel = baseFeeRate != null
         ? '수수료(${baseFeeRate.toStringAsFixed(1)}%)'
         : '수수료';
-    final baseFeeTotal = supplyAmount + vatAmount + (promoDiscountAmount ?? 0);
+    final baseFeeTotal = supplyAmount + (promoDiscountAmount ?? 0);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -299,19 +299,11 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
             const SizedBox(height: 10),
             // (B) 수수료
             if (hasPromo) ...[
-              // 취소선 수수료
+              // (B) 수수료 - 취소선
               Row(
                 children: [
-                  const Text(
-                    '(B) ',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF808080),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
                   Text(
-                    baseFeeLabel,
+                    '(B) $baseFeeLabel',
                     style: const TextStyle(
                       fontSize: 13,
                       color: Color(0xFF808080),
@@ -332,59 +324,55 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                 ],
               ),
               const SizedBox(height: 6),
-              // 프로모션 할인
-              Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: Row(
-                  children: [
-                    Text(
-                      '프로모션 할인(${promoFeeRate.toStringAsFixed(1)}%)',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Color(0xFF34C759),
-                        fontFamily: 'Inter',
-                      ),
+              // 프로모션 할인 (들여쓰기 — (B) prefix 너비에 맞춤)
+              Row(
+                children: [
+                  const SizedBox(width: 24),
+                  Text(
+                    '프로모션 할인(${(baseFeeRate! - promoFeeRate).toStringAsFixed(1)}%)',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF34C759),
+                      fontFamily: 'Inter',
                     ),
-                    const Spacer(),
-                    Text(
-                      '-${formatCurrency(promoDiscountAmount)}',
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF34C759),
-                        fontFamily: 'Inter',
-                      ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    '-${formatCurrency(promoDiscountAmount)}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF34C759),
+                      fontFamily: 'Inter',
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
               const SizedBox(height: 6),
-              // 실 수수료 (B')
-              Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: Row(
-                  children: [
-                    const Text(
-                      '→ 실 수수료(B\')',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF101010),
-                        fontFamily: 'Inter',
-                      ),
+              // → 최종 수수료 (들여쓰기)
+              Row(
+                children: [
+                  const SizedBox(width: 24),
+                  const Text(
+                    '최종 수수료',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF101010),
+                      fontFamily: 'Inter',
                     ),
-                    const Spacer(),
-                    Text(
-                      formatCurrency(totalFeeAmount),
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF101010),
-                        fontFamily: 'Inter',
-                      ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    formatCurrency(supplyAmount),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF101010),
+                      fontFamily: 'Inter',
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ] else ...[
               _buildFeeRow(
@@ -405,7 +393,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
             Row(
               children: [
                 Text(
-                  hasPromo ? '정산총액  A - B\' - C' : '정산총액  A - B - C',
+                  '정산총액  A - B - C',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,

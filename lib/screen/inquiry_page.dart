@@ -4,9 +4,8 @@ import 'package:owner/common/model/inquiry.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
-import 'package:owner/screen/inquiry_detail_page.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:provider/provider.dart';
-import '../../common/Style/CommonSection.dart';
 
 class InquiryPage extends StatefulWidget {
   const InquiryPage({Key? key}) : super(key: key);
@@ -17,282 +16,383 @@ class InquiryPage extends StatefulWidget {
 
 class _InquiryPageState extends State<InquiryPage>
     with SingleTickerProviderStateMixin {
-  final scaffoldKey = GlobalKey<ScaffoldState>();
   late TabController _tabController;
 
-  TextEditingController titleController = TextEditingController();
-  TextEditingController contentController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _contentController = TextEditingController();
 
-  late Future<InquiryListResponse?> futureInquiryList;
-  Set<int> expandedItems = {};
+  late Future<InquiryListResponse?> _futureInquiryList;
+  final Set<int> _expandedItems = {};
+
+  static const Color _borderColor = Color(0xFFE6E6E6);
+  static const Color _hintColor = Color(0xFF808080);
+  static const Color _primary = Color(0xFFF27213);
+  static const Color _textColor = Color(0xFF101010);
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    fetchInquiry();
+    _fetchInquiry();
   }
 
-  Future<void> fetchInquiry() async {
-    User? user = Provider.of<UserProvider>(context, listen: false).user;
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchInquiry() async {
+    final user = Provider.of<UserProvider>(context, listen: false).user;
     setState(() {
-      futureInquiryList = Api().client.getInquiry(user?.owner_id ?? 0);
+      _futureInquiryList = Api().client.getInquiry(user?.owner_id ?? 0);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("문의하기"),
-          centerTitle: true,
+      appBar: CommonAppBar(
+        title: "문의하기",
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(44),
+          child: _buildTabBar(),
         ),
-        body: SafeArea(
-            child: GestureDetector(
-                onTap: () {
-                  FocusScope.of(context).unfocus();
-                },
-                child: Container(
-                    margin: const EdgeInsets.fromLTRB(10, 5, 10, 10),
-                    child: Column(
-                        crossAxisAlignment: CrossAxisAlignment
-                            .start, // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          SizedBox(
-                            height: kToolbarHeight - 8.0,
-                            child: getTabBarWidget(),
-                          ),
-                          Expanded(
-                            child: TabBarView(
-                              controller: _tabController,
-                              physics: const NeverScrollableScrollPhysics(),
-                              children: <Widget>[InquiryForm(), InquiryList()],
-                            ),
-                          )
-                        ])))));
-  }
-
-  Widget getTabBarWidget() {
-    return TabBar(
-      controller: _tabController,
-      // isScrollable: true,
-      indicatorColor: Colors.black,
-      labelColor: Colors.black,
-      indicatorWeight: 5,
-      unselectedLabelColor: Colors.grey,
-      tabs: [
-        Container(
-          alignment: Alignment.center,
-          // width: (MediaQuery.of(context).size.width) / 2,
-          child: const Tab(text: '문의하기'),
+      ),
+      backgroundColor: Colors.white,
+      body: GestureDetector(
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: TabBarView(
+          controller: _tabController,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [_buildInquiryForm(), _buildInquiryList()],
         ),
-        Container(
-            alignment: Alignment.center,
-            // width: (MediaQuery.of(context).size.width),
-            child: const Text(
-              "나의 문의내역 보기",
-            )),
-      ],
-      // tabs: _tabs,
+      ),
     );
   }
 
-  Widget InquiryForm() {
-    User? user = Provider.of<UserProvider>(context, listen: false).user;
+  Widget _buildTabBar() {
+    return TabBar(
+      controller: _tabController,
+      indicatorColor: _primary,
+      labelColor: _textColor,
+      unselectedLabelColor: _hintColor,
+      indicatorWeight: 2,
+      labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+      unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+      tabs: const [
+        Tab(text: '문의하기'),
+        Tab(text: '나의 문의내역'),
+      ],
+    );
+  }
 
-    return Scaffold(
-        body: Column(
+  Widget _buildInquiryForm() {
+    final user = Provider.of<UserProvider>(context, listen: false).user;
+
+    return Column(
       children: [
-        const SizedBox(
-          height: 5,
-        ),
-        TextFormField(
-          // style: TextStyle(fontSize: 15, height: 0.1),
-          controller: titleController,
-
-          decoration: InputDecoration(
-            // contentPadding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-            hintText: '제목을 입력해주세요',
-
-            border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8.0),
-                borderSide: const BorderSide(
-                  color: Colors.redAccent,
-                  width: 2,
-                )),
-          ),
-          onChanged: (text) async {},
-          // validator: (_) => (hasRecipe) ? "Exists" : null,
-          validator: (value) {
-            return null;
-          },
-        ),
-        const SizedBox(
-          height: 10,
-        ),
         Expanded(
-          child: TextFormField(
-            // style: TextStyle(fontSize: 15, height: 0.1),
-            expands: true, // TextFormField를 남은 공간에 맞춤
-            textAlignVertical: TextAlignVertical.top,
-            maxLines: null,
-            controller: contentController,
-            decoration: InputDecoration(
-              // isDense: true,
-              hintText: '내용을 입력해주세요',
-              border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: const BorderSide(
-                    width: 2,
-                  )),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '제목',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: _textColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    hintText: '제목을 입력해주세요',
+                    hintStyle: const TextStyle(fontSize: 14, color: _hintColor),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 14),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: _borderColor),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: _borderColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: _primary),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                const Text(
+                  '내용',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: _textColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _contentController,
+                  maxLines: 10,
+                  textAlignVertical: TextAlignVertical.top,
+                  decoration: InputDecoration(
+                    hintText: '내용을 입력해주세요',
+                    hintStyle: const TextStyle(fontSize: 14, color: _hintColor),
+                    contentPadding: const EdgeInsets.all(16),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: _borderColor),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: _borderColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: _primary),
+                    ),
+                  ),
+                ),
+              ],
             ),
-            onChanged: (text) async {},
-            // validator: (_) => (hasRecipe) ? "Exists" : null,
-            validator: (value) {
-              return null;
-            },
           ),
         ),
-        ElevatedButton(
-          onPressed: () {
-            // 서버 전송 로직 추가
-            var inquiry = Inquiry(
-                title: titleController.text, content: contentController.text);
-            Api().client.subjectInquiry(user?.owner_id ?? 0, inquiry);
-            CommonDialog.show(
+        _buildSubmitButton(user),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton(User? user) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: _borderColor)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 52,
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: () {
+              final inquiry = Inquiry(
+                title: _titleController.text,
+                content: _contentController.text,
+              );
+              Api().client.subjectInquiry(user?.owner_id ?? 0, inquiry);
+              CommonDialog.show(
                 context: context,
                 title: "등록완료",
                 content: "문의하기 등록이 완료되었습니다.",
                 buttonText: "확인",
                 onPressed: () async {
-                  titleController.text = "";
-                  contentController.text = "";
-                  await fetchInquiry();
-                });
-          },
-          child: const Text('문의하기 제출'),
-        )
-      ],
-    ));
-  }
-
-  Widget InquiryList() {
-    return Scaffold(
-      body: FutureBuilder<InquiryListResponse?>(
-          future: futureInquiryList, // 비동기적으로 데이터를 가져오는 Future 객체
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // 데이터 로딩 중일 때 로딩 인디케이터 표시
-              return const Center(
-                  child: SizedBox(
-                width: 30,
-                height: 30,
-                child: CircularProgressIndicator(),
-              ));
-            } else if (snapshot.hasError) {
-              // 에러가 발생한 경우
-              return Text("Error: ${snapshot.error}");
-            } else if (snapshot.hasData) {
-              // 데이터가 정상적으로 로드되었을 때
-              List<InquiryResponse> inquiryList =
-                  snapshot.data!.inquiryResponse;
-              if (inquiryList.isEmpty) {
-                return const Center(
-                  child: Text(
-                    '문의 내역이 없습니다.',
-                    style: TextStyle(fontSize: 15, color: Colors.grey),
-                  ),
-                );
-              }
-              return RefreshIndicator(
-                  onRefresh: () async {
-                    setState(() async {
-                      await fetchInquiry();
-                    });
-                  },
-                  child: ListView.separated(
-                    itemCount: inquiryList.length,
-                    itemBuilder: (context, index) {
-                      // bool isExpanded = expandedItems.contains(index);
-
-                      return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (expandedItems.contains(index)) {
-                                expandedItems.remove(index);
-                              } else {
-                                expandedItems.add(index);
-                              }
-                            });
-                          },
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Row(children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: <Widget>[
-                                      Text(
-                                          "${inquiryList[index].inquiry_created}"),
-                                      Text(
-                                        inquiryList[index].title,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Text(inquiryList[index].content)
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  inquiryList[index].status == "pending"
-                                      ? const Text("답변대기")
-                                      : const Text("답변완료"),
-                                  Image(
-                                    image: AssetImage(
-                                      expandedItems.contains(index)
-                                          ? 'assets/chevron-up.png'
-                                          : 'assets/chevron-down.png',
-                                    ),
-                                  ),
-                                ]),
-                                if (expandedItems.contains(index))
-                                  Padding(
-                                    padding: const EdgeInsets.all(8.0),
-                                    child: Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(10),
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey[200],
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        inquiryList[index]
-                                                    .response
-                                                    ?.isNotEmpty ==
-                                                true
-                                            ? inquiryList[index].response!
-                                            : "답변 대기 중입니다",
-                                        style: const TextStyle(fontSize: 14),
-                                      ),
-                                    ),
-                                  ),
-                              ]));
-                    },
-                    separatorBuilder: (BuildContext context, int index) {
-                      return const Divider();
-                    },
-                  ));
-            } else {
-              return const Text("문의내역 읽어오기 실패");
-            }
-          }),
+                  _titleController.clear();
+                  _contentController.clear();
+                  await _fetchInquiry();
+                },
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            child: const Text(
+              '문의 제출',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w400),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget showContents(content) {
-    if (content == null || content == "") {
-      return const Text("답변 대기 중입니다");
-    }
-    return Text(content);
+  Widget _buildInquiryList() {
+    return FutureBuilder<InquiryListResponse?>(
+      future: _futureInquiryList,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(
+            child: SizedBox(
+              width: 30,
+              height: 30,
+              child: CircularProgressIndicator(color: _primary),
+            ),
+          );
+        } else if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.error_outline, size: 48, color: _hintColor),
+                const SizedBox(height: 12),
+                const Text(
+                  '문의 내역을 불러오지 못했습니다.',
+                  style: TextStyle(fontSize: 14, color: _hintColor),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: _fetchInquiry,
+                  child: const Text('다시 시도', style: TextStyle(color: _primary)),
+                ),
+              ],
+            ),
+          );
+        } else if (snapshot.hasData) {
+          final inquiryList = snapshot.data!.inquiryResponse;
+          if (inquiryList.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF7F7F7),
+                      borderRadius: BorderRadius.circular(36),
+                      border: Border.all(color: _borderColor),
+                    ),
+                    child: const Icon(Icons.inbox_outlined,
+                        size: 36, color: _hintColor),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '문의 내역이 없습니다.',
+                    style: TextStyle(fontSize: 14, color: _hintColor),
+                  ),
+                ],
+              ),
+            );
+          }
+          return RefreshIndicator(
+            color: _primary,
+            onRefresh: _fetchInquiry,
+            child: ListView.separated(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              itemCount: inquiryList.length,
+              separatorBuilder: (_, __) =>
+                  const Divider(height: 1, color: _borderColor),
+              itemBuilder: (context, index) {
+                final item = inquiryList[index];
+                final isExpanded = _expandedItems.contains(index);
+                final isAnswered = item.status != "pending";
+
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      if (isExpanded) {
+                        _expandedItems.remove(index);
+                      } else {
+                        _expandedItems.add(index);
+                      }
+                    });
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${item.inquiry_created}',
+                                    style: const TextStyle(
+                                        fontSize: 12, color: _hintColor),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    item.title,
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: _textColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: isAnswered
+                                    ? const Color(0xFFEDF7ED)
+                                    : const Color(0xFFFFF3E0),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                isAnswered ? '답변완료' : '답변대기',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: isAnswered
+                                      ? const Color(0xFF2E7D32)
+                                      : _primary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              isExpanded
+                                  ? Icons.keyboard_arrow_up
+                                  : Icons.keyboard_arrow_down,
+                              size: 20,
+                              color: _hintColor,
+                            ),
+                          ],
+                        ),
+                        if (isExpanded) ...[
+                          const SizedBox(height: 12),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF7F7F7),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: _borderColor),
+                            ),
+                            child: Text(
+                              item.response?.isNotEmpty == true
+                                  ? item.response!
+                                  : '답변 대기 중입니다.',
+                              style: const TextStyle(
+                                  fontSize: 14, color: _textColor),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          );
+        }
+        return const Center(
+          child: Text('문의 내역을 불러오지 못했습니다.',
+              style: TextStyle(fontSize: 14, color: _hintColor)),
+        );
+      },
+    );
   }
 }

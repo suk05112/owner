@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/widgets.dart';
 
@@ -47,5 +50,12 @@ Future<void> main() async {
             ReCaptchaV3Provider("6LeuC04sAAAAALXiv1CX_UsbOj1Vpo1zR1DAvd8d"));
   }
   await initializeFCM();
-  await runner.main();
+
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+
+  await runZonedGuarded(
+    runner.main,
+    (error, stack) =>
+        FirebaseCrashlytics.instance.recordError(error, stack, fatal: true),
+  );
 }

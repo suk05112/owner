@@ -39,7 +39,6 @@ class StoreImage extends StatelessWidget {
     } else {
       image = Image.network(
         url,
-        headers: const {'Cache-Control': 'no-cache'},
         width: width,
         height: height,
         fit: fit,

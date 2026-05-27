@@ -59,16 +59,12 @@ class UserProvider with ChangeNotifier {
         phone_number: userMap['phone_number'] as String,
       );
       notifyListeners();
-      print("Mock user loaded from asset.");
-      print("${_user?.name}, ${_user?.email}, ${_user?.phone_number}");
     } catch (e) {
-      print("Failed to load mock user from asset: $e");
     }
   }
 
   /// Save the user to secure storage (private method)
   Future<void> _saveUserToStorage(User user) async {
-    print("${user.name}, ${user.email}, ${user.phone_number}");
     try {
       final userJson = jsonEncode({
         'owner_id': user.owner_id,
@@ -97,8 +93,6 @@ class UserProvider with ChangeNotifier {
           phone_number: userMap['phone'],
         );
         notifyListeners();
-        print("User loaded from secure storage.");
-        print("${_user?.name}, ${_user?.email}, ${_user?.phone_number}");
 
         return _user;
       } else {

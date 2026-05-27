@@ -542,8 +542,6 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      print('FCM token 획득: $fcmToken');
-
       final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
       final pushTokenRequest = OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType);
       final response = await Api().client.registerOwnerPushToken(

@@ -196,6 +196,14 @@ class _InquiryPageState extends State<InquiryPage>
               // 데이터가 정상적으로 로드되었을 때
               List<InquiryResponse> inquiryList =
                   snapshot.data!.inquiryResponse;
+              if (inquiryList.isEmpty) {
+                return const Center(
+                  child: Text(
+                    '문의 내역이 없습니다.',
+                    style: TextStyle(fontSize: 15, color: Colors.grey),
+                  ),
+                );
+              }
               return RefreshIndicator(
                   onRefresh: () async {
                     setState(() async {

@@ -143,6 +143,18 @@ class MockApiClient implements ApiClient {
     }
   }
 
+  @override
+  Future<SettlementDetailResponse> getSettlementPreview(int storeId) async {
+    try {
+      return await _load(
+        'assets/mock/settlement_preview.json',
+        SettlementDetailResponse.fromJson,
+      );
+    } catch (_) {
+      return SettlementDetailResponse(settlement: SettlementSummary(), details: []);
+    }
+  }
+
   // ── 계좌 ──────────────────────────────────────────────────────────────────
 
   @override

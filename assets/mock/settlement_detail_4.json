@@ -10,7 +10,12 @@
     "net_payout_amount": 278500,
     "status": "COMPLETED",
     "payout_date": "2026-04-16",
-    "failure_reason": null
+    "failure_reason": null,
+    "base_fee_rate": 3.0,
+    "promo_fee_rate": null,
+    "promo_discount_amount": null,
+    "supply_amount": 39091,
+    "vat_amount": 3909
   },
   "details": [
     {

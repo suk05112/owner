@@ -51,7 +51,28 @@ FutureOr<void> main() async {
   // API 초기화 - 환경에 맞는 baseUrl 설정
   await Api().setBaseClient(AppConfig.baseUrl);
 
-  // debugInvertOversizedImages = true;
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Scaffold(
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.grey),
+              const SizedBox(height: 16),
+              const Text(
+                '일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해 주세요.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 15, color: Colors.black87),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  };
+
   runApp(const MyApp());
 }
 

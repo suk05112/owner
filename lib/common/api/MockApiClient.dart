@@ -72,7 +72,7 @@ class MockApiClient implements ApiClient {
       StorePostResponse(
         statusCode: 200,
         store_id: 1,
-        store_logo_url: '',
+        store_logo_put_url: '',
         store_photos: [],
         bankBook_put_url: '',
       );

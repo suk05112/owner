@@ -10,7 +10,6 @@ import 'dart:io';
 import '../../common/api/request/store/store.dart';
 import '../../common/widget/common_app_bar.dart';
 import '../../common/utils/address_parser.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class DocumentInputPage extends StatefulWidget {
   const DocumentInputPage({Key? key}) : super(key: key);
@@ -29,6 +28,21 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   TextEditingController businessNumberController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  final _scrollController = ScrollController();
+
+  final _nameKey = GlobalKey();
+  final _storeNameKey = GlobalKey();
+  final _addrKey = GlobalKey();
+  final _phoneKey = GlobalKey();
+  final _businessNumberKey = GlobalKey();
+  final _businessRegKey = GlobalKey();
+  final _storeImagesKey = GlobalKey();
+  final _privacyKey = GlobalKey();
+
+  final _nameFocus = FocusNode();
+  final _storeNameFocus = FocusNode();
+  final _phoneFocus = FocusNode();
+  final _businessNumberFocus = FocusNode();
 
   late Store _store;
   bool _isChecked = false;
@@ -87,7 +101,29 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
     telePhoneController.dispose();
     introController.dispose();
     businessNumberController.dispose();
+    _scrollController.dispose();
+    _nameFocus.dispose();
+    _storeNameFocus.dispose();
+    _phoneFocus.dispose();
+    _businessNumberFocus.dispose();
     super.dispose();
+  }
+
+  void _scrollToKey(GlobalKey key) {
+    final ctx = key.currentContext;
+    if (ctx == null) return;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final offset = box.localToGlobal(Offset.zero, ancestor: context.findRenderObject());
+    final target = (_scrollController.offset + offset.dy - 100).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   Widget _buildLabel(String text) {
@@ -107,7 +143,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
       final List<XFile> pickedImages = await picker.pickMultiImage();
       if (pickedImages.isNotEmpty) {
         setState(() {
-          int remainingSlots = 5 - _storeImages.length;
+          int remainingSlots = 10 - _storeImages.length;
           if (remainingSlots > 0) {
             int imagesToAdd = pickedImages.length > remainingSlots
                 ? remainingSlots
@@ -116,10 +152,10 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
               _storeImages.add(File(pickedImages[i].path));
             }
             if (pickedImages.length > remainingSlots) {
-              showToast("최대 5장까지 업로드 가능합니다.");
+              showToast("최대 10장까지 업로드 가능합니다.");
             }
           } else {
-            showToast("최대 5장까지 업로드 가능합니다.");
+            showToast("최대 10장까지 업로드 가능합니다.");
           }
         });
       }
@@ -127,7 +163,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
       // iOS 등에서 pickMultiImage가 지원되지 않는 경우
       final XFile? pickedImage =
           await picker.pickImage(source: ImageSource.gallery);
-      if (pickedImage != null && _storeImages.length < 5) {
+      if (pickedImage != null && _storeImages.length < 10) {
         setState(() {
           _storeImages.add(File(pickedImage.path));
         });
@@ -158,14 +194,14 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   }
 
   void showToast(String msg) {
-    Fluttertoast.showToast(
-      msg: msg,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 2,
-      backgroundColor: Colors.grey,
-      textColor: Colors.white,
-      fontSize: 16.0,
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF333333),
+      ),
     );
   }
 
@@ -216,15 +252,17 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
             children: [
               Expanded(
                 child: SingleChildScrollView(
+                  controller: _scrollController,
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 대표자명
-                      _buildLabel("대표자명"),
+                      SizedBox(key: _nameKey, child: _buildLabel("대표자명")),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: nameController,
+                        focusNode: _nameFocus,
                         keyboardType: TextInputType.text,
                         decoration: inputDecoration.copyWith(hintText: "대표자명을 입력해주세요"),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
@@ -236,10 +274,11 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       const SizedBox(height: 24),
 
                       // 매장명
-                      _buildLabel("매장명"),
+                      SizedBox(key: _storeNameKey, child: _buildLabel("매장명")),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: storenNameController,
+                        focusNode: _storeNameFocus,
                         keyboardType: TextInputType.text,
                         decoration: inputDecoration.copyWith(hintText: "매장명을 입력해주세요"),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
@@ -251,7 +290,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       const SizedBox(height: 24),
 
                       // 주소
-                      _buildLabel("주소"),
+                      SizedBox(key: _addrKey, child: _buildLabel("주소")),
                       const SizedBox(height: 8),
                       Row(
                         children: [
@@ -306,10 +345,11 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       const SizedBox(height: 24),
 
                       // 매장 전화번호
-                      _buildLabel("매장 전화번호"),
+                      SizedBox(key: _phoneKey, child: _buildLabel("매장 전화번호")),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: telePhoneController,
+                        focusNode: _phoneFocus,
                         keyboardType: TextInputType.phone,
                         decoration: inputDecoration.copyWith(hintText: "전화번호를 입력해주세요"),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
@@ -370,10 +410,11 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       const SizedBox(height: 24),
 
                       // 사업자 등록번호
-                      _buildLabel("사업자 등록번호"),
+                      SizedBox(key: _businessNumberKey, child: _buildLabel("사업자 등록번호")),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: businessNumberController,
+                        focusNode: _businessNumberFocus,
                         keyboardType: TextInputType.number,
                         decoration: inputDecoration.copyWith(hintText: "사업자 등록번호를 입력해주세요"),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
@@ -389,7 +430,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       const SizedBox(height: 24),
 
                       // 사업자 등록증
-                      _buildLabel("사업자 등록증"),
+                      SizedBox(key: _businessRegKey, child: _buildLabel("사업자 등록증")),
                       const SizedBox(height: 8),
                       GestureDetector(
                         onTap: _pickBusinessRegistration,
@@ -423,17 +464,20 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       const SizedBox(height: 24),
 
                       // 매장 사진
-                      _buildLabel("매장 사진"),
+                      SizedBox(key: _storeImagesKey, child: _buildLabel("매장 사진")),
                       const SizedBox(height: 8),
                       _buildStoreImagesGrid(),
                       const SizedBox(height: 24),
 
                       // 개인정보 수집 및 이용 동의
-                      _PrivacyConsentWidget(
-                        isChecked: _isChecked,
-                        onChanged: (value) {
-                          setState(() => _isChecked = value ?? false);
-                        },
+                      SizedBox(
+                        key: _privacyKey,
+                        child: _PrivacyConsentWidget(
+                          isChecked: _isChecked,
+                          onChanged: (value) {
+                            setState(() => _isChecked = value ?? false);
+                          },
+                        ),
                       ),
                       const SizedBox(height: 100),
                     ],
@@ -454,22 +498,48 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       elevation: 0,
                     ),
                     onPressed: () {
-                      if (!_formKey.currentState!.validate()) return;
-
-                      if (_logoImage == null) {
-                        showToast("로고 이미지를 업로드해주세요.");
+                      if (!_formKey.currentState!.validate()) {
+                        if (nameController.text.isEmpty) {
+                          _scrollToKey(_nameKey);
+                          _nameFocus.requestFocus();
+                        } else if (storenNameController.text.isEmpty) {
+                          _scrollToKey(_storeNameKey);
+                          _storeNameFocus.requestFocus();
+                        } else if (addrController.text.isEmpty) {
+                          _scrollToKey(_addrKey);
+                        } else if (telePhoneController.text.isEmpty) {
+                          _scrollToKey(_phoneKey);
+                          _phoneFocus.requestFocus();
+                        } else if (businessNumberController.text.isEmpty) {
+                          _scrollToKey(_businessNumberKey);
+                          _businessNumberFocus.requestFocus();
+                        } else {
+                          final phoneOk = RegExp(r'^0\d{8,9}$')
+                              .hasMatch(telePhoneController.text.replaceAll('-', ''));
+                          if (phoneOk) {
+                            _scrollToKey(_businessNumberKey);
+                            _businessNumberFocus.requestFocus();
+                          } else {
+                            _scrollToKey(_phoneKey);
+                            _phoneFocus.requestFocus();
+                          }
+                        }
                         return;
                       }
+
                       if (_businessRegistration == null) {
                         showToast("사업자 등록증을 업로드해주세요.");
+                        _scrollToKey(_businessRegKey);
                         return;
                       }
                       if (_storeImages.isEmpty) {
                         showToast("매장 사진을 최소 1장 이상 업로드해주세요.");
+                        _scrollToKey(_storeImagesKey);
                         return;
                       }
                       if (!_isChecked) {
                         showToast("개인정보 수집 및 이용에 동의해주세요.");
+                        _scrollToKey(_privacyKey);
                         return;
                       }
 
@@ -510,12 +580,12 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
     // 사진 추가 버튼 (항상 첫 번째에 위치)
     itemWidgets.add(
       GestureDetector(
-        onTap: _storeImages.length < 5 ? _pickMultipleImages : null,
+        onTap: _storeImages.length < 10 ? _pickMultipleImages : null,
         child: Container(
           width: 96,
           height: 96,
           decoration: BoxDecoration(
-            color: _storeImages.length < 5
+            color: _storeImages.length < 10
                 ? const Color(0xFFF7F7F7)
                 : const Color(0xFFE6E6E6),
             borderRadius: BorderRadius.circular(12),
@@ -529,7 +599,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
             children: [
               Icon(
                 Icons.add,
-                color: _storeImages.length < 5
+                color: _storeImages.length < 10
                     ? const Color(0xFF808080)
                     : const Color(0xFFB0B0B0),
                 size: 24,
@@ -540,7 +610,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
-                  color: _storeImages.length < 5
+                  color: _storeImages.length < 10
                       ? const Color(0xFF808080)
                       : const Color(0xFFB0B0B0),
                   fontFamily: 'Inter',
@@ -620,7 +690,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
         ),
         const SizedBox(height: 8),
         const Text(
-          "최대 5장까지 업로드 가능합니다.",
+          "최대 10장까지 업로드 가능합니다.",
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w400,

@@ -377,7 +377,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Container(
                   color: Colors.black.withOpacity(0.3),
                   child: const Center(
-                    child: CircularProgressIndicator(),
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                          ColorAssset.mainColor),
+                    ),
                   ),
                 ),
             ],

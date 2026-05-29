@@ -253,7 +253,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                     CommonDialog.show(
                                       context: context,
                                       title: "회원가입 오류",
-                                      content: e.message ?? "이메일 링크 중 오류 발생",
+                                      content: _firebaseAuthErrorToKorean(e.code),
                                       buttonText: "확인",
                                       onPressed: () {},
                                     );
@@ -264,7 +264,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                   CommonDialog.show(
                                     context: context,
                                     title: "회원가입 오류",
-                                    content: e.toString(),
+                                    content: "잠시 후 다시 시도해주세요.",
                                     buttonText: "확인",
                                     onPressed: () {},
                                   );
@@ -325,7 +325,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                   CommonDialog.show(
                                     context: context,
                                     title: "회원가입 오류",
-                                    content: e.toString(),
+                                    content: "잠시 후 다시 시도해주세요.",
                                     buttonText: "확인",
                                     onPressed: () {},
                                   );
@@ -453,6 +453,12 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                     onPressed: () {});
                               } else {
                                 print(e.code);
+                                CommonDialog.show(
+                                    context: context,
+                                    title: "회원가입 오류",
+                                    content: _firebaseAuthErrorToKorean(e.code),
+                                    buttonText: "확인",
+                                    onPressed: () {});
                               }
                             }
                           }
@@ -472,6 +478,29 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
             ),
           ],
         ));
+  }
+
+  String _firebaseAuthErrorToKorean(String code) {
+    switch (code) {
+      case 'weak-password':
+        return '비밀번호가 너무 간단합니다. 6자 이상 입력해주세요.';
+      case 'email-already-in-use':
+        return '이미 사용중인 아이디입니다. 다른 아이디를 사용해주세요.';
+      case 'invalid-email':
+        return '유효하지 않은 이메일 형식입니다.';
+      case 'operation-not-allowed':
+        return '현재 사용할 수 없는 인증 방식입니다.';
+      case 'too-many-requests':
+        return '요청이 너무 많습니다. 잠시 후 다시 시도해주세요.';
+      case 'network-request-failed':
+        return '네트워크 연결을 확인해주세요.';
+      case 'credential-already-in-use':
+        return '이미 다른 계정에 연결된 인증 정보입니다.';
+      case 'requires-recent-login':
+        return '보안을 위해 다시 로그인 후 시도해주세요.';
+      default:
+        return '잠시 후 다시 시도해주세요.';
+    }
   }
 
   String? validateName(String? value) {
@@ -626,7 +655,7 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
             children: [
               const SizedBox(height: 10.0),
               const Text(
-                "이메일",
+                "아이디",
                 style: TextAssset.header2,
               ),
               Row(
@@ -635,31 +664,25 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
                   Expanded(
                     flex: 3,
                     child: TextFormField(
-                      // style: TextStyle(fontSize: 15, height: 0.1),
                       controller: idController,
                       decoration:
-                          inputDecoration.copyWith(hintText: "아이디를 입력하세요"),
+                          inputDecoration.copyWith(hintText: "아이디를 입력하세요 (@ 제외)"),
                       onChanged: (text) async {
                         final check = await checkEmail(text);
                         setState(() => hasRecipe = check);
-                        widget.onEmailChanged(text); // 부모에게 이메일 값 전달
+                        widget.onEmailChanged(text);
                       },
-                      // validator: (_) => (hasRecipe) ? "Exists" : null,
                       validator: (value) {
                         print("id validator 호출");
                         if (value == null || value.isEmpty) {
-                          return "이메일을 입력해주세요.";
+                          return "아이디를 입력해주세요.";
                         }
-
-                        // if (hasRecipe == false) {
-                        //   return "중복된 이메일 입니다. 다른 이메일을 입력해주세요.";
-                        // }
-
-                        // 내부적으로 @gifnut.com을 붙여서 검사
-                        if (isValidEmail(value) == false) {
-                          return "이메일 형식이 올바르지 않습니다. 올바른 이메일을 입력해주세요.";
+                        if (value.contains('@')) {
+                          return "아이디에 @를 포함할 수 없습니다.";
                         }
-
+                        if (!isValidId(value)) {
+                          return "영문, 숫자, 특수문자(._-)만 사용 가능합니다.";
+                        }
                         return null;
                       },
                     ),
@@ -669,17 +692,13 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
             ]));
   }
 
-  bool isValidEmail(String email) {
-    // 내부적으로 @gifnut.com을 붙여서 검사
-    String emailToCheck = email.contains('@') ? email : '$email@gifnut.com';
-    const pattern = r'^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-za-z0-9\-]+';
-    final regex = RegExp(pattern);
-    return regex.hasMatch(emailToCheck);
+  bool isValidId(String id) {
+    const pattern = r'^[A-Za-z0-9_\.\-]+$';
+    return RegExp(pattern).hasMatch(id);
   }
 
   Future<bool> checkEmail(String email) async {
-    // 내부적으로 @gifnut.com을 붙여서 중복 체크
-    String emailToCheck = email.contains('@') ? email : '$email@gifnut.com';
+    String emailToCheck = '$email@gifnut.com';
     final userDB = FirebaseFirestore.instance.collection('User');
     final query = userDB.where('email', isEqualTo: emailToCheck);
     // final query = userDB.where('email', isEqualTo: "id3");

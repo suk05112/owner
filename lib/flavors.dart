@@ -14,7 +14,7 @@ class F {
       case Flavor.dev:
         return 'Gifnut 사장님 Dev';
       case Flavor.prod:
-        return 'Gifnut 사장님';
+        return '기프넛 사장님';
       case Flavor.mock:
         return 'Gifnut 사장님 Mock';
       default:

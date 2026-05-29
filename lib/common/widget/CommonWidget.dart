@@ -478,39 +478,11 @@ class _PhoneNumberVerificationWidgetState
                                                           validationNumberController
                                                               .text);
 
-                                              // 인증번호 검증
-                                              await _auth.signInWithCredential(
-                                                  credential);
+                                                // credential 유효성 확인: 임시 로그인 후 즉시 로그아웃
+                                              await _auth.signInWithCredential(credential);
+                                              await _auth.signOut();
 
-                                              // 전화번호로 이미 가입된 계정인지 확인 (회원가입 시에만 체크)
-                                              // owner 프로젝트에는 LoginService가 없으므로 이 부분은 주석 처리
-                                              // if (!widget.skipRegistrationCheck) {
-                                              //   try {
-                                              //     await Api().setBaseClient(AppConfig.baseUrl);
-                                              //     String e164PhoneNumber = _formatToE164(phoneNumberController.text);
-                                              //     final provider = widget.provider ?? (widget.isSocialLogin ? "" : "email");
-                                              //     final isRegistered = await loginService.isRegisteredUser(null, provider, phone: e164PhoneNumber);
-                                              //     if (isRegistered) {
-                                              //       if (mounted) {
-                                              //         await _auth.signOut();
-                                              //         ScaffoldMessenger.of(context).showSnackBar(
-                                              //           SnackBar(
-                                              //             content: Text('이미 가입된 전화번호입니다.'),
-                                              //             duration: Duration(seconds: 2),
-                                              //             backgroundColor: Colors.red[700],
-                                              //           ),
-                                              //         );
-                                              //       }
-                                              //       return;
-                                              //     }
-                                              //   } on DioException catch (e) {
-                                              //     print("전화번호 가입 확인 API 오류: $e");
-                                              //   } catch (e) {
-                                              //     print("전화번호 가입 확인 오류: $e");
-                                              //   }
-                                              // }
-
-                                              // 인증 성공
+                                              // 인증 성공 — credential을 상위로 전달 (실제 로그인은 상위에서 처리)
                                               if (mounted &&
                                                   !_hasCalledSuccessCallback) {
                                                 _hasCalledSuccessCallback =
@@ -519,7 +491,6 @@ class _PhoneNumberVerificationWidgetState
                                                   isVerified = true;
                                                 });
 
-                                                // successCallback 호출
                                                 widget.successCallback(
                                                   PhoneAuthResult(
                                                     credential: credential,
@@ -529,9 +500,6 @@ class _PhoneNumberVerificationWidgetState
                                                     name: name,
                                                   ),
                                                 );
-
-                                                // 인증 완료 후 로그아웃 (임시 인증이므로)
-                                                await _auth.signOut();
                                               }
                                             } on FirebaseAuthException catch (e) {
                                               // 인증 실패

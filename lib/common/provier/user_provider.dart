@@ -7,9 +7,20 @@ import 'package:owner/flavors.dart';
 
 class UserProvider with ChangeNotifier {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  User? _user; // Nullable for better initialization handling
+  User? _user;
+  bool _profileLoaded = false;
+  bool _profileLoading = false;
+  bool _isRegistering = false;
 
   User? get user => _user;
+  bool get profileLoaded => _profileLoaded;
+
+  /// 회원가입 진행 중 플래그 — true이면 main.dart의 강제 로그아웃을 건너뜀
+  bool get isRegistering => _isRegistering;
+  set isRegistering(bool value) {
+    _isRegistering = value;
+    notifyListeners();
+  }
 
   UserProvider() {
     if (F.isMock) {
@@ -22,7 +33,12 @@ class UserProvider with ChangeNotifier {
   /// Firebase 세션이 살아있을 때 SecureStorage에서 프로필을 복원
   Future<void> loadProfileIfSignedIn() async {
     if (F.isMock) return;
+    if (_profileLoading || _profileLoaded) return; // 중복 호출 방지
+    _profileLoading = true;
     await _loadUserFromStorage();
+    _profileLoading = false;
+    _profileLoaded = true;
+    notifyListeners();
   }
 
   /// mock 모드 전용: 스토리지 저장 없이 메모리에만 유저 세팅
@@ -110,6 +126,8 @@ class UserProvider with ChangeNotifier {
     try {
       await _storage.delete(key: "user");
       _user = null;
+      _profileLoaded = false;
+      _profileLoading = false;
       notifyListeners();
       print("User data cleared from storage.");
     } catch (e) {

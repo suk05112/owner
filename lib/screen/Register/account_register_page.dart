@@ -883,10 +883,10 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
 
   // 통장사본, 사업자등록증 업로드
   Future<void> uploadBusinessImage(
-      String bankbookPutUrl, String businessPutUrl) async {
+      String? bankbookPutUrl, String businessPutUrl) async {
     try {
       http.Response? response1;
-      if (_store.bank_book != null) {
+      if (_store.bank_book != null && bankbookPutUrl != null) {
         print('Uploading bank book to: $bankbookPutUrl');
         final bankBookBytes = await _store.bank_book!.readAsBytes();
         print('Bank book size: ${bankBookBytes.length} bytes');

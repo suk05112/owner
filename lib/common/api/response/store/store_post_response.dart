@@ -22,7 +22,7 @@ class StorePostResponse {
   String? store_logo_put_url;
   List<StorePhoto> store_photos;
   PresignedUrl? presignedUrl;
-  String bankBook_put_url;
+  String? bankBook_put_url;
   String? business_put_url;
 
   StorePostResponse(
@@ -30,7 +30,7 @@ class StorePostResponse {
       required this.store_id,
       this.store_logo_put_url,
       required this.store_photos,
-      required this.bankBook_put_url,
+      this.bankBook_put_url,
       this.business_put_url});
 
   factory StorePostResponse.fromJson(Map<String, dynamic> json) =>

@@ -25,7 +25,7 @@ StorePostResponse _$StorePostResponseFromJson(Map<String, dynamic> json) =>
       store_photos: (json['store_photos'] as List<dynamic>)
           .map((e) => StorePhoto.fromJson(e as Map<String, dynamic>))
           .toList(),
-      bankBook_put_url: json['bankBook_put_url'] as String,
+      bankBook_put_url: json['bankBook_put_url'] as String?,
       business_put_url: json['business_put_url'] as String?,
     )..presignedUrl = json['presignedUrl'] == null
         ? null

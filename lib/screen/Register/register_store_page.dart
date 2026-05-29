@@ -165,6 +165,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                         decoration: _fieldDecoration.copyWith(hintText: "매장 전화번호 입력"),
                         validator: (value) {
                           if (value == null || value.isEmpty) return '매장 전화번호를 입력해주세요.';
+                          final phoneRegex = RegExp(r'^0\d{1,2}-?\d{3,4}-?\d{4}$');
+                          if (!phoneRegex.hasMatch(value.replaceAll('-', ''))) {
+                            return '올바른 전화번호 형식을 입력해주세요 (예: 0507-1234-5678)';
+                          }
                           return null;
                         },
                       ),

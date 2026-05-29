@@ -678,7 +678,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       final response = await Api().client.registerStore(_store);
       var storeId = response.store_id;
       var storeLogoUrl = response.store_logo_url;
-      final storePhotoUrls = response.store_photo_urls;
+      final storePhotoUrls = response.store_photos.map((p) => p.put_url).toList();
       final bankbookPutUrl = response.bankBook_put_url;
       final businessPutUrl = response.business_put_url;
 

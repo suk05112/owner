@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
@@ -40,6 +39,13 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   TextEditingController accountController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+  final _scrollController = ScrollController();
+  final _nameKey = GlobalKey();
+  final _bankKey = GlobalKey();
+  final _accountKey = GlobalKey();
+  final _bankBookKey = GlobalKey();
+  final _nameFocus = FocusNode();
+  final _accountFocus = FocusNode();
 
   @override
   void initState() {
@@ -52,6 +58,9 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   void dispose() {
     nameController.dispose();
     accountController.dispose();
+    _scrollController.dispose();
+    _nameFocus.dispose();
+    _accountFocus.dispose();
     super.dispose();
   }
 
@@ -100,14 +109,31 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   }
 
   void showToast(String msg) {
-    Fluttertoast.showToast(
-      msg: msg,
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.BOTTOM,
-      timeInSecForIosWeb: 2,
-      backgroundColor: Colors.grey,
-      textColor: Colors.white,
-      fontSize: 16.0,
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: const Color(0xFF333333),
+      ),
+    );
+  }
+
+  void _scrollToKey(GlobalKey key) {
+    final ctx = key.currentContext;
+    if (ctx == null) return;
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final offset = box.localToGlobal(Offset.zero, ancestor: context.findRenderObject());
+    final target = (_scrollController.offset + offset.dy - 100).clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
     );
   }
 
@@ -124,6 +150,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
           children: [
             Expanded(
               child: SingleChildScrollView(
+                controller: _scrollController,
                 padding:
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
                 child: Form(
@@ -132,10 +159,12 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // 예금주
+                      SizedBox(key: _nameKey, height: 0),
                       _buildLabel("예금주"),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: nameController,
+                        focusNode: _nameFocus,
                         keyboardType: TextInputType.text,
                         decoration: inputDecoration.copyWith(
                           hintText: "예금주명을 입력해주세요",
@@ -156,6 +185,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                       const SizedBox(height: 24),
 
                       // 은행선택
+                      SizedBox(key: _bankKey, height: 0),
                       _buildLabel("은행선택"),
                       const SizedBox(height: 8),
                       GestureDetector(
@@ -226,10 +256,12 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                       const SizedBox(height: 24),
 
                       // 계좌번호
+                      SizedBox(key: _accountKey, height: 0),
                       _buildLabel("계좌번호"),
                       const SizedBox(height: 8),
                       TextFormField(
                         controller: accountController,
+                        focusNode: _accountFocus,
                         keyboardType: TextInputType.number,
                         decoration: inputDecoration.copyWith(
                           hintText: "계좌번호를 입력해주세요",
@@ -250,6 +282,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                       const SizedBox(height: 24),
 
                       // 통장 사본
+                      SizedBox(key: _bankBookKey, height: 0),
                       _buildLabel("통장 사본"),
                       const SizedBox(height: 8),
                       const Text(
@@ -337,20 +370,30 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                   onPressed: _isLoading
                       ? null
                       : () {
+                          if (!_formKey.currentState!.validate()) {
+                            if (nameController.text.isEmpty) {
+                              _scrollToKey(_nameKey);
+                              _nameFocus.requestFocus();
+                            } else if (accountController.text.isEmpty) {
+                              _scrollToKey(_accountKey);
+                              _accountFocus.requestFocus();
+                            }
+                            return;
+                          }
                           if (selectedBank == '은행선택') {
                             showToast("은행을 선택해주세요");
+                            _scrollToKey(_bankKey);
                             return;
                           }
                           if (_bankBook == null) {
                             showToast("통장 사본을 업로드해주세요.");
+                            _scrollToKey(_bankBookKey);
                             return;
                           }
-                          if (_formKey.currentState!.validate()) {
-                            account.account = accountController.text;
-                            account.name = nameController.text;
-                            _store.bank_book = _bankBook;
-                            registerStore();
-                          }
+                          account.account = accountController.text;
+                          account.name = nameController.text;
+                          _store.bank_book = _bankBook;
+                          registerStore();
                         },
                   child: _isLoading
                       ? const Center(
@@ -677,15 +720,15 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       // 매장 등록 API 호출
       final response = await Api().client.registerStore(_store);
       var storeId = response.store_id;
-      var storeLogoUrl = response.store_logo_url;
-      final storePhotoUrls = response.store_photo_urls;
+      final storeLogoPutUrl = response.store_logo_put_url;
+      final storePhotoUrls = response.store_photos.map((p) => p.put_url).whereType<String>().toList();
       final bankbookPutUrl = response.bankBook_put_url;
       final businessPutUrl = response.business_put_url;
 
       // 이미지 업로드
       try {
-        if (widget.logoImage != null) {
-          await uploadLogoImage(storeLogoUrl);
+        if (widget.logoImage != null && storeLogoPutUrl != null) {
+          await uploadLogoImage(storeLogoPutUrl);
         }
         if (widget.storeImages != null && widget.storeImages!.isNotEmpty) {
           await uploadStoreImages(storePhotoUrls);
@@ -840,10 +883,10 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
 
   // 통장사본, 사업자등록증 업로드
   Future<void> uploadBusinessImage(
-      String bankbookPutUrl, String businessPutUrl) async {
+      String? bankbookPutUrl, String businessPutUrl) async {
     try {
       http.Response? response1;
-      if (_store.bank_book != null) {
+      if (_store.bank_book != null && bankbookPutUrl != null) {
         print('Uploading bank book to: $bankbookPutUrl');
         final bankBookBytes = await _store.bank_book!.readAsBytes();
         print('Bank book size: ${bankBookBytes.length} bytes');

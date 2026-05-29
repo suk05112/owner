@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
@@ -12,6 +14,7 @@ import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:owner/common/model/user.dart' as my_app;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common/widget/CommonWidget.dart';
 import '../../common/utils/phone_utils.dart';
@@ -398,6 +401,9 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                           listen: false)
                                       .setUser(user);
 
+                                  // 푸시 토큰 등록 (백그라운드, 실패해도 가입 플로우 계속 진행)
+                                  _registerPushToken(ownerId);
+
                                   // 성공 시에만 가입완료 페이지로 이동
                                   if (mounted) {
                                     setState(() {
@@ -508,6 +514,23 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
             ),
           ],
         ));
+  }
+
+  Future<void> _registerPushToken(int ownerId) async {
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null || fcmToken.isEmpty) return;
+      final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
+      await Api().client.registerOwnerPushToken(
+            ownerId,
+            OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType),
+          );
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('registered_fcm_token', fcmToken);
+      print('Push token 등록 성공 (회원가입)');
+    } catch (e) {
+      print('Push token 등록 실패 (회원가입): $e');
+    }
   }
 
   String? validateName(String? value) {

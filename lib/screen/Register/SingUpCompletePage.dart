@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import '../Store/cafe_list_page.dart';
+import '../home.dart';
 
 class SignUpCompletePage extends StatelessWidget {
   const SignUpCompletePage({Key? key}) : super(key: key);
@@ -64,10 +65,9 @@ class SignUpCompletePage extends StatelessWidget {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const CafeList()),
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const CafeList()),
+                        (route) => false,
                       );
                     },
                     style: ElevatedButton.styleFrom(
@@ -94,7 +94,10 @@ class SignUpCompletePage extends StatelessWidget {
                   height: 50,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.of(context).popUntil((route) => route.isFirst);
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const Home()),
+                        (route) => false,
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: ColorAssset.mainColor,

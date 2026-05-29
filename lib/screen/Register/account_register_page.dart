@@ -720,15 +720,15 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       // 매장 등록 API 호출
       final response = await Api().client.registerStore(_store);
       var storeId = response.store_id;
-      var storeLogoUrl = response.store_logo_url;
+      final storeLogoPutUrl = response.store_logo_put_url;
       final storePhotoUrls = response.store_photos.map((p) => p.put_url).whereType<String>().toList();
       final bankbookPutUrl = response.bankBook_put_url;
       final businessPutUrl = response.business_put_url;
 
       // 이미지 업로드
       try {
-        if (widget.logoImage != null) {
-          await uploadLogoImage(storeLogoUrl);
+        if (widget.logoImage != null && storeLogoPutUrl != null) {
+          await uploadLogoImage(storeLogoPutUrl);
         }
         if (widget.storeImages != null && widget.storeImages!.isNotEmpty) {
           await uploadStoreImages(storePhotoUrls);

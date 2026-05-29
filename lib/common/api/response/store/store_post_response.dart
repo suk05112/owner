@@ -19,7 +19,7 @@ class StorePostResponse {
   @JsonKey(defaultValue: 200)
   int statusCode;
   int store_id;
-  String store_logo_url;
+  String? store_logo_put_url;
   List<StorePhoto> store_photos;
   PresignedUrl? presignedUrl;
   String bankBook_put_url;
@@ -28,7 +28,7 @@ class StorePostResponse {
   StorePostResponse(
       {required this.statusCode,
       required this.store_id,
-      required this.store_logo_url,
+      this.store_logo_put_url,
       required this.store_photos,
       required this.bankBook_put_url,
       this.business_put_url});

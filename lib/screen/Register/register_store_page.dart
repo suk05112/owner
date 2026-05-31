@@ -68,6 +68,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   File? _imageFile;
   bool isClickedPhotoUploadPage = false;
   bool _isLoading = false;
+  int _uploadedCount = 0;
+  int _totalUploadCount = 0;
 
   @override
   @override
@@ -183,10 +185,7 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                         maxLines: 4,
                         maxLength: 200,
                         decoration: _fieldDecoration.copyWith(hintText: "매장 소개 입력(200자 이내)"),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) return '매장 소개를 입력해주세요.';
-                          return null;
-                        },
+                        validator: null,
                       ),
                       const SizedBox(height: 20),
 
@@ -235,13 +234,12 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                 padding: const EdgeInsets.fromLTRB(20, 0, 20, 32),
                 child: Column(
                   children: [
-                    if (_isLoading)
+                    if (_isLoading && _totalUploadCount > 0)
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: LinearProgressIndicator(
-                          color: const Color(0xFFFE7831),
-                          backgroundColor: const Color(0x33FE7831),
-                          borderRadius: BorderRadius.circular(4),
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: _CircularUploadProgress(
+                          uploaded: _uploadedCount,
+                          total: _totalUploadCount,
                         ),
                       ),
                     SizedBox(
@@ -495,6 +493,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   //매장 사진 업로드
   Future<void> uploadStoreImages(List<dynamic> storePhotoUrls) async {
+    setState(() {
+      _uploadedCount = 0;
+      _totalUploadCount = storePhotoUrls.length;
+    });
+
     final entries = storePhotoUrls.asMap().entries.toList();
     await Future.wait(entries.map((e) async {
       try {
@@ -507,6 +510,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         }
       } catch (e) {
         print('Error uploading store_photo: $e');
+      } finally {
+        if (mounted) setState(() => _uploadedCount++);
       }
     }));
   }
@@ -681,4 +686,84 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       child: Row(children: itemWidgets),
     );
   }
+}
+
+class _CircularUploadProgress extends StatelessWidget {
+  const _CircularUploadProgress({
+    required this.uploaded,
+    required this.total,
+  });
+
+  final int uploaded;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = total > 0 ? uploaded / total : 0.0;
+    return Column(
+      children: [
+        SizedBox(
+          width: 80,
+          height: 80,
+          child: CustomPaint(
+            painter: _CircularProgressPainter(progress: progress),
+            child: Center(
+              child: Text(
+                '$uploaded/$total',
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFFF27213),
+                ),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          '사진 업로드 중...',
+          style: TextStyle(fontSize: 12, color: Color(0xFF808080)),
+        ),
+      ],
+    );
+  }
+}
+
+class _CircularProgressPainter extends CustomPainter {
+  const _CircularProgressPainter({required this.progress});
+
+  final double progress;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const strokeWidth = 7.0;
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = (size.width - strokeWidth) / 2;
+
+    // 배경 트랙
+    final trackPaint = Paint()
+      ..color = const Color(0x33F27213)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    canvas.drawCircle(center, radius, trackPaint);
+
+    // 진행 호
+    final progressPaint = Paint()
+      ..color = const Color(0xFFF27213)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -1.5707963267948966, // -π/2 (12시 방향)
+      2 * 3.141592653589793 * progress,
+      false,
+      progressPaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_CircularProgressPainter oldDelegate) =>
+      oldDelegate.progress != progress;
 }

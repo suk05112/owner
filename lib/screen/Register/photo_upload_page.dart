@@ -109,35 +109,42 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     return tempFile;
   }
 
+  static const int _maxImages = 10;
+
   Future getImage() async {
+    final remaining = _maxImages - selectedImages.length;
+    if (remaining <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('사진은 최대 10장까지 업로드할 수 있습니다.')),
+      );
+      return;
+    }
+
     setState(() {
-      isLoading = true; // Start loading
+      isLoading = true;
     });
 
     final pickedFile = await picker.pickMultiImage(
-      imageQuality: 90,
+      imageQuality: 100,
     );
     List<XFile> xfilePick = pickedFile;
 
-    print("image 선택됨");
-    print(xfilePick.length);
-    // if atleast 1 images is selected it will add
-    // all images in selectedImages
-    // variable so that we can easily show them in UI
     if (xfilePick.isNotEmpty) {
-      for (var i = 0; i < xfilePick.length; i++) {
-        selectedImages.add(await fixExifRotation(xfilePick[i].path));
-        // selectedImages.add(File(xfilePick[i].path));
+      final limited = xfilePick.take(remaining).toList();
+      if (xfilePick.length > remaining) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('최대 10장까지만 업로드 가능해서 $remaining장만 추가되었습니다.')),
+        );
       }
-      setState(
-        () {
-          isLoading = false; // Images are loaded, stop loading
-        },
-      );
-    } else {
-      // If no image is selected, show a snackbar
+      for (var xfile in limited) {
+        selectedImages.add(await fixExifRotation(xfile.path));
+      }
       setState(() {
-        isLoading = false; // Stop loading
+        isLoading = false;
+      });
+    } else {
+      setState(() {
+        isLoading = false;
       });
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Nothing is selected')));
@@ -191,7 +198,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     // or jpg with some compression
     // I choose jpg with 100% quality
     final fixedFile =
-        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 90));
+        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 100));
 
     return fixedFile;
   }
@@ -223,8 +230,6 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
             Image.file(
               File(path.path),
               fit: BoxFit.cover,
-              cacheWidth: 200,
-              cacheHeight: 200,
             ),
             Positioned(
               top: 4,
@@ -273,7 +278,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  "드래그하여 순서를 변경할 수 있습니다",
+                  "최대 10장 · 드래그하여 순서 변경 가능",
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey[600],

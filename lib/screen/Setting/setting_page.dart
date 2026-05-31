@@ -440,7 +440,7 @@ class _SettingPageState extends State<SettingPage> {
           ),
           SizedBox(height: 2),
           Text(
-            "주소: 서울특별시 강서구 공항대로 543 \n이메일: service@502company.com \n고객센터: 02-3664-3338",
+            "주소: 서울특별시 강서구 강남대로 112길 47, 2층-661A호\n이메일: admin@502company.com \n고객센터: 02-3664-3338",
             style: TextStyle(
               fontSize: 10,
               color: Colors.grey,

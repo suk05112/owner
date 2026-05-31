@@ -2,14 +2,25 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
+import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/utils/phone_utils.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
+import 'package:owner/screen/LoginPage.dart';
 import 'package:owner/screen/Register/find_password_page.dart';
-import 'dart:io';
 
 import '../../common/widget/CommonWidget.dart';
+
+const _outlineBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.all(Radius.circular(8)),
+  borderSide: BorderSide(color: Color(0xFFDDDDDD)),
+);
+const _focusedBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.all(Radius.circular(8)),
+  borderSide: BorderSide(color: Color(0xFFAAAAAA)),
+);
 
 class FindUserIDPage extends StatefulWidget {
   const FindUserIDPage({Key? key}) : super(key: key);
@@ -19,88 +30,123 @@ class FindUserIDPage extends StatefulWidget {
 }
 
 class _FindUserIDPageState extends State<FindUserIDPage> {
-  TextEditingController inputIDController = TextEditingController();
-  TextEditingController inputPhoneNumbfController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  bool _isLoading = false;
 
   @override
   void dispose() {
-    inputIDController.dispose();
-    inputPhoneNumbfController.dispose();
+    _nameController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
-  final inputDecoration = const InputDecoration(
-      border: UnderlineInputBorder(
-          // borderRadius: BorderRadius.circular(8.0),
-          // borderSide: const BorderSide(
-          //   color: Colors.redAccent,
-          //   width: 2,
-          ));
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text("아이디 찾기"),
-        ),
-        body: Container(
-            margin: const EdgeInsets.fromLTRB(27, 0, 27, 21),
-            child:
-                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text("이름 입력"),
-              TextFormField(
-                controller: inputIDController,
-                keyboardType: TextInputType.text,
-                decoration: inputDecoration.copyWith(hintText: "이름"),
+    return GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Stack(
+        children: [
+        Scaffold(
+        appBar: const CommonAppBar(title: "아이디 찾기"),
+        backgroundColor: Colors.white,
+        body: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
+                    const Text("이름", style: TextAssset.header2),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _nameController,
+                      keyboardType: TextInputType.text,
+                      decoration: const InputDecoration(
+                        hintText: "이름을 입력해주세요",
+                        hintStyle: TextStyle(color: Color(0xFFBBBBBB)),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: _outlineBorder,
+                        enabledBorder: _outlineBorder,
+                        focusedBorder: _focusedBorder,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    const Text("전화번호", style: TextAssset.header2),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _phoneController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [
+                        NumberFormatter(),
+                        LengthLimitingTextInputFormatter(13),
+                      ],
+                      decoration: const InputDecoration(
+                        hintText: "전화번호를 입력해주세요",
+                        hintStyle: TextStyle(color: Color(0xFFBBBBBB)),
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: _outlineBorder,
+                        enabledBorder: _outlineBorder,
+                        focusedBorder: _focusedBorder,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const Text("전화번호 입력"),
-              TextFormField(
-                controller: inputPhoneNumbfController,
-                keyboardType: TextInputType.text,
-                inputFormatters: [
-                  NumberFormatter(), // 자동하이픈
-                  LengthLimitingTextInputFormatter(13)
-                ],
-                decoration: inputDecoration.copyWith(hintText: "전화번호"),
-              ),
-              // PhoneNumberVerificationWidget(
-              //   successCallback: showRegisteredId,
-              // ),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity, // <-- match_parent
-                height: 50, // <-- match-parent
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5),
+                    ),
                     foregroundColor: Colors.white,
                     backgroundColor: ColorAssset.mainColor,
-                    // minimumSize: const Size.fromHeight(50), // NEW
                   ),
-                  onPressed: () async {
-                    // 전화번호를 서버 형식으로 변환
-                    String formattedPhone = PhoneUtils.formatForServer(
-                        inputPhoneNumbfController.text);
+                  onPressed: _isLoading ? null : () async {
+                    String formattedPhone = PhoneUtils.formatForServer(_phoneController.text);
                     showRegisteredId(OwnerFind(
-                        name: inputIDController.text,
-                        phone_number: formattedPhone));
+                      name: _nameController.text,
+                      phone_number: formattedPhone,
+                    ));
                   },
                   child: const Text("확인"),
                 ),
               ),
-              const SizedBox(
-                height: 81,
-              ) //전화번호
-            ])));
+            ),
+          ],
+        ),
+      ),
+      if (_isLoading)
+        Positioned.fill(
+          child: Container(
+            color: Colors.black26,
+            child: Center(
+              child: CircularProgressIndicator(
+                color: ColorAssset.mainColor,
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
   }
 
-  //전화번호 인증 성공 후 uid 넘겨 받고, 이름, Uid 담아서 id response 로 받기
-  showRegisteredId(OwnerFind ownerFind) async {
+  void showRegisteredId(OwnerFind ownerFind) async {
+    setState(() => _isLoading = true);
     try {
       var response = await Api().client.findOwnerId(ownerFind);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
 
       if (response.owner_id != null) {
-        print(
-            "결과 값 ${response.owner_id}, ${response.created_time}, ${response.msg}");
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -112,130 +158,137 @@ class _FindUserIDPageState extends State<FindUserIDPage> {
         );
       } else {
         CommonDialog.show(
-            context: context,
-            title: "입력된 정보가 올바르지 않습니다.",
-            content: "다시한번 확인해주세요.",
-            buttonText: "확인",
-            onPressed: () {});
-        print(response.msg);
+          context: context,
+          title: "입력된 정보가 올바르지 않습니다.",
+          content: "다시한번 확인해주세요.",
+          buttonText: "확인",
+          onPressed: () {},
+        );
       }
     } on DioException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
       String errorMsg = "";
       if (e.response != null) {
-        // 서버에서 받은 상태 코드에 따른 처리
         if (e.response!.statusCode == 401) {
-          // 인증 실패
-          print("인증 실패: ${e.response!.data}");
           errorMsg = "[401]인증에 실패했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
         } else if (e.response!.statusCode == 500) {
-          // 서버 오류
-          print("서버 오류: ${e.response!.data}");
-          errorMsg =
-              "[500]서버에 오류가 발행했습니다.잠시 후 다시 실행해주세요.\n ${e.response!.data}";
+          errorMsg = "[500]서버에 오류가 발행했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
         } else {
-          // 기타 오류
-          print("기타 오류: ${e.response!.data}");
           errorMsg = "오류가 발생했습니다. 잠시 후 다시 실행해주세요.\n ${e.response!.data}";
         }
       } else {
-        // 네트워크 연결 실패 등
-        print("네트워크 오류: ${e.message}");
         errorMsg = "네트워크 오류가 발생했습니다. 잠시 후 다시 실행해주세요.\n ${e.message}";
       }
 
       CommonDialog.show(
-          context: context,
-          title: "아이디 찾기 실패",
-          content: errorMsg,
-          buttonText: "확인",
-          onPressed: () {});
+        context: context,
+        title: "아이디 찾기 실패",
+        content: errorMsg,
+        buttonText: "확인",
+        onPressed: () {},
+      );
     }
-    print("showRegisterdId");
   }
 }
 
-class RegisterdIDPage extends StatefulWidget {
-  const RegisterdIDPage({Key? key, this.email, this.created_time, this.msg})
-      : super(key: key);
+class RegisterdIDPage extends StatelessWidget {
+  const RegisterdIDPage({Key? key, this.email, this.created_time, this.msg}) : super(key: key);
 
   final String? email;
   final String? created_time;
   final String? msg;
 
   @override
-  State<RegisterdIDPage> createState() => _RegisterdIDPageState();
-}
-
-class _RegisterdIDPageState extends State<RegisterdIDPage> {
-  TextEditingController inputIDController = TextEditingController();
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("아이디 찾기"),
-          centerTitle: true,
-        ),
-        body: Container(
-          margin: const EdgeInsets.fromLTRB(27, 0, 27, 21),
-          child: Column(
-            // 세로 컬럼 생성
-            mainAxisAlignment: MainAxisAlignment.center, // 새로축 가운데 정렬
-            children: <Widget>[
-              const Spacer(),
-              // 컬럼에 들어갈 위젯들
-              const Text("가입 하신 아이디는 아래와 같습니다."),
-              Container(
-                  // color: ColorAssset.greyBackground,
-                  width: double.infinity, // <-- match_parent
-
-                  margin: const EdgeInsets.fromLTRB(27, 0, 27, 21),
+      appBar: const CommonAppBar(title: "아이디 찾기"),
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Column(
+              children: [
+                const Text(
+                  "가입하신 아이디는 아래와 같습니다.",
+                  style: TextAssset.header2,
+                ),
+                const SizedBox(height: 24),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8F8F8),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFEEEEEE)),
+                  ),
                   child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                            "아이디 : ${widget.email} \n가입일: ${widget.created_time}"),
-                      ])),
-              const Spacer(),
-              SizedBox(
-                width: double.infinity, // <-- match_parent
-                height: 50, // <-- match-parent
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: ColorAssset.mainColor,
-                    // minimumSize: const Size.fromHeight(50), // NEW
+                    children: [
+                      Text(
+                        email?.replaceAll('@gifnut.com', '') ?? "-",
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF131313),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        "가입일: ${created_time?.replaceFirst('T', ' ') ?? "-"}",
+                        style: const TextStyle(fontSize: 13, color: Color(0xFF888888)),
+                      ),
+                    ],
                   ),
-                  onPressed: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const FindPasswordPage()),
-                    );
-                  },
-                  child: const Text("비밀번호 재설정하기"),
                 ),
-              ),
-              const SizedBox(
-                height: 5,
-              ),
-              SizedBox(
-                width: double.infinity, // <-- match_parent
-                height: 50, // <-- match-parent
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.white,
-                    backgroundColor: ColorAssset.mainColor,
-                    // minimumSize: const Size.fromHeight(50), // NEW
-                  ),
-                  onPressed: () async {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text("로그인 하러 가기"),
-                ),
-              )
-            ],
+              ],
+            ),
           ),
-        ));
+          const Spacer(),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                  foregroundColor: Colors.white,
+                  backgroundColor: ColorAssset.mainColor,
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FindPasswordPage()),
+                  );
+                },
+                child: const Text("비밀번호 재설정하기"),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+            child: SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                  foregroundColor: ColorAssset.mainColor,
+                  side: BorderSide(color: ColorAssset.mainColor),
+                ),
+                onPressed: () => Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                ),
+                child: const Text("로그인 하러 가기"),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

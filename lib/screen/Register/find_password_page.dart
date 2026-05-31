@@ -142,7 +142,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     }
   }
 
-  // ── 2단계: 인증번호 확인 (형식 검증만, 실제 Firebase 인증은 3단계에서) ──────
+  // ── 2단계: 인증번호 확인 ──────────────────────────────────────────────────
   Future<void> _onVerifySms() async {
     final sms = _smsController.text.trim();
     if (sms.isEmpty) {
@@ -157,9 +157,40 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
       _showSnack('인증번호를 먼저 요청해주세요.');
       return;
     }
-    setState(() {
-      _step = _Step.inputPassword;
-    });
+
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+    setState(() => _isLoading = true);
+    userProvider.isRegistering = true;
+
+    try {
+      final credential = PhoneAuthProvider.credential(
+        verificationId: _verificationId,
+        smsCode: sms,
+      );
+      final userCred = await FirebaseAuth.instance.signInWithCredential(credential);
+      if (userCred.user == null) throw Exception();
+
+      if (!mounted) return;
+      setState(() {
+        _step = _Step.inputPassword;
+        _isLoading = false;
+      });
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      userProvider.isRegistering = false;
+      final msg = e.code == 'invalid-verification-code'
+          ? '인증번호가 올바르지 않습니다.'
+          : e.code == 'session-expired'
+              ? '인증이 만료되었습니다. 인증번호를 다시 요청해주세요.'
+              : '인증에 실패했습니다. 다시 시도해주세요.';
+      _showSnack(msg);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      userProvider.isRegistering = false;
+      _showSnack('인증에 실패했습니다. 다시 시도해주세요.');
+    }
   }
 
   // ── 3단계: 비밀번호 변경 ──────────────────────────────────────────────────
@@ -176,17 +207,10 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     userProvider.isRegistering = true; // authStateChanges 개입 차단
 
     try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: _verificationId,
-        smsCode: _smsController.text.trim(),
-      );
-      final userCred = await FirebaseAuth.instance.signInWithCredential(credential);
-      final user = userCred.user;
+      final user = FirebaseAuth.instance.currentUser;
       if (user == null) throw Exception('인증 정보를 확인할 수 없습니다.');
 
       await user.updatePassword(_pwController.text);
-      // isRegistering = true 유지한 채로 signOut — authStateChanges 차단
-      await FirebaseAuth.instance.signOut();
 
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -197,11 +221,17 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
         buttonText: "로그인하기",
         onPressed: () {
           userProvider.isRegistering = false;
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
-          );
+          // OKBtn이 onPressed() 실행 후 dialogContext.pop()을 호출하므로,
+          // pushAndRemoveUntil은 다음 프레임에 실행해 충돌을 방지
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            await FirebaseAuth.instance.signOut();
+            if (!mounted) return;
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const LoginScreen()),
+              (route) => false,
+            );
+          });
         },
       );
     } on FirebaseAuthException catch (e) {

@@ -2,6 +2,19 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'owner.g.dart';
 
+class CheckDuplicateResponse {
+  final bool emailExists;
+  final bool phoneExists;
+
+  CheckDuplicateResponse({required this.emailExists, required this.phoneExists});
+
+  factory CheckDuplicateResponse.fromJson(Map<String, dynamic> json) =>
+      CheckDuplicateResponse(
+        emailExists: json['email_exists'] as bool? ?? false,
+        phoneExists: json['phone_exists'] as bool? ?? false,
+      );
+}
+
 @JsonSerializable()
 class OwnerRegisterPost {
   String name;

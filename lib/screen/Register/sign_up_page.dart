@@ -1,8 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
@@ -67,12 +64,43 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   TextEditingController pwController = TextEditingController();
   final formKey = GlobalKey<FormState>();
   final formKey2 = GlobalKey<FormState>();
+  final idWidgetKey = GlobalKey<_IDVerificationWidgetState>();
+  final _scrollController = ScrollController();
+
+  // 각 필드 섹션의 위치 추적용 GlobalKey
+  final _nameKey = GlobalKey();
+  final _phoneKey = GlobalKey();
+  final _pwKey = GlobalKey();
+  final _pwConfirmKey = GlobalKey();
+
+  // FocusNode
+  final _nameFocus = FocusNode();
+  final _idFocus = FocusNode();
+  final _pwConfirmFocus = FocusNode();
 
   @override
   void dispose() {
     idController.dispose();
     pwController.dispose();
+    _scrollController.dispose();
+    _nameFocus.dispose();
+    _idFocus.dispose();
+    _pwConfirmFocus.dispose();
     super.dispose();
+  }
+
+  /// 특정 위젯으로 스크롤 + 포커스 이동
+  void _focusAndScroll(GlobalKey key, FocusNode focusNode) {
+    focusNode.requestFocus();
+    final ctx = key.currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+  }
+
+  void _scrollToKey(GlobalKey key) {
+    final ctx = key.currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(ctx, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
   }
 
   String? name;
@@ -91,12 +119,15 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
+                controller: _scrollController,
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     InputInfoWidget(
+                      key: _nameKey,
+                      focusNode: _nameFocus,
                       title: "이름",
                       hintText: "이름을 입력해주세요",
                       validator: validateName,
@@ -107,50 +138,45 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                       },
                     ),
                     PhoneNumberVerificationWidget(
+                        key: _phoneKey,
                         successCallback: (phoneAuthResult) {
-                      // 여기서 phoneNumber 변수에 인증된 전화번호가 들어옵니다.
                       if (phoneAuthResult != null) {
-                        print(
-                            "회원가입 전화번호 인증 성공: ${phoneAuthResult.phoneNumber}");
                         phone_number = phoneAuthResult.phoneNumber;
-                        phoneAuthCredential =
-                            phoneAuthResult.credential; // credential 저장
+                        phoneAuthCredential = phoneAuthResult.credential;
                       } else {
-                        print("전화번호 인증 실패");
                         phoneAuthCredential = null;
                       }
                     }), //전화번호
                     IDVerificationWidget(
+                      key: idWidgetKey,
                       formKey: formKey2,
+                      focusNode: _idFocus,
                       onEmailChanged: (newEmail) {
                         setState(() {
-                          email = newEmail; // 이메일 값 업데이트
+                          email = newEmail;
                         });
                       },
                     ), //아이디
-                    InputInfoWidget(
-                      title: "비밀번호",
-                      hintText: "비밀번호를 입력해주세요",
-                      hidePassword: true,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "비밀번호를 입력해주세요";
-                        }
-                        return null;
-                      },
-                      onChanged: (newPassword) {
+                    PasswordInputWidget(
+                      key: _pwKey,
+                      onPasswordChanged: (newPassword) {
                         setState(() {
                           password = newPassword;
                         });
                       },
                     ),
                     InputInfoWidget(
+                      key: _pwConfirmKey,
+                      focusNode: _pwConfirmFocus,
                       title: "비밀번호 확인",
                       hintText: "비밀번호를 입력해주세요",
                       hidePassword: true,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return "비밀번호를 입력해주세요";
+                        }
+                        if (value != password) {
+                          return "비밀번호가 일치하지 않습니다";
                         }
                         return null;
                       },
@@ -165,7 +191,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
               child: SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -181,315 +207,207 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                   onPressed: _isLoading
                       ? null
                       : () async {
-                          if (formKey2.currentState!.validate()) {
-                            print("id validator");
-                          } else {
+                          // 1. 아이디 형식 검증
+                          if (!formKey2.currentState!.validate()) {
+                            _focusAndScroll(idWidgetKey, _idFocus);
                             return;
                           }
-                          if (formKey.currentState!.validate()) {
-                            setState(() {
-                              _isLoading = true;
-                            });
-                            try {
-                              if (password != confirmPassword) {
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                                CommonDialog.show(
-                                  context: context,
-                                  title: "비밀번호 확인",
-                                  content: "비밀번호가 일치하지 않습니다.",
-                                  buttonText: "확인",
-                                  onPressed: () {},
-                                );
-                                return;
-                              }
+                          // 2. 나머지 필드 검증 (이름, 비밀번호 확인)
+                          if (!formKey.currentState!.validate()) {
+                            if (name == null || name!.isEmpty) {
+                              _focusAndScroll(_nameKey, _nameFocus);
+                            } else {
+                              _focusAndScroll(_pwConfirmKey, _pwConfirmFocus);
+                            }
+                            return;
+                          }
 
-                              if (phone_number == null ||
-                                  phoneAuthCredential == null) {
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                                CommonDialog.show(
-                                  context: context,
-                                  title: "전화번호를 확인할 수 없습니다.",
-                                  content: "전화번호 인증을 완료해주세요.",
-                                  buttonText: "확인",
-                                  onPressed: () {},
-                                );
-                                return;
-                              }
+                          // 3. 비밀번호 일치 확인
+                          if (password != confirmPassword) {
+                            CommonDialog.show(
+                              context: context,
+                              title: "비밀번호 확인",
+                              content: "비밀번호가 일치하지 않습니다.",
+                              buttonText: "확인",
+                              onPressed: () {},
+                            );
+                            return;
+                          }
 
-                              UserCredential? userCredential;
+                          // 4. 전화번호 인증 완료 확인
+                          if (phone_number == null || phoneAuthCredential == null) {
+                            _scrollToKey(_phoneKey);
+                            CommonDialog.show(
+                              context: context,
+                              title: "전화번호를 확인할 수 없습니다.",
+                              content: "전화번호 인증을 완료해주세요.",
+                              buttonText: "확인",
+                              onPressed: () {},
+                            );
+                            return;
+                          }
 
+                          // 5. 비밀번호 규칙 확인
+                          if (!PasswordValidator.isValid(password ?? "")) {
+                            _scrollToKey(_pwKey);
+                            CommonDialog.show(
+                              context: context,
+                              title: "비밀번호 확인",
+                              content: "비밀번호 규칙을 확인해주세요.",
+                              buttonText: "확인",
+                              onPressed: () {},
+                            );
+                            return;
+                          }
+
+                          // 6. 아이디 중복 체크 (마지막)
+                          setState(() => _isLoading = true);
+                          final idAvailable = await idWidgetKey.currentState!.checkDuplicateForSubmit();
+                          if (!mounted) return;
+                          if (!idAvailable) {
+                            setState(() => _isLoading = false);
+                            formKey2.currentState!.validate();
+                            _focusAndScroll(idWidgetKey, _idFocus);
+                            return;
+                          }
+
+                          Provider.of<UserProvider>(context, listen: false)
+                              .isRegistering = true;
+
+                          UserCredential? userCredential;
+                          bool didCreatePhoneAccount = false;
+
+                              // Step 1: 전화번호 계정 확보 + 이메일 링크
                               try {
-                                // 전화번호 credential로 로그인
-                                print("전화번호 credential로 로그인합니다.");
-                                final phoneResult = await FirebaseAuth.instance
-                                    .signInWithCredential(phoneAuthCredential!);
+                                User? phoneUser = FirebaseAuth.instance.currentUser;
+                                if (phoneUser == null) {
+                                  final result = await FirebaseAuth.instance
+                                      .signInWithCredential(phoneAuthCredential!);
+                                  phoneUser = result.user;
+                                  didCreatePhoneAccount = true;
+                                }
 
-                                // 이메일 credential 생성
                                 final emailCredential =
                                     EmailAuthProvider.credential(
                                   email: PhoneUtils.formatEmailForServer(
                                       email ?? ""),
                                   password: password ?? "",
                                 );
-
-                                // 이메일 credential을 전화번호 계정에 링크
-                                userCredential = await phoneResult.user!
+                                userCredential = await phoneUser!
                                     .linkWithCredential(emailCredential);
-                                print("이메일이 전화번호 계정에 성공적으로 링크되었습니다.");
-
-                                // Display name 설정
                                 await userCredential.user!
                                     .updateDisplayName("displayName");
                               } on FirebaseAuthException catch (e) {
-                                print("계정 링크 실패: ${e.code} - ${e.message}");
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                                String errorMessage = "회원가입 중 오류가 발생했습니다.";
-                                if (e.code == 'email-already-in-use') {
-                                  errorMessage = "이미 사용 중인 이메일입니다.";
-                                } else if (e.code ==
-                                    'credential-already-in-use') {
-                                  errorMessage = "이미 다른 계정에 연결된 자격증명입니다.";
-                                } else if (e.code ==
-                                    'provider-already-linked') {
-                                  errorMessage = "이미 가입된 계정입니다.";
+                                print("Step1 FirebaseAuthException: ${e.code} - ${e.message}");
+                                // 이번 가입에서 새로 만든 전화번호 계정만 삭제, 기존 계정은 건드리지 않음
+                                if (didCreatePhoneAccount) {
+                                  await _deleteFirebaseAccount();
                                 } else {
-                                  errorMessage = e.message ?? "이메일 링크 중 오류 발생";
-                                }
-
-                                if (mounted) {
-                                  CommonDialog.show(
-                                    context: context,
-                                    title: "회원가입 오류",
-                                    content: errorMessage,
-                                    buttonText: "확인",
-                                    onPressed: () {},
-                                  );
-                                }
-                                return;
-                              } catch (e) {
-                                print("계정 링크 중 일반 오류: $e");
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                                if (mounted) {
-                                  CommonDialog.show(
-                                    context: context,
-                                    title: "회원가입 오류",
-                                    content: e.toString(),
-                                    buttonText: "확인",
-                                    onPressed: () {},
-                                  );
-                                }
-                                return;
-                              }
-
-                              // Firebase UserCredential이 최종적으로 설정되었는지 확인
-                              if (userCredential.user == null) {
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                                if (mounted) {
-                                  CommonDialog.show(
-                                    context: context,
-                                    title: "회원가입 오류",
-                                    content: "Firebase 계정 처리에 실패했습니다.",
-                                    buttonText: "확인",
-                                    onPressed: () {},
-                                  );
-                                }
-                                return;
-                              }
-
-                              try {
-                                // 전화번호를 서버 형식으로 변환 (+821012345678)
-                                String formattedPhone =
-                                    PhoneUtils.formatForServer(
-                                        phone_number ?? "");
-                                // 이메일에 @gifnut.com 추가
-                                String formattedEmail =
-                                    PhoneUtils.formatEmailForServer(
-                                        email ?? "");
-
-                                OwnerRegisterPost owner = OwnerRegisterPost(
-                                    uid: userCredential.user!.uid,
-                                    phone_number: formattedPhone,
-                                    name: name ?? "",
-                                    email: formattedEmail);
-
-                                try {
-                                  print("회원가입 API 호출 시작");
-                                  OwnerRegisterResponse? response;
-                                  try {
-                                    response =
-                                        await Api().client.registerOwner(owner);
-                                    print("회원가입 API 호출 성공: $response");
-                                    print(
-                                        "response.owner_id: ${response?.owner_id}");
-                                  } catch (apiError) {
-                                    print("회원가입 API 호출 중 예외 발생: $apiError");
-                                    print("예외 타입: ${apiError.runtimeType}");
-
-                                    // Firebase 계정 삭제
-                                    try {
-                                      await userCredential.user?.delete();
-                                      await FirebaseAuth.instance.signOut();
-                                      print("Firebase 계정 삭제 완료 (API 예외)");
-                                    } catch (deleteError) {
-                                      print(
-                                          "Firebase 계정 삭제 중 오류: $deleteError");
-                                    }
-
-                                    if (mounted) {
-                                      CommonDialog.show(
-                                        context: context,
-                                        title: "회원가입 오류",
-                                        content: ApiErrorUtils.toUserMessage(apiError),
-                                        buttonText: "확인",
-                                        onPressed: () {},
-                                      );
-                                    }
-                                    return;
-                                  }
-
-                                  // response가 null이거나 owner_id가 null인 경우 실패 처리
-                                  if (response == null ||
-                                      response.owner_id == null) {
-                                    // API 호출은 성공했지만 owner_id가 null인 경우
-                                    // Firebase 계정 삭제
-                                    print(
-                                        "회원가입 실패: owner_id가 null - Firebase 계정 삭제 시작");
-                                    try {
-                                      await userCredential.user?.delete();
-                                      await FirebaseAuth.instance.signOut();
-                                      print("Firebase 계정 삭제 완료");
-                                    } catch (e) {
-                                      print("Firebase 계정 삭제 중 오류: $e");
-                                    }
-
-                                    if (mounted) {
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-                                      print("회원가입 실패 다이얼로그 표시");
-                                      CommonDialog.show(
-                                        context: context,
-                                        title: "회원가입 실패",
-                                        content: "서버오류: 잠시 후 다시 시도해주세요.",
-                                        buttonText: "확인",
-                                        onPressed: () {},
-                                      );
-                                    }
-                                    return;
-                                  }
-
-                                  // 회원가입 성공 (여기서는 response와 owner_id가 null이 아님을 확인했으므로 직접 접근)
-                                  final ownerId = response.owner_id!;
-                                  print("회원가입 성공: owner_id=$ownerId");
-                                  my_app.User user = my_app.User(
-                                      owner_id: ownerId,
-                                      name: name ?? "",
-                                      email: email ?? "",
-                                      phone_number: phone_number ?? "");
-
-                                  Provider.of<UserProvider>(context,
-                                          listen: false)
-                                      .setUser(user);
-
-                                  // 푸시 토큰 등록 (백그라운드, 실패해도 가입 플로우 계속 진행)
-                                  _registerPushToken(ownerId);
-
-                                  // 성공 시에만 가입완료 페이지로 이동
-                                  if (mounted) {
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                            builder: (context) =>
-                                                const SignUpCompletePage()));
-                                  }
-                                } catch (e) {
-                                  print("회원가입 API 예외 발생: $e");
-                                  try {
-                                    await userCredential.user?.delete();
-                                    await FirebaseAuth.instance.signOut();
-                                    print("Firebase 계정 삭제 완료 (예외)");
-                                  } catch (deleteError) {
-                                    print("Firebase 계정 삭제 중 오류: $deleteError");
-                                  }
-
-                                  if (mounted) {
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    CommonDialog.show(
-                                      context: context,
-                                      title: "회원가입 오류",
-                                      content: ApiErrorUtils.toUserMessage(e),
-                                      buttonText: "확인",
-                                      onPressed: () {},
-                                    );
-                                  }
-                                }
-                              } catch (e) {
-                                try {
-                                  await userCredential.user?.delete();
                                   await FirebaseAuth.instance.signOut();
-                                } catch (deleteError) {
-                                  print("Firebase 계정 삭제 중 오류: $deleteError");
                                 }
+                                if (!mounted) return;
+                                Provider.of<UserProvider>(context, listen: false)
+                                    .isRegistering = false;
+                                setState(() => _isLoading = false);
+                                String msg;
+                                if (e.code == 'email-already-in-use' ||
+                                    e.code == 'provider-already-linked') {
+                                  msg = "이미 사용 중인 아이디입니다.";
+                                } else if (e.code == 'credential-already-in-use') {
+                                  msg = "이미 다른 계정에 연결된 전화번호입니다.";
+                                } else if (e.code == 'weak-password') {
+                                  msg = "비밀번호는 6자 이상 입력해주세요.";
+                                } else {
+                                  msg = "잠시 후 다시 시도해주세요.";
+                                }
+                                CommonDialog.show(
+                                  context: context,
+                                  title: "회원가입 오류",
+                                  content: msg,
+                                  buttonText: "확인",
+                                  onPressed: () {},
+                                );
+                                return;
+                              } catch (e) {
+                                print("Step1 일반 오류: ${e.runtimeType} - $e");
+                                if (didCreatePhoneAccount) {
+                                  await _deleteFirebaseAccount();
+                                } else {
+                                  await FirebaseAuth.instance.signOut();
+                                }
+                                if (!mounted) return;
+                                Provider.of<UserProvider>(context, listen: false)
+                                    .isRegistering = false;
+                                setState(() => _isLoading = false);
+                                CommonDialog.show(
+                                  context: context,
+                                  title: "회원가입 오류",
+                                  content: "잠시 후 다시 시도해주세요.",
+                                  buttonText: "확인",
+                                  onPressed: () {},
+                                );
+                                return;
+                              }
 
-                                if (mounted) {
-                                  setState(() {
-                                    _isLoading = false;
-                                  });
+                              // Step 2: 서버 회원가입 API 호출
+                              try {
+                                final response = await Api()
+                                    .client
+                                    .registerOwner(OwnerRegisterPost(
+                                      uid: userCredential.user!.uid,
+                                      phone_number: PhoneUtils.formatForServer(
+                                          phone_number ?? ""),
+                                      name: name ?? "",
+                                      email: PhoneUtils.formatEmailForServer(
+                                          email ?? ""),
+                                    ));
+
+                                if (response == null ||
+                                    response.owner_id == null) {
+                                  await _deleteFirebaseAccount(userCredential);
+                                  if (!mounted) return;
+                                  Provider.of<UserProvider>(context, listen: false)
+                                      .isRegistering = false;
+                                  setState(() => _isLoading = false);
                                   CommonDialog.show(
                                     context: context,
                                     title: "회원가입 실패",
-                                    content: ApiErrorUtils.toUserMessage(e),
+                                    content: "서버 오류: 잠시 후 다시 시도해주세요.",
                                     buttonText: "확인",
                                     onPressed: () {},
                                   );
+                                  return;
                                 }
-                              }
-                              // FirebaseAuth.instance.currentUser
-                              //     ?.sendEmailVerification();
-                            } on FirebaseAuthException catch (e) {
-                              setState(() {
-                                _isLoading = false;
-                              });
-                              if (e.code == 'weak-password') {
-                                print('the password provided is too weak');
+
+                                if (!mounted) return;
+                                Provider.of<UserProvider>(context, listen: false)
+                                  ..isRegistering = false
+                                  ..setUser(my_app.User(
+                                    owner_id: response.owner_id!,
+                                    name: name ?? "",
+                                    email: email ?? "",
+                                    phone_number: phone_number ?? "",
+                                  ));
+
+                                setState(() => _isLoading = false);
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const SignUpCompletePage()));
+                              } catch (e) {
+                                await _deleteFirebaseAccount(userCredential);
+                                if (!mounted) return;
+                                Provider.of<UserProvider>(context, listen: false)
+                                    .isRegistering = false;
+                                setState(() => _isLoading = false);
                                 CommonDialog.show(
-                                    context: context,
-                                    title: "비밀번호 확인",
-                                    content: "취약한 비밀번호입니다. 다른 비밀번호를 사용해주세요.",
-                                    buttonText: "확인",
-                                    onPressed: () {});
-                              } else if (e.code == 'email-already-in-use') {
-                                print(
-                                    'The account already exists for that email.');
-                                CommonDialog.show(
-                                    context: context,
-                                    title: "아이디 확인",
-                                    content: "이미 사용중인 아이디입니다. 다른 아이디를 사용해주세요.",
-                                    buttonText: "확인",
-                                    onPressed: () {});
-                              } else {
-                                print(e.code);
-                              }
-                            } catch (e) {
-                              setState(() {
-                                _isLoading = false;
-                              });
-                            }
+                                  context: context,
+                                  title: "회원가입 오류",
+                                  content: ApiErrorUtils.toUserMessage(e),
+                                  buttonText: "확인",
+                                  onPressed: () {},
+                                );
                           }
 
                           // Navigator.push(
@@ -516,20 +434,24 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
         ));
   }
 
-  Future<void> _registerPushToken(int ownerId) async {
+  /// Firebase 계정 삭제 후 로그아웃. 실패해도 무시하고 계속 진행.
+  Future<void> _deleteFirebaseAccount([UserCredential? credential]) async {
     try {
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      if (fcmToken == null || fcmToken.isEmpty) return;
-      final deviceType = defaultTargetPlatform == TargetPlatform.iOS ? 'ios' : 'android';
-      await Api().client.registerOwnerPushToken(
-            ownerId,
-            OwnerPushTokenPost(fcm_token: fcmToken, device_type: deviceType),
-          );
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('registered_fcm_token', fcmToken);
-      print('Push token 등록 성공 (회원가입)');
+      final user = credential?.user ?? FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        print("Firebase 계정 삭제 시도: uid=${user.uid}");
+        await user.delete();
+        print("Firebase 계정 삭제 완료");
+      } else {
+        print("Firebase 계정 삭제: currentUser 없음 (이미 로그아웃 상태)");
+      }
     } catch (e) {
-      print('Push token 등록 실패 (회원가입): $e');
+      print("Firebase 계정 삭제 실패: ${e.runtimeType} - $e");
+    }
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      print("Firebase signOut 실패: $e");
     }
   }
 
@@ -555,13 +477,15 @@ class InputInfoWidget extends StatefulWidget {
       required this.hintText,
       required this.validator,
       required this.onChanged,
-      this.hidePassword});
+      this.hidePassword,
+      this.focusNode});
 
   final String title;
   String hintText;
   Function(String?) validator;
   final Function(String) onChanged;
   bool? hidePassword;
+  final FocusNode? focusNode;
 
   @override
   State<InputInfoWidget> createState() => _InputInfoWidgetState();
@@ -591,30 +515,54 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const SizedBox(height: 10.0),
+          const SizedBox(height: 20),
           Text(
             widget.title,
             style: TextAssset.header2,
           ),
+          const SizedBox(height: 8),
           TextFormField(
             controller: inputController,
+            focusNode: widget.focusNode,
             obscureText: _hidePassword == null ? false : _hidePassword!,
             keyboardType: TextInputType.text,
             decoration: InputDecoration(
-                    border: const UnderlineInputBorder(),
-                    suffixIcon: _hidePassword == null
-                        ? null
-                        : IconButton(
-                            icon: _hidePassword!
-                                ? const Icon(Icons.visibility_off)
-                                : const Icon(Icons.visibility),
-                            onPressed: () {
-                              setState(() {
-                                _hidePassword = !_hidePassword!;
-                              });
-                            },
-                          ))
-                .copyWith(hintText: widget.hintText),
+              hintText: widget.hintText,
+              hintStyle: TextStyle(color: Colors.grey[400]),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFAAAAAA)),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFFF5252)),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: const BorderSide(color: Color(0xFFFF5252)),
+              ),
+              suffixIcon: _hidePassword == null
+                  ? null
+                  : IconButton(
+                      icon: _hidePassword!
+                          ? const Icon(Icons.visibility_off_outlined, color: Color(0xFFAAAAAA))
+                          : const Icon(Icons.visibility_outlined, color: Color(0xFFAAAAAA)),
+                      onPressed: () {
+                        setState(() {
+                          _hidePassword = !_hidePassword!;
+                        });
+                      },
+                    ),
+            ),
             validator: (value) {
               return widget.validator(value);
             },
@@ -625,19 +573,7 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         ]);
   }
 
-  static const inputDecoration =
-      InputDecoration(border: UnderlineInputBorder());
 }
-
-final inputDecoration = InputDecoration(
-  // isDense: true,
-  border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(8.0),
-      borderSide: const BorderSide(
-        color: Colors.redAccent,
-        width: 2,
-      )),
-);
 
 // 이메일과 비밀번호를 사용하여 Firebase Authentication에 새 사용자를 만듭니다.
 void signUpWithEmail(String email, String password) async {
@@ -668,10 +604,11 @@ void signUpWithEmail(String email, String password) async {
 }
 
 class IDVerificationWidget extends StatefulWidget {
-  final Function(String) onEmailChanged; // 이메일 변경 시 호출되는 콜백
+  final Function(String) onEmailChanged;
   final GlobalKey<FormState> formKey;
+  final FocusNode? focusNode;
   const IDVerificationWidget(
-      {super.key, required this.onEmailChanged, required this.formKey});
+      {super.key, required this.onEmailChanged, required this.formKey, this.focusNode});
 
   @override
   State<IDVerificationWidget> createState() => _IDVerificationWidgetState();
@@ -679,13 +616,37 @@ class IDVerificationWidget extends StatefulWidget {
 
 class _IDVerificationWidgetState extends State<IDVerificationWidget> {
   TextEditingController idController = TextEditingController();
-  // final _formKey = GlobalKey<FormState>();
-  var hasRecipe = false;
+  String _value = '';
+  // null = 미체크, true = 사용 가능, false = 중복
+  bool? _idAvailable;
+  bool _isChecking = false;
 
   @override
   void dispose() {
     idController.dispose();
     super.dispose();
+  }
+
+  // 확인 버튼에서 호출 — 중복 체크 후 결과 반환 (true=진행 가능, false=중복)
+  Future<bool> checkDuplicateForSubmit() async {
+    final value = idController.text;
+    if (!RegExp(r'^[a-z0-9]{5,20}$').hasMatch(value)) return false;
+    setState(() {
+      _isChecking = true;
+      _idAvailable = null;
+    });
+    try {
+      final response = await Api().client.checkDuplicate(email: '$value@gifnut.com');
+      final available = !response.emailExists;
+      if (mounted) setState(() => _idAvailable = available);
+      return available;
+    } catch (e) {
+      print('[아이디 중복체크 에러] $e');
+      if (mounted) setState(() => _idAvailable = null);
+      return true; // 서버 에러 시 진행 허용
+    } finally {
+      if (mounted) setState(() => _isChecking = false);
+    }
   }
 
   @override
@@ -696,84 +657,231 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 10.0),
+              const SizedBox(height: 20),
               const Text(
-                "이메일",
+                "아이디",
                 style: TextAssset.header2,
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  Expanded(
-                    flex: 3,
-                    child: TextFormField(
-                      // style: TextStyle(fontSize: 15, height: 0.1),
-                      controller: idController,
-                      decoration:
-                          inputDecoration.copyWith(hintText: "아이디를 입력하세요"),
-                      onChanged: (text) async {
-                        final check = await checkEmail(text);
-                        setState(() => hasRecipe = check);
-                        widget.onEmailChanged(text); // 부모에게 이메일 값 전달
-                      },
-                      // validator: (_) => (hasRecipe) ? "Exists" : null,
-                      validator: (value) {
-                        print("id validator 호출");
-                        if (value == null || value.isEmpty) {
-                          return "이메일을 입력해주세요.";
-                        }
-
-                        // if (hasRecipe == false) {
-                        //   return "중복된 이메일 입니다. 다른 이메일을 입력해주세요.";
-                        // }
-
-                        // 내부적으로 @gifnut.com을 붙여서 검사
-                        if (isValidEmail(value) == false) {
-                          return "이메일 형식이 올바르지 않습니다. 올바른 이메일을 입력해주세요.";
-                        }
-
-                        return null;
-                      },
-                    ),
-                  ),
-                ],
-              )
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: idController,
+                focusNode: widget.focusNode,
+                decoration: _inputDecoration.copyWith(
+                  hintText: "아이디를 입력하세요",
+                  suffixIcon: _isChecking
+                      ? const Padding(
+                          padding: EdgeInsets.all(12),
+                          child: SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        )
+                      : null,
+                ),
+                onChanged: (text) {
+                  setState(() {
+                    _value = text;
+                    _idAvailable = null;
+                  });
+                  widget.onEmailChanged(text);
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "아이디를 입력해주세요.";
+                  }
+                  if (!RegExp(r'^[a-z0-9]{5,20}$').hasMatch(value)) {
+                    return "5~20자의 영문 소문자, 숫자만 사용 가능합니다.";
+                  }
+                  if (_idAvailable == false) {
+                    return "이미 존재하는 아이디입니다.";
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 8),
+              _RuleRow(
+                text: "5~20자 입력",
+                satisfied: _value.isEmpty
+                    ? null
+                    : (_value.length >= 5 && _value.length <= 20),
+              ),
+              _RuleRow(
+                text: "영문 소문자, 숫자만 사용 가능",
+                satisfied: _value.isEmpty
+                    ? null
+                    : RegExp(r'^[a-z0-9]+$').hasMatch(_value),
+              ),
+              if (_idAvailable != null) ...[
+                const SizedBox(height: 2),
+                _RuleRow(
+                  text: _idAvailable! ? "사용 가능한 아이디입니다." : "이미 존재하는 아이디입니다.",
+                  satisfied: _idAvailable,
+                ),
+              ],
             ]));
   }
 
-  bool isValidEmail(String email) {
-    // 내부적으로 @gifnut.com을 붙여서 검사
-    String emailToCheck = email.contains('@') ? email : '$email@gifnut.com';
-    const pattern = r'^[A-Za-z0-9_\.\-]+@[A-Za-z0-9\-]+\.[A-za-z0-9\-]+';
-    final regex = RegExp(pattern);
-    return regex.hasMatch(emailToCheck);
-  }
-
-  Future<bool> checkEmail(String email) async {
-    // 내부적으로 @gifnut.com을 붙여서 중복 체크
-    String emailToCheck = email.contains('@') ? email : '$email@gifnut.com';
-    final userDB = FirebaseFirestore.instance.collection('User');
-    final query = userDB.where('email', isEqualTo: emailToCheck);
-    // final query = userDB.where('email', isEqualTo: "id3");
-
-    final querySnapshot = await query.get();
-    if (querySnapshot.docs.isEmpty) {
-      print('데이터 중복 안 됨 가입 진행 가능');
-      return Future<bool>.value(true);
-    } else {
-      print('데이터 중복 됨 가입 진행 불가');
-      return Future<bool>.value(false);
-    }
-  }
-
-  static const inputDecoration = InputDecoration(
-    // isDense: true,
-    border: UnderlineInputBorder(
-        // borderRadius: BorderRadius.circular(8.0),
-        // borderSide: const BorderSide(
-        //   color: Colors.redAccent,
-        //   width: 2,
-        // )
-        ),
+  static InputDecoration get _inputDecoration => InputDecoration(
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFAAAAAA)),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFFF5252)),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFFF5252)),
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
   );
+}
+
+class PasswordValidator {
+  static bool hasValidLength(String pw) =>
+      pw.length >= 8 && pw.length <= 16;
+
+  static bool hasTwoOrMoreTypes(String pw) {
+    int count = 0;
+    if (RegExp(r'[A-Za-z]').hasMatch(pw)) count++;
+    if (RegExp(r'[0-9]').hasMatch(pw)) count++;
+    if (RegExp(r'[^A-Za-z0-9]').hasMatch(pw)) count++;
+    return count >= 2;
+  }
+
+  static bool noConsecutiveChars(String pw) {
+    for (int i = 0; i < pw.length - 2; i++) {
+      if (pw[i] == pw[i + 1] && pw[i + 1] == pw[i + 2]) return false;
+    }
+    return true;
+  }
+
+  static bool isValid(String pw) =>
+      hasValidLength(pw) && hasTwoOrMoreTypes(pw) && noConsecutiveChars(pw);
+}
+
+class PasswordInputWidget extends StatefulWidget {
+  final Function(String) onPasswordChanged;
+
+  const PasswordInputWidget({super.key, required this.onPasswordChanged});
+
+  @override
+  State<PasswordInputWidget> createState() => _PasswordInputWidgetState();
+}
+
+class _PasswordInputWidgetState extends State<PasswordInputWidget> {
+  final _controller = TextEditingController();
+  bool _obscure = true;
+  String _value = '';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        const Text("비밀번호", style: TextAssset.header2),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: _controller,
+          obscureText: _obscure,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFAAAAAA)),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFFF5252)),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: Color(0xFFFF5252)),
+            ),
+            hintText: "••••••••••",
+            hintStyle: const TextStyle(color: Color(0xFFBBBBBB), letterSpacing: 2),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                color: const Color(0xFFAAAAAA),
+              ),
+              onPressed: () => setState(() => _obscure = !_obscure),
+            ),
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) return "비밀번호를 입력해주세요";
+            if (!PasswordValidator.isValid(value)) return "비밀번호 규칙을 확인해주세요";
+            return null;
+          },
+          onChanged: (value) {
+            setState(() => _value = value);
+            widget.onPasswordChanged(value);
+          },
+        ),
+        const SizedBox(height: 8),
+        _RuleRow(
+          text: "영문/숫자/특수문자 중 2가지 이상 포함",
+          satisfied: _value.isEmpty ? null : PasswordValidator.hasTwoOrMoreTypes(_value),
+        ),
+        _RuleRow(
+          text: "8자 이상 16자 이하 입력 (공백 제외)",
+          satisfied: _value.isEmpty ? null : PasswordValidator.hasValidLength(_value),
+        ),
+        _RuleRow(
+          text: "연속 3자 이상 동일한 문자/숫자 제외",
+          satisfied: _value.isEmpty ? null : PasswordValidator.noConsecutiveChars(_value),
+        ),
+      ],
+    );
+  }
+}
+
+class _RuleRow extends StatelessWidget {
+  final String text;
+  final bool? satisfied;
+
+  const _RuleRow({required this.text, required this.satisfied});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = satisfied == null
+        ? const Color(0xFF888888)
+        : satisfied!
+            ? const Color(0xFF4CAF50)
+            : const Color(0xFF888888);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Text("✓ ", style: TextStyle(fontSize: 12, color: color)),
+          Text(text, style: TextStyle(fontSize: 12, color: color)),
+        ],
+      ),
+    );
+  }
 }

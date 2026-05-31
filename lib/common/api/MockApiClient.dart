@@ -34,6 +34,13 @@ class MockApiClient implements ApiClient {
       OwnerRegisterResponse(statusCode: 200, owner_id: 12345);
 
   @override
+  Future<CheckDuplicateResponse> checkDuplicate({
+    String? email,
+    String? phoneNumber,
+  }) async =>
+      CheckDuplicateResponse(emailExists: false, phoneExists: false);
+
+  @override
   Future<OwnerPushTokenResponse> registerOwnerPushToken(
     int ownerId,
     OwnerPushTokenPost pushToken,

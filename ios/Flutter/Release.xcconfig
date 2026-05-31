@@ -5,4 +5,4 @@
 FLUTTER_TARGET=lib/main_prod.dart
 ASSET_PREFIX=prod
 BUNDLE_NAME=GifnutOwnerProd
-BUNDLE_DISPLAY_NAME=GifnutOwnerProd
+BUNDLE_DISPLAY_NAME=기프넛 사장님

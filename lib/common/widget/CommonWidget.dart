@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
+import 'package:owner/common/api/API.dart';
+import 'package:owner/common/utils/phone_utils.dart';
+import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:dio/dio.dart';
 import 'dart:async'; // Import for Timer
 
@@ -50,6 +53,7 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
+          const SizedBox(height: 20),
           Text(
             widget.title,
             style: const TextStyle(
@@ -94,16 +98,28 @@ class _InputInfoWidgetState extends State<InputInfoWidget> {
         ]);
   }
 
-  final inputDecoration = InputDecoration(
+  InputDecoration get inputDecoration => InputDecoration(
     hintStyle: TextStyle(color: Colors.grey[400]),
-    border: UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.grey[300]!),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
     ),
-    enabledBorder: UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.grey[300]!),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
     ),
-    focusedBorder: const UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.black, width: 2),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFAAAAAA)),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFFF5252)),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFFF5252)),
     ),
   );
 }
@@ -180,14 +196,26 @@ class _PhoneNumberVerificationWidgetState
 
   final inputDecoration = InputDecoration(
     hintStyle: TextStyle(color: Colors.grey[400]),
-    border: UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.grey[300]!),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
     ),
-    enabledBorder: UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.grey[300]!),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
     ),
-    focusedBorder: const UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.black, width: 2),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFAAAAAA)),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFFF5252)),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFFF5252)),
     ),
   );
 
@@ -348,6 +376,7 @@ class _PhoneNumberVerificationWidgetState
                       ),
                       const SizedBox(height: 20),
                     ],
+                    const SizedBox(height: 20),
                     const Text(
                       "전화번호",
                       style: TextStyle(
@@ -356,7 +385,7 @@ class _PhoneNumberVerificationWidgetState
                         color: Colors.black87,
                       ),
                     ),
-                    // const SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
@@ -387,7 +416,7 @@ class _PhoneNumberVerificationWidgetState
                               foregroundColor: Colors.white,
                               backgroundColor: ColorAssset.mainColor,
                               fixedSize: const Size(110, 50)),
-                          onPressed: () {
+                          onPressed: () async {
                             final phoneNumber = phoneNumberController.text;
                             // 전화번호 형식 검증 (3-4-4 형식: 010-1234-5678)
                             final phonePattern = RegExp(r'^010-\d{4}-\d{4}$');
@@ -403,12 +432,36 @@ class _PhoneNumberVerificationWidgetState
                               return;
                             }
 
+                            // 회원가입 시 전화번호 중복 체크
+                            if (!widget.skipRegistrationCheck) {
+                              try {
+                                final e164 = PhoneUtils.formatForServer(phoneNumber);
+                                print('[중복체크] 전화번호 중복 체크 시작: $e164');
+                                final result = await Api().client.checkDuplicate(phoneNumber: e164);
+                                print('[중복체크] phoneExists=${result.phoneExists}');
+                                if (result.phoneExists) {
+                                  if (mounted) {
+                                    CommonDialog.show(
+                                      context: context,
+                                      title: "전화번호 확인",
+                                      content: "이미 가입된 번호입니다.",
+                                      buttonText: "확인",
+                                      onPressed: () {},
+                                    );
+                                  }
+                                  return;
+                                }
+                              } catch (e) {
+                                print('[중복체크] 전화번호 중복 체크 실패 (진행 허용): $e');
+                              }
+                            } else {
+                              print('[중복체크] skipRegistrationCheck=true, 건너뜀');
+                            }
+
                             setState(() {
                               isTouched = true;
                             });
                             verifyPhoneNumber(phoneNumberController.text);
-                            // verifyPhoneNumber("+821025446458");
-                            // verifyPhoneNumber("+821012345678");
                           },
                           child: isTouched ? const Text('재전송') : const Text('인증'),
                         ),
@@ -478,39 +531,11 @@ class _PhoneNumberVerificationWidgetState
                                                           validationNumberController
                                                               .text);
 
-                                              // 인증번호 검증
-                                              await _auth.signInWithCredential(
-                                                  credential);
+                                                // credential 유효성 확인: 임시 로그인 후 즉시 로그아웃
+                                              await _auth.signInWithCredential(credential);
+                                              await _auth.signOut();
 
-                                              // 전화번호로 이미 가입된 계정인지 확인 (회원가입 시에만 체크)
-                                              // owner 프로젝트에는 LoginService가 없으므로 이 부분은 주석 처리
-                                              // if (!widget.skipRegistrationCheck) {
-                                              //   try {
-                                              //     await Api().setBaseClient(AppConfig.baseUrl);
-                                              //     String e164PhoneNumber = _formatToE164(phoneNumberController.text);
-                                              //     final provider = widget.provider ?? (widget.isSocialLogin ? "" : "email");
-                                              //     final isRegistered = await loginService.isRegisteredUser(null, provider, phone: e164PhoneNumber);
-                                              //     if (isRegistered) {
-                                              //       if (mounted) {
-                                              //         await _auth.signOut();
-                                              //         ScaffoldMessenger.of(context).showSnackBar(
-                                              //           SnackBar(
-                                              //             content: Text('이미 가입된 전화번호입니다.'),
-                                              //             duration: Duration(seconds: 2),
-                                              //             backgroundColor: Colors.red[700],
-                                              //           ),
-                                              //         );
-                                              //       }
-                                              //       return;
-                                              //     }
-                                              //   } on DioException catch (e) {
-                                              //     print("전화번호 가입 확인 API 오류: $e");
-                                              //   } catch (e) {
-                                              //     print("전화번호 가입 확인 오류: $e");
-                                              //   }
-                                              // }
-
-                                              // 인증 성공
+                                              // 인증 성공 — credential을 상위로 전달 (실제 로그인은 상위에서 처리)
                                               if (mounted &&
                                                   !_hasCalledSuccessCallback) {
                                                 _hasCalledSuccessCallback =
@@ -519,7 +544,6 @@ class _PhoneNumberVerificationWidgetState
                                                   isVerified = true;
                                                 });
 
-                                                // successCallback 호출
                                                 widget.successCallback(
                                                   PhoneAuthResult(
                                                     credential: credential,
@@ -529,9 +553,6 @@ class _PhoneNumberVerificationWidgetState
                                                     name: name,
                                                   ),
                                                 );
-
-                                                // 인증 완료 후 로그아웃 (임시 인증이므로)
-                                                await _auth.signOut();
                                               }
                                             } on FirebaseAuthException catch (e) {
                                               // 인증 실패

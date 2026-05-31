@@ -177,35 +177,73 @@ class MyApp extends StatelessWidget {
           ],
           child: F.isMock
               ? _buildApp(context, const Home())
-              : StreamBuilder<firebase_auth.User?>(
-                  stream: FirebaseAuth.instance.authStateChanges(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const MaterialApp(
-                        home: Scaffold(
-                          body: Center(child: CircularProgressIndicator()),
-                        ),
-                        debugShowCheckedModeBanner: false,
-                      );
-                    }
-
-                    final firebaseUser = snapshot.data;
-                    if (firebaseUser != null) {
-                      Provider.of<UserProvider>(context, listen: false)
-                          .loadProfileIfSignedIn();
-                    } else {
-                      Provider.of<UserProvider>(context, listen: false)
-                          .clearUser();
-                    }
-
-                    final Widget homeWidget = firebaseUser != null
-                        ? const Home()
-                        : const LoginScreen();
-
-                    return _buildApp(context, homeWidget);
-                  },
-                ),
+              : _AuthGate(buildApp: _buildApp),
         ));
+  }
+}
+
+class _AuthGate extends StatefulWidget {
+  const _AuthGate({required this.buildApp});
+  final Widget Function(BuildContext, Widget) buildApp;
+
+  @override
+  State<_AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<_AuthGate> {
+  // null = 아직 확인 중, true = 로그인, false = 로그아웃
+  bool? _isLoggedIn;
+
+  @override
+  void initState() {
+    super.initState();
+    FirebaseAuth.instance.authStateChanges().listen(_onAuthStateChanged);
+  }
+
+  Future<void> _onAuthStateChanged(firebase_auth.User? firebaseUser) async {
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    // 회원가입 진행 중이면 authStateChanges 무시
+    if (userProvider.isRegistering) return;
+
+    if (firebaseUser == null) {
+      await userProvider.clearUser();
+      if (mounted) setState(() => _isLoggedIn = false);
+      return;
+    }
+
+    // 이메일 없는 전화번호 전용 계정 → 로그아웃
+    if (firebaseUser.email == null) {
+      await FirebaseAuth.instance.signOut();
+      await userProvider.clearUser();
+      if (mounted) setState(() => _isLoggedIn = false);
+      return;
+    }
+
+    // 정상 계정 → SecureStorage 프로필 로드
+    await userProvider.loadProfileIfSignedIn();
+    if (!mounted) return;
+
+    if (userProvider.user == null) {
+      await FirebaseAuth.instance.signOut();
+      setState(() => _isLoggedIn = false);
+    } else {
+      setState(() => _isLoggedIn = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoggedIn == null) {
+      return const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+        debugShowCheckedModeBanner: false,
+      );
+    }
+    return widget.buildApp(
+      context,
+      _isLoggedIn! ? const Home() : const LoginScreen(),
+    );
   }
 }
 

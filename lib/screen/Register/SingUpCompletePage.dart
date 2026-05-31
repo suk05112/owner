@@ -1,8 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
-import '../Store/cafe_list_page.dart';
-import '../home.dart';
+import '../LoginPage.dart';
 
 class SignUpCompletePage extends StatelessWidget {
   const SignUpCompletePage({Key? key}) : super(key: key);
@@ -20,7 +20,6 @@ class SignUpCompletePage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const SizedBox(height: 80),
-                // 체크 아이콘
                 Container(
                   width: 100,
                   height: 100,
@@ -35,7 +34,6 @@ class SignUpCompletePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 40),
-                // 가입 완료 텍스트
                 const Text(
                   "가입 완료",
                   style: TextStyle(
@@ -45,11 +43,10 @@ class SignUpCompletePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // 안내 메시지
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    "승인되기 전에도 매장과 메뉴를 등록할 수 있습니다.",
+                    "회원가입이 완료되었습니다.\n다시 로그인해주세요.",
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
@@ -59,14 +56,15 @@ class SignUpCompletePage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 80),
-                // 매장 등록하러 가기 버튼
                 SizedBox(
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: () {
+                    onPressed: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (!context.mounted) return;
                       Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const CafeList()),
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
                         (route) => false,
                       );
                     },
@@ -79,36 +77,7 @@ class SignUpCompletePage extends StatelessWidget {
                       elevation: 0,
                     ),
                     child: const Text(
-                      '매장 등록하러 가기',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                // 홈으로 버튼
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const Home()),
-                        (route) => false,
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorAssset.mainColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      '홈으로',
+                      '로그인하러 가기',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,

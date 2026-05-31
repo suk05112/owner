@@ -34,6 +34,8 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   String? uploadedBankBookFilename;
   final picker = ImagePicker();
   bool _isLoading = false;
+  int _uploadCurrent = 0;
+  int _uploadTotal = 0;
 
   TextEditingController nameController = TextEditingController();
   TextEditingController accountController = TextEditingController();
@@ -143,7 +145,9 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       onTap: () {
         FocusScope.of(context).unfocus();
       },
-      child: Scaffold(
+      child: Stack(
+        children: [
+        Scaffold(
         appBar: const CommonAppBar(title: "계좌 정보 입력(2/2)"),
         backgroundColor: Colors.white,
         body: Column(
@@ -395,37 +399,64 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
                           _store.bank_book = _bankBook;
                           registerStore();
                         },
-                  child: _isLoading
-                      ? const Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          ),
-                        )
-                      : const Center(
-                          child: Text(
-                            '완료',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Inter',
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
+                  child: const Text(
+                    '완료',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Inter',
+                    ),
+                  ),
                 ),
               ),
             ),
           ],
         ),
       ),
-    );
+      if (_isLoading)
+        Positioned.fill(
+          child: Container(
+            color: Colors.black45,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 28),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      color: ColorAssset.mainColor,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      "매장 사진 업로드 중",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      "$_uploadCurrent / $_uploadTotal",
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF888888),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
   }
 
   Widget bankList() {
@@ -727,20 +758,28 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
 
       // 이미지 업로드
       try {
+        final int total = (widget.logoImage != null && storeLogoPutUrl != null ? 1 : 0)
+            + (widget.storeImages?.length ?? 0)
+            + (businessPutUrl != null ? 1 : 0);
+        setState(() {
+          _uploadTotal = total;
+          _uploadCurrent = 0;
+        });
+
         if (widget.logoImage != null && storeLogoPutUrl != null) {
           await uploadLogoImage(storeLogoPutUrl);
+          if (mounted) setState(() => _uploadCurrent++);
         }
         if (widget.storeImages != null && widget.storeImages!.isNotEmpty) {
           await uploadStoreImages(storePhotoUrls);
         }
         if (businessPutUrl != null) {
           await uploadBusinessImage(bankbookPutUrl, businessPutUrl);
+          if (mounted) setState(() => _uploadCurrent++);
         }
         print('All images uploaded successfully.');
       } catch (e) {
         print('Error during image upload: $e');
-        // 이미지 업로드 실패해도 계속 진행 (선택적)
-        // throw e; // 또는 에러를 다시 throw하여 전체 프로세스 중단
       }
 
       // 계좌 등록 API 호출
@@ -868,6 +907,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
 
         if (response.statusCode == 200) {
           print('Store photo $idx uploaded successfully.');
+          if (mounted) setState(() => _uploadCurrent++);
         } else {
           print(
               'Store photo $idx upload failed. Status code: ${response.statusCode}, Response: ${response.body}');

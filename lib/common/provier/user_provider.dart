@@ -35,10 +35,13 @@ class UserProvider with ChangeNotifier {
     if (F.isMock) return;
     if (_profileLoading || _profileLoaded) return; // 중복 호출 방지
     _profileLoading = true;
-    await _loadUserFromStorage();
-    _profileLoading = false;
-    _profileLoaded = true;
-    notifyListeners();
+    try {
+      await _loadUserFromStorage();
+      _profileLoaded = true;
+    } finally {
+      _profileLoading = false;
+      notifyListeners();
+    }
   }
 
   /// mock 모드 전용: 스토리지 저장 없이 메모리에만 유저 세팅

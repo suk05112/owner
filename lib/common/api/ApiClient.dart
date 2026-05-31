@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:owner/common/api/request/owner/owner.dart';
+export 'package:owner/common/api/request/owner/owner.dart' show CheckDuplicateResponse;
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
@@ -32,6 +33,12 @@ abstract class ApiClient {
   Future<OwnerRegisterResponse> registerOwner(
     @Body() OwnerRegisterPost owner,
   );
+
+  @GET("/owner/check-duplicate")
+  Future<CheckDuplicateResponse> checkDuplicate({
+    @Query('email') String? email,
+    @Query('phone_number') String? phoneNumber,
+  });
 
   @POST("/owner/push-token/{owner_id}")
   Future<OwnerPushTokenResponse> registerOwnerPushToken(

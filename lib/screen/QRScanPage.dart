@@ -21,7 +21,8 @@ class QRCheckScreen extends StatefulWidget {
 class _QRCheckScreenState extends State<QRCheckScreen> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   QRViewController? controller;
-  bool _isProcessing = false; // ✅ 중복 실행 방지
+  bool _isProcessing = false;
+  bool _isLoading = false;
   User? user;
 
   @override
@@ -42,23 +43,34 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
       appBar: AppBar(
         title: const Text('QR 스캐너'),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      body: Stack(
         children: [
-          Expanded(
-            child: QRView(
-              key: qrKey,
-              onQRViewCreated: _onQRViewCreated,
-              formatsAllowed: const [BarcodeFormat.qrcode],
-              overlay: QrScannerOverlayShape(
-                borderRadius: 10,
-                borderColor: Colors.blue,
-                borderLength: 30,
-                borderWidth: 5,
-                cutOutSize: screenSize.width / 1.4,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: QRView(
+                  key: qrKey,
+                  onQRViewCreated: _onQRViewCreated,
+                  formatsAllowed: const [BarcodeFormat.qrcode],
+                  overlay: QrScannerOverlayShape(
+                    borderRadius: 10,
+                    borderColor: Colors.blue,
+                    borderLength: 30,
+                    borderWidth: 5,
+                    cutOutSize: screenSize.width / 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_isLoading)
+            const ColoredBox(
+              color: Colors.black54,
+              child: Center(
+                child: CircularProgressIndicator(color: Colors.white),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -73,10 +85,9 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
       if (_isProcessing) return; // ✅ 중복 실행 방지
       if (event.code == null) return;
 
-      print('QRCheckScreen_onQRViewCreated.listen : result=${event.code}');
-
-      _isProcessing = true; // ✅ 처리 시작
-      controller.pauseCamera(); // ✅ QR 스캔 멈추기
+      _isProcessing = true;
+      controller.pauseCamera();
+      setState(() => _isLoading = true);
 
       try {
         final scannedCode = event.code!;
@@ -84,19 +95,15 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
         int scannedStoreId = int.tryParse(scannedData[0]) ?? -1;
         String gifticonId = scannedData[1];
 
-        // 🔹 API 호출하여 store 목록 가져오기
         var response =
             await Api().client.getOwnerStoreList(user?.owner_id ?? -1);
 
-        // 🔹 store_id 리스트 생성
-        List<int> storeIdList =
-            response.ownerStoreList.map((store) => store.store_id).toList();
+        List<int> storeIdList = [];
+        for (final store in response.ownerStoreList) {
+          storeIdList.add(store.store_id);
+        }
 
-        print("list: $storeIdList, scannedStoreId: $scannedStoreId");
-        // 🔹 store_id 검사
         if (storeIdList.contains(scannedStoreId)) {
-          print("eventcode: ${event.code}, keyword: ${widget.eventKeyword}");
-
           final response =
               await Api().client.useGifticon(int.tryParse(gifticonId) ?? 0);
 
@@ -120,6 +127,7 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
             });
       } finally {
         _isProcessing = false;
+        if (mounted) setState(() => _isLoading = false);
       }
     });
   }

@@ -11,6 +11,7 @@ class UserProvider with ChangeNotifier {
   bool _profileLoaded = false;
   bool _profileLoading = false;
   bool _isRegistering = false;
+  bool _isLoggingIn = false;
 
   User? get user => _user;
   bool get profileLoaded => _profileLoaded;
@@ -19,6 +20,13 @@ class UserProvider with ChangeNotifier {
   bool get isRegistering => _isRegistering;
   set isRegistering(bool value) {
     _isRegistering = value;
+    notifyListeners();
+  }
+
+  /// 로그인 진행 중 플래그 — true이면 main.dart의 강제 로그아웃을 건너뜀
+  bool get isLoggingIn => _isLoggingIn;
+  set isLoggingIn(bool value) {
+    _isLoggingIn = value;
     notifyListeners();
   }
 

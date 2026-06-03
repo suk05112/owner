@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kpostal/kpostal.dart';
 import 'package:owner/common/model/user.dart';
@@ -10,6 +11,74 @@ import 'dart:io';
 import '../../common/api/request/store/store.dart';
 import '../../common/widget/common_app_bar.dart';
 import '../../common/utils/address_parser.dart';
+
+// 전화번호 자동 하이픈 formatter
+// 규칙: 02-XXXX-XXXX / 0X0-XXXX-XXXX / 0507-XXXX-XXXX 등
+class _PhoneFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final buf = StringBuffer();
+
+    if (digits.startsWith('02')) {
+      // 서울 지역번호: 02-XXXX-XXXX (최대 10자리)
+      for (int i = 0; i < digits.length && i < 10; i++) {
+        if (i == 2 || (i == 6 && digits.length <= 10) || (i == 6 && digits.length > 10)) buf.write('-');
+        buf.write(digits[i]);
+      }
+      // 02-XXX-XXXX (9자리) vs 02-XXXX-XXXX (10자리)
+      // 위 로직을 단순화
+    } else {
+      // 일반: 0XX-XXXX-XXXX (11자리) 또는 0507-XXXX-XXXX (12자리)
+      for (int i = 0; i < digits.length && i < 12; i++) {
+        if (digits.length <= 10) {
+          // 지역번호 3자리: 0XX-XXX-XXXX
+          if (i == 3 || i == 6) buf.write('-');
+        } else {
+          // 일반 핸드폰/인터넷전화: 0XX-XXXX-XXXX
+          if (i == 3 || i == 7) buf.write('-');
+        }
+        buf.write(digits[i]);
+      }
+    }
+
+    // 02 케이스 재처리 (단순화)
+    if (digits.startsWith('02')) {
+      buf.clear();
+      for (int i = 0; i < digits.length && i < 10; i++) {
+        if (i == 2) buf.write('-');
+        if (i == 6) buf.write('-');
+        buf.write(digits[i]);
+      }
+    }
+
+    final formatted = buf.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
+
+// 사업자 등록번호 자동 하이픈 formatter: XXX-XX-XXXXX
+class _BusinessNumberFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final buf = StringBuffer();
+    for (int i = 0; i < digits.length && i < 10; i++) {
+      if (i == 3 || i == 5) buf.write('-');
+      buf.write(digits[i]);
+    }
+    final formatted = buf.toString();
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+}
 
 class DocumentInputPage extends StatefulWidget {
   const DocumentInputPage({Key? key}) : super(key: key);
@@ -37,7 +106,6 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   final _businessNumberKey = GlobalKey();
   final _businessRegKey = GlobalKey();
   final _storeImagesKey = GlobalKey();
-  final _privacyKey = GlobalKey();
 
   final _nameFocus = FocusNode();
   final _storeNameFocus = FocusNode();
@@ -45,11 +113,11 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   final _businessNumberFocus = FocusNode();
 
   late Store _store;
-  bool _isChecked = false;
   File? _logoImage;
   final List<File> _storeImages = [];
   File? _businessRegistration;
   String? uploadedBusinessRegistrationFilename;
+  bool _isPicking = false;
 
   final picker = ImagePicker();
 
@@ -139,6 +207,8 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
   }
 
   Future<void> _pickMultipleImages() async {
+    if (_isPicking) return;
+    _isPicking = true;
     try {
       final List<XFile> pickedImages = await picker.pickMultiImage();
       if (pickedImages.isNotEmpty) {
@@ -168,6 +238,8 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
           _storeImages.add(File(pickedImage.path));
         });
       }
+    } finally {
+      _isPicking = false;
     }
   }
 
@@ -212,6 +284,22 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
         builder: (_) => KpostalView(
           kakaoKey: '16dd251b86287783606ea600a98c7131',
           useLocalServer: false,
+          loadingColor: const Color(0xFFFE7831),
+          appBar: AppBar(
+            title: const Text(
+              '주소 검색',
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF101010),
+              ),
+            ),
+            backgroundColor: Colors.white,
+            foregroundColor: const Color(0xFF101010),
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            centerTitle: true,
+          ),
           callback: (Kpostal result) {
             setState(() {
               final address = result.address;
@@ -223,13 +311,13 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
               if (result.longitude != null) {
                 _store.store_lng = result.longitude as double;
               }
-              
+
               // 주소에서 district_code와 region_code 추출
               final addressString = result.address;
               final codes = parseAddressCodes(addressString);
               _store.district_code = codes["district_code"];
               _store.region_code = codes["region_code"];
-              
+
               print("주소: $addressString");
               print("district_code: ${_store.district_code}, region_code: ${_store.region_code}");
             });
@@ -237,6 +325,37 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
         ),
       ),
     );
+  }
+
+  // validator 실패한 첫 번째 필드로 스크롤/포커스 이동
+  void _scrollToFirstError() {
+    if (nameController.text.isEmpty) {
+      _scrollToKey(_nameKey);
+      _nameFocus.requestFocus();
+    } else if (storenNameController.text.isEmpty) {
+      _scrollToKey(_storeNameKey);
+      _storeNameFocus.requestFocus();
+    } else if (addrController.text.isEmpty) {
+      _scrollToKey(_addrKey);
+    } else if (_isPhoneInvalid()) {
+      _scrollToKey(_phoneKey);
+      _phoneFocus.requestFocus();
+    } else if (_isBusinessNumberInvalid()) {
+      _scrollToKey(_businessNumberKey);
+      _businessNumberFocus.requestFocus();
+    }
+  }
+
+  bool _isPhoneInvalid() {
+    final digits = telePhoneController.text.replaceAll('-', '');
+    if (digits.isEmpty) return true;
+    return !RegExp(r'^0\d{8,10}$').hasMatch(digits);
+  }
+
+  bool _isBusinessNumberInvalid() {
+    final digits = businessNumberController.text.replaceAll('-', '');
+    if (digits.isEmpty) return true;
+    return !RegExp(r'^\d{10}$').hasMatch(digits);
   }
 
   @override
@@ -267,7 +386,8 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                         decoration: inputDecoration.copyWith(hintText: "대표자명을 입력해주세요"),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
                         validator: (value) {
-                          if (value == null || value.isEmpty) return '대표자명을 입력해주세요';
+                          if (value == null || value.trim().isEmpty) return '대표자명을 입력해주세요';
+                          if (value.trim().length < 2) return '대표자명은 2자 이상 입력해주세요';
                           return null;
                         },
                       ),
@@ -351,13 +471,14 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                         controller: telePhoneController,
                         focusNode: _phoneFocus,
                         keyboardType: TextInputType.phone,
-                        decoration: inputDecoration.copyWith(hintText: "전화번호를 입력해주세요"),
+                        inputFormatters: [_PhoneFormatter()],
+                        decoration: inputDecoration.copyWith(hintText: "전화번호를 입력해주세요 (예: 02-1234-5678)"),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
                         validator: (value) {
                           if (value == null || value.isEmpty) return '전화번호를 입력해주세요';
-                          final phoneRegex = RegExp(r'^0\d{1,2}-?\d{3,4}-?\d{4}$');
-                          if (!phoneRegex.hasMatch(value.replaceAll('-', ''))) {
-                            return '올바른 전화번호 형식을 입력해주세요 (예: 0507-1234-5678)';
+                          final digits = value.replaceAll('-', '');
+                          if (!RegExp(r'^0\d{8,10}$').hasMatch(digits)) {
+                            return '올바른 전화번호 형식을 입력해주세요 (예: 02-1234-5678)';
                           }
                           return null;
                         },
@@ -416,7 +537,8 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                         controller: businessNumberController,
                         focusNode: _businessNumberFocus,
                         keyboardType: TextInputType.number,
-                        decoration: inputDecoration.copyWith(hintText: "사업자 등록번호를 입력해주세요"),
+                        inputFormatters: [_BusinessNumberFormatter()],
+                        decoration: inputDecoration.copyWith(hintText: "사업자 등록번호를 입력해주세요 (예: 000-00-00000)"),
                         style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
                         validator: (value) {
                           if (value == null || value.isEmpty) return '사업자 등록번호를 입력해주세요';
@@ -467,19 +589,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       SizedBox(key: _storeImagesKey, child: _buildLabel("매장 사진")),
                       const SizedBox(height: 8),
                       _buildStoreImagesGrid(),
-                      const SizedBox(height: 24),
-
-                      // 개인정보 수집 및 이용 동의
-                      SizedBox(
-                        key: _privacyKey,
-                        child: _PrivacyConsentWidget(
-                          isChecked: _isChecked,
-                          onChanged: (value) {
-                            setState(() => _isChecked = value ?? false);
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 100),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
@@ -499,31 +609,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                     ),
                     onPressed: () {
                       if (!_formKey.currentState!.validate()) {
-                        if (nameController.text.isEmpty) {
-                          _scrollToKey(_nameKey);
-                          _nameFocus.requestFocus();
-                        } else if (storenNameController.text.isEmpty) {
-                          _scrollToKey(_storeNameKey);
-                          _storeNameFocus.requestFocus();
-                        } else if (addrController.text.isEmpty) {
-                          _scrollToKey(_addrKey);
-                        } else if (telePhoneController.text.isEmpty) {
-                          _scrollToKey(_phoneKey);
-                          _phoneFocus.requestFocus();
-                        } else if (businessNumberController.text.isEmpty) {
-                          _scrollToKey(_businessNumberKey);
-                          _businessNumberFocus.requestFocus();
-                        } else {
-                          final phoneOk = RegExp(r'^0\d{8,9}$')
-                              .hasMatch(telePhoneController.text.replaceAll('-', ''));
-                          if (phoneOk) {
-                            _scrollToKey(_businessNumberKey);
-                            _businessNumberFocus.requestFocus();
-                          } else {
-                            _scrollToKey(_phoneKey);
-                            _phoneFocus.requestFocus();
-                          }
-                        }
+                        _scrollToFirstError();
                         return;
                       }
 
@@ -535,11 +621,6 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       if (_storeImages.isEmpty) {
                         showToast("매장 사진을 최소 1장 이상 업로드해주세요.");
                         _scrollToKey(_storeImagesKey);
-                        return;
-                      }
-                      if (!_isChecked) {
-                        showToast("개인정보 수집 및 이용에 동의해주세요.");
-                        _scrollToKey(_privacyKey);
                         return;
                       }
 
@@ -698,111 +779,6 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
             fontFamily: 'Inter',
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _PrivacyConsentWidget extends StatefulWidget {
-  final bool isChecked;
-  final ValueChanged<bool?> onChanged;
-
-  const _PrivacyConsentWidget({
-    required this.isChecked,
-    required this.onChanged,
-  });
-
-  @override
-  State<_PrivacyConsentWidget> createState() => _PrivacyConsentWidgetState();
-}
-
-class _PrivacyConsentWidgetState extends State<_PrivacyConsentWidget> {
-  bool _isExpanded = false;
-
-  static const _privacyText = '''개인정보 수집 및 이용 동의
-
-기프넛은 서비스 제공 및 원활한 운영을 위해 아래와 같이 개인정보를 수집·이용합니다.
-
-1. 수집 항목
-• 필수 항목: 사업자명, 대표자명, 휴대전화번호, 이메일, 사업자등록번호, 정산 계좌정보
-• 선택 항목: 매장 사진, 메뉴 사진, 위치 정보
-
-2. 수집 및 이용 목적
-• 회원가입 및 본인 확인
-• 가맹점 관리 및 서비스 제공
-• 주문, 정산 및 고객 문의 대응
-• 공지사항 및 중요 안내 전달
-• 서비스 개선 및 부정 이용 방지
-
-3. 보유 및 이용 기간
-회사는 개인정보 수집 및 이용 목적이 달성된 후 지체 없이 파기합니다.
-단, 관계 법령에 따라 일정 기간 보관이 필요한 경우 해당 기간 동안 안전하게 보관합니다.
-
-4. 동의 거부 권리 및 불이익 안내
-이용자는 개인정보 수집 및 이용에 대한 동의를 거부할 권리가 있습니다.
-다만, 필수 항목에 대한 동의를 거부할 경우 서비스 이용이 제한될 수 있습니다.''';
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Checkbox(
-              value: widget.isChecked,
-              onChanged: widget.onChanged,
-              activeColor: const Color(0xFFF27213),
-              checkColor: Colors.white,
-              side: const BorderSide(color: Color(0xFFB0B0B0), width: 1.5),
-            ),
-            const Expanded(
-              child: Text(
-                "개인정보 수집 및 이용에 동의합니다.",
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Color(0xFF101010),
-                  fontFamily: 'Inter',
-                ),
-              ),
-            ),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isExpanded = !_isExpanded;
-                });
-              },
-              child: Icon(
-                _isExpanded
-                    ? Icons.keyboard_arrow_up
-                    : Icons.keyboard_arrow_down,
-                color: const Color(0xFF808080),
-                size: 20,
-              ),
-            ),
-          ],
-        ),
-        if (_isExpanded)
-          Container(
-            margin: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF7F7F7),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: const Color(0xFFE6E6E6)),
-            ),
-            child: const Text(
-              _privacyText,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-                color: Color(0xFF808080),
-                fontFamily: 'Inter',
-                height: 1.6,
-              ),
-            ),
-          ),
       ],
     );
   }

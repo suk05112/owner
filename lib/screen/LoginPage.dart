@@ -97,6 +97,7 @@ class _LoginScreenState extends State<LoginScreen> {
         print('Mock login success');
       } else {
         // Normal mode: use Firebase authentication
+        Provider.of<UserProvider>(context, listen: false).isLoggingIn = true;
         final userCredential = await _auth.signInWithEmailAndPassword(
           email: emailWithDomain,
           password: _passwordController.text,
@@ -434,7 +435,9 @@ class _LoginScreenState extends State<LoginScreen> {
           user.phone_number = response.phone_number;
           user.name = response.name;
 
-          Provider.of<UserProvider>(context, listen: false).setUser(user);
+          final userProvider = Provider.of<UserProvider>(context, listen: false);
+          await userProvider.setUser(user);
+          userProvider.isLoggingIn = false;
 
           // Push token 등록 (백그라운드에서 실행, 실패해도 로그인은 계속 진행)
           _registerPushToken(response.owner_id!).catchError((error) {
@@ -443,6 +446,7 @@ class _LoginScreenState extends State<LoginScreen> {
         } else {
           // owner_id가 null인 경우
           if (mounted) {
+            Provider.of<UserProvider>(context, listen: false).isLoggingIn = false;
             setState(() {
               _loading = false;
             });
@@ -474,6 +478,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       }
     } on DioException catch (e) {
+      if (mounted) {
+        Provider.of<UserProvider>(context, listen: false).isLoggingIn = false;
+      }
       // Only show detailed errors in non-mock mode
       if (!F.isMock) {
         String errorMsg = "";
@@ -529,6 +536,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       // 기타 예외 처리
       if (mounted) {
+        Provider.of<UserProvider>(context, listen: false).isLoggingIn = false;
         setState(() {
           _loading = false;
         });

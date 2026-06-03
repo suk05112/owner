@@ -4,6 +4,7 @@ import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/gifticon_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
@@ -39,9 +40,7 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
   Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('QR 스캐너'),
-      ),
+      appBar: const CommonAppBar(title: 'QR 스캐너'),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [

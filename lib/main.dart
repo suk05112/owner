@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/flavors.dart';
 
 import 'package:owner/common/model/user.dart';
@@ -203,8 +204,8 @@ class _AuthGateState extends State<_AuthGate> {
   Future<void> _onAuthStateChanged(firebase_auth.User? firebaseUser) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    // 회원가입 진행 중이면 authStateChanges 무시
-    if (userProvider.isRegistering) return;
+    // 회원가입 또는 로그인 진행 중이면 authStateChanges 무시
+    if (userProvider.isRegistering || userProvider.isLoggingIn) return;
 
     if (firebaseUser == null) {
       await userProvider.clearUser();
@@ -236,7 +237,14 @@ class _AuthGateState extends State<_AuthGate> {
   Widget build(BuildContext context) {
     if (_isLoggedIn == null) {
       return const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+        home: Scaffold(
+          backgroundColor: Colors.white,
+          body: Center(
+            child: CircularProgressIndicator(
+              color: ColorAssset.mainColor,
+            ),
+          ),
+        ),
         debugShowCheckedModeBanner: false,
       );
     }

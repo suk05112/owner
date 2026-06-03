@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -82,13 +83,7 @@ class _NoticePageState extends State<NoticePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("공지사항"),
-        centerTitle: true,
-        foregroundColor: Colors.black,
-        elevation: 0.0,
-        backgroundColor: Colors.white,
-      ),
+      appBar: const CommonAppBar(title: '공지사항'),
       backgroundColor: Colors.white,
       body: SafeArea(
         bottom: false,

@@ -113,7 +113,7 @@ class _UsedGifticonPagetate extends State<UsedGifticonPage> {
                                 child: SizedBox(
                               width: 30,
                               height: 30,
-                              child: CircularProgressIndicator(),
+                              child: const CircularProgressIndicator(color: Color(0xFFFE7831)),
                             ));
                           } else if (snapshot.hasError) {
                             // 에러가 발생한 경우

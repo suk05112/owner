@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:owner/common/utils/account_number_formatter.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/model/Account.dart';
+import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/common/utils/address_parser.dart';
 import 'package:owner/screen/Home.dart';
+import 'package:provider/provider.dart';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
@@ -29,11 +33,13 @@ class AccountRegisterPage extends StatefulWidget {
 class _AccountRegisterPageState extends State<AccountRegisterPage> {
   late Store _store;
   String selectedBank = "은행선택";
+  String _selectedBankCode = '';
   late Account account;
   File? _bankBook;
   String? uploadedBankBookFilename;
   final picker = ImagePicker();
   bool _isLoading = false;
+  String _uploadStatus = '';
 
   TextEditingController nameController = TextEditingController();
   TextEditingController accountController = TextEditingController();
@@ -62,6 +68,16 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
     _nameFocus.dispose();
     _accountFocus.dispose();
     super.dispose();
+  }
+
+  bool _isNameInvalid() {
+    final v = nameController.text.trim();
+    return v.isEmpty || v.length < 2;
+  }
+
+  bool _isAccountInvalid() {
+    final digits = accountController.text.replaceAll('-', '');
+    return !RegExp(r'^\d{10,14}$').hasMatch(digits);
   }
 
   final inputDecoration = InputDecoration(
@@ -140,290 +156,274 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        FocusScope.of(context).unfocus();
-      },
-      child: Scaffold(
-        appBar: const CommonAppBar(title: "계좌 정보 입력(2/2)"),
-        backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                controller: _scrollController,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 예금주
-                      SizedBox(key: _nameKey, height: 0),
-                      _buildLabel("예금주"),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: nameController,
-                        focusNode: _nameFocus,
-                        keyboardType: TextInputType.text,
-                        decoration: inputDecoration.copyWith(
-                          hintText: "예금주명을 입력해주세요",
-                        ),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF101010),
-                          fontFamily: 'Inter',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return '예금주명을 입력해주세요';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 24),
-
-                      // 은행선택
-                      SizedBox(key: _bankKey, height: 0),
-                      _buildLabel("은행선택"),
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () {
-                          showModalBottomSheet<Map<String, String>>(
-                            isScrollControlled: true,
-                            isDismissible: true,
-                            showDragHandle: true,
-                            backgroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            context: context,
-                            builder: (BuildContext context) {
-                              return SizedBox(
-                                width: double.infinity,
-                                height: 682,
-                                child: bankList(),
-                              );
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: Stack(
+        children: [
+          Scaffold(
+            appBar: const CommonAppBar(title: "계좌 정보 입력(2/2)"),
+            backgroundColor: Colors.white,
+            body: Column(
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // 예금주
+                          SizedBox(key: _nameKey, height: 0),
+                          _buildLabel("예금주"),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: nameController,
+                            focusNode: _nameFocus,
+                            keyboardType: TextInputType.text,
+                            decoration: inputDecoration.copyWith(hintText: "예금주명을 입력해주세요"),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) return '예금주명을 입력해주세요';
+                              if (value.trim().length < 2) return '예금주명은 2자 이상 입력해주세요';
+                              return null;
                             },
-                          ).then((value) {
-                            if (value != null) {
-                              print("선택된 은행 ${value['name']}");
-                              setState(() {
-                                selectedBank = value['name']!;
-                                account = Account(
-                                  bank: value['name'],
-                                  code: value['code'],
-                                );
+                          ),
+                          const SizedBox(height: 24),
+
+                          // 은행선택
+                          SizedBox(key: _bankKey, height: 0),
+                          _buildLabel("은행선택"),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () {
+                              showModalBottomSheet<Map<String, String>>(
+                                isScrollControlled: true,
+                                isDismissible: true,
+                                showDragHandle: true,
+                                backgroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return SizedBox(width: double.infinity, height: 682, child: bankList());
+                                },
+                              ).then((value) {
+                                if (value != null) {
+                                  print("선택된 은행 ${value['name']}");
+                                  setState(() {
+                                    selectedBank = value['name']!;
+                                    _selectedBankCode = value['code'] ?? '';
+                                    accountController.clear();
+                                    account = Account(bank: value['name'], code: value['code']);
+                                  });
+                                }
                               });
-                            }
-                          });
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          height: 44,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFE6E6E6),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              Text(
-                                selectedBank,
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  color: selectedBank == "은행선택"
-                                      ? const Color(0xFF808080)
-                                      : const Color(0xFF101010),
-                                  fontFamily: 'Inter',
-                                ),
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 44,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE6E6E6), width: 1),
                               ),
-                              const Spacer(),
-                              const Icon(
-                                Icons.keyboard_arrow_down,
-                                color: Color(0xFF808080),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // 계좌번호
-                      SizedBox(key: _accountKey, height: 0),
-                      _buildLabel("계좌번호"),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: accountController,
-                        focusNode: _accountFocus,
-                        keyboardType: TextInputType.number,
-                        decoration: inputDecoration.copyWith(
-                          hintText: "계좌번호를 입력해주세요",
-                        ),
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF101010),
-                          fontFamily: 'Inter',
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return '계좌번호를 입력해주세요.';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 24),
-
-                      // 통장 사본
-                      SizedBox(key: _bankBookKey, height: 0),
-                      _buildLabel("통장 사본"),
-                      const SizedBox(height: 8),
-                      const Text(
-                        "사업자 등록증에 있는 사업자와 동일해야합니다.",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w400,
-                          color: Color(0xFF808080),
-                          fontFamily: 'Inter',
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () async {
-                          final pickedImage = await picker.pickImage(
-                            source: ImageSource.gallery,
-                          );
-                          if (pickedImage != null) {
-                            setState(() {
-                              _bankBook = File(pickedImage.path);
-                              uploadedBankBookFilename = pickedImage.name;
-                            });
-                          }
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          height: 56,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF7F7F7),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFE6E6E6),
-                              width: 1,
-                            ),
-                          ),
-                          child: Center(
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.add,
-                                    color: Color(0xFF808080), size: 20),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    uploadedBankBookFilename ?? "파일 추가",
-                                    style: const TextStyle(
-                                      fontSize: 14,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    selectedBank,
+                                    style: TextStyle(
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w400,
-                                      color: Color(0xFF808080),
+                                      color: selectedBank == "은행선택" ? const Color(0xFF808080) : const Color(0xFF101010),
                                       fontFamily: 'Inter',
                                     ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
                                   ),
+                                  const Spacer(),
+                                  const Icon(Icons.keyboard_arrow_down, color: Color(0xFF808080)),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // 계좌번호
+                          SizedBox(key: _accountKey, height: 0),
+                          _buildLabel("계좌번호"),
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: accountController,
+                            focusNode: _accountFocus,
+                            keyboardType: TextInputType.number,
+                            inputFormatters: [
+                              AccountNumberFormatter(bankCode: _selectedBankCode),
+                              LengthLimitingTextInputFormatter(19),
+                            ],
+                            decoration: inputDecoration.copyWith(
+                              hintText: _selectedBankCode.isEmpty ? "은행 선택 후 입력해주세요" : "계좌번호를 입력해주세요",
+                            ),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF101010), fontFamily: 'Inter'),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) return '계좌번호를 입력해주세요';
+                              final digits = value.replaceAll('-', '');
+                              if (!RegExp(r'^\d{10,14}$').hasMatch(digits)) return '계좌번호는 10~14자리 숫자입니다';
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+
+                          // 통장 사본
+                          SizedBox(key: _bankBookKey, height: 0),
+                          _buildLabel("통장 사본"),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "사업자 등록증에 있는 사업자와 동일해야합니다.",
+                            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xFF808080), fontFamily: 'Inter'),
+                          ),
+                          const SizedBox(height: 8),
+                          GestureDetector(
+                            onTap: () async {
+                              final pickedImage = await picker.pickImage(source: ImageSource.gallery);
+                              if (pickedImage != null) {
+                                setState(() {
+                                  _bankBook = File(pickedImage.path);
+                                  uploadedBankBookFilename = pickedImage.name;
+                                });
+                              }
+                            },
+                            child: Container(
+                              width: double.infinity,
+                              height: 56,
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF7F7F7),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFE6E6E6), width: 1),
+                              ),
+                              child: Center(
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.add, color: Color(0xFF808080), size: 20),
+                                    const SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        uploadedBankBookFilename ?? "파일 추가",
+                                        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: Color(0xFF808080), fontFamily: 'Inter'),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            // 하단 버튼
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF27213),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
                     ),
-                    elevation: 0,
-                    padding: EdgeInsets.zero,
                   ),
-                  onPressed: _isLoading
-                      ? null
-                      : () {
-                          if (!_formKey.currentState!.validate()) {
-                            if (nameController.text.isEmpty) {
-                              _scrollToKey(_nameKey);
-                              _nameFocus.requestFocus();
-                            } else if (accountController.text.isEmpty) {
-                              _scrollToKey(_accountKey);
-                              _accountFocus.requestFocus();
-                            }
-                            return;
-                          }
-                          if (selectedBank == '은행선택') {
-                            showToast("은행을 선택해주세요");
-                            _scrollToKey(_bankKey);
-                            return;
-                          }
-                          if (_bankBook == null) {
-                            showToast("통장 사본을 업로드해주세요.");
-                            _scrollToKey(_bankBookKey);
-                            return;
-                          }
-                          account.account = accountController.text;
-                          account.name = nameController.text;
-                          _store.bank_book = _bankBook;
-                          registerStore();
-                        },
-                  child: _isLoading
-                      ? const Center(
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+                // 하단 버튼
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(color: Colors.white),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF27213),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                        padding: EdgeInsets.zero,
+                      ),
+                      onPressed: _isLoading
+                          ? null
+                          : () {
+                              if (!_formKey.currentState!.validate()) {
+                                if (_isNameInvalid()) {
+                                  _scrollToKey(_nameKey);
+                                  _nameFocus.requestFocus();
+                                } else if (_isAccountInvalid()) {
+                                  _scrollToKey(_accountKey);
+                                  _accountFocus.requestFocus();
+                                }
+                                return;
+                              }
+                              if (selectedBank == '은행선택') {
+                                showToast("은행을 선택해주세요");
+                                _scrollToKey(_bankKey);
+                                return;
+                              }
+                              if (_bankBook == null) {
+                                showToast("통장 사본을 업로드해주세요.");
+                                _scrollToKey(_bankBookKey);
+                                return;
+                              }
+                              if (_isLoading) return;
+                              setState(() => _isLoading = true);
+                              account.account = accountController.text.replaceAll('-', '');
+                              account.name = nameController.text;
+                              _store.bank_book = _bankBook;
+                              registerStore();
+                            },
+                      child: _isLoading
+                          ? const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              ),
+                            )
+                          : const Center(
+                              child: Text(
+                                '완료',
+                                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w500, fontFamily: 'Inter'),
+                                textAlign: TextAlign.center,
+                              ),
                             ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (_isLoading)
+            Positioned.fill(
+              child: Material(
+                color: Colors.black.withValues(alpha: 0.5),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const CircularProgressIndicator(color: Color(0xFFFE7831)),
+                        const SizedBox(height: 20),
+                        Text(
+                          _uploadStatus.isEmpty ? '처리 중...' : _uploadStatus,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Color(0xFF101010),
                           ),
-                        )
-                      : const Center(
-                          child: Text(
-                            '완료',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'Inter',
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                          textAlign: TextAlign.center,
                         ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -693,10 +693,6 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
   void registerStore() async {
     print("register store 호출");
 
-    setState(() {
-      _isLoading = true;
-    });
-
     try {
       _store.image_count = widget.storeImages?.length ?? 0;
 
@@ -728,12 +724,14 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       // 이미지 업로드
       try {
         if (widget.logoImage != null && storeLogoPutUrl != null) {
+          if (mounted) setState(() => _uploadStatus = '로고 업로드 중...');
           await uploadLogoImage(storeLogoPutUrl);
         }
         if (widget.storeImages != null && widget.storeImages!.isNotEmpty) {
           await uploadStoreImages(storePhotoUrls);
         }
         if (businessPutUrl != null) {
+          if (mounted) setState(() => _uploadStatus = '서류 업로드 중...');
           await uploadBusinessImage(bankbookPutUrl, businessPutUrl);
         }
         print('All images uploaded successfully.');
@@ -744,6 +742,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       }
 
       // 계좌 등록 API 호출
+      if (mounted) setState(() => _uploadStatus = '계좌 정보 등록 중...');
       try {
         await Api().client.registerAccount(storeId, account);
         print("계좌 등록성공 $storeId");
@@ -751,6 +750,7 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
           setState(() {
             _isLoading = false;
           });
+          Provider.of<SelectedStoreProvider>(context, listen: false).invalidate();
           showToast("매장 등록이 완료되었습니다.");
           Navigator.pushAndRemoveUntil(
             context,
@@ -848,10 +848,14 @@ class _AccountRegisterPageState extends State<AccountRegisterPage> {
       return;
     }
 
-    print('Uploading ${widget.storeImages!.length} store images...');
+    final total = widget.storeImages!.length;
+    print('Uploading $total store images...');
     for (int idx = 0;
         idx < widget.storeImages!.length && idx < storePhotoUrls.length;
         idx++) {
+      if (mounted) {
+        setState(() => _uploadStatus = '매장 사진 업로드 중...\n${idx + 1} / $total');
+      }
       try {
         print('Uploading store photo $idx to: ${storePhotoUrls[idx]}');
         final imageBytes = await widget.storeImages![idx].readAsBytes();

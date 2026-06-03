@@ -499,6 +499,8 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                     ),
                     onPressed: () {
                       if (!_formKey.currentState!.validate()) {
+                        final phoneRegex = RegExp(r'^0\d{8,9}$');
+                        final businessDigits = businessNumberController.text.replaceAll('-', '');
                         if (nameController.text.isEmpty) {
                           _scrollToKey(_nameKey);
                           _nameFocus.requestFocus();
@@ -507,22 +509,14 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                           _storeNameFocus.requestFocus();
                         } else if (addrController.text.isEmpty) {
                           _scrollToKey(_addrKey);
-                        } else if (telePhoneController.text.isEmpty) {
+                        } else if (telePhoneController.text.isEmpty ||
+                            !phoneRegex.hasMatch(telePhoneController.text.replaceAll('-', ''))) {
                           _scrollToKey(_phoneKey);
                           _phoneFocus.requestFocus();
-                        } else if (businessNumberController.text.isEmpty) {
+                        } else if (businessNumberController.text.isEmpty ||
+                            !RegExp(r'^\d{10}$').hasMatch(businessDigits)) {
                           _scrollToKey(_businessNumberKey);
                           _businessNumberFocus.requestFocus();
-                        } else {
-                          final phoneOk = RegExp(r'^0\d{8,9}$')
-                              .hasMatch(telePhoneController.text.replaceAll('-', ''));
-                          if (phoneOk) {
-                            _scrollToKey(_businessNumberKey);
-                            _businessNumberFocus.requestFocus();
-                          } else {
-                            _scrollToKey(_phoneKey);
-                            _phoneFocus.requestFocus();
-                          }
                         }
                         return;
                       }

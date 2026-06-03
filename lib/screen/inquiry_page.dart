@@ -82,6 +82,8 @@ class _InquiryPageState extends State<InquiryPage>
       indicatorWeight: 2,
       labelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       unselectedLabelStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w400),
+      splashFactory: NoSplash.splashFactory,
+      overlayColor: WidgetStateProperty.all(Colors.transparent),
       tabs: const [
         Tab(text: '문의하기'),
         Tab(text: '나의 문의내역'),

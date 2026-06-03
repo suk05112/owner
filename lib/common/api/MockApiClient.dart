@@ -176,6 +176,16 @@ class MockApiClient implements ApiClient {
   @override
   Future<String> registerAccount(int storeId, Account account) async => 'ok';
 
+  // ── 약관 ──────────────────────────────────────────────────────────────────
+
+  @override
+  Future<TermsContentResponse> getTermsContent(String termType) async =>
+      TermsContentResponse(
+        content: '<p>($termType) 약관 내용입니다.</p>',
+        termType: termType,
+        version: '260101',
+      );
+
   // ── 문의 ──────────────────────────────────────────────────────────────────
 
   @override

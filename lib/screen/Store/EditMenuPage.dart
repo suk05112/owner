@@ -65,10 +65,23 @@ class _EditMenuPageState extends State<EditMenuPage> {
     hintStyle: TextAssset.placeholder,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(5.0),
-      // borderSide: const BorderSide(
-      //   color: Colors.redAccent,
-      //   width: 2,
-      // ),
+      borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(5.0),
+      borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(5.0),
+      borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(5.0),
+      borderSide: const BorderSide(color: Colors.red, width: 1),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(5.0),
+      borderSide: const BorderSide(color: Colors.red, width: 1),
     ),
     isDense: true,
     contentPadding: const EdgeInsets.fromLTRB(21, 14, 21, 18),
@@ -125,12 +138,19 @@ class _EditMenuPageState extends State<EditMenuPage> {
                                       suffixText: '원',
                                       hintText: "${widget.menu?.price ?? ""}",
                                       border: OutlineInputBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(5.0),
+                                        borderRadius: BorderRadius.circular(5.0),
+                                        borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(5.0),
+                                        borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(5.0),
+                                        borderSide: const BorderSide(color: Color(0xFFE6E6E6), width: 1),
                                       ),
                                       isDense: true,
-                                      contentPadding: const EdgeInsets.fromLTRB(
-                                          21, 14, 21, 18),
+                                      contentPadding: const EdgeInsets.fromLTRB(21, 14, 21, 18),
                                     ),
                                     textAlign: TextAlign.end,
                                     validator: (value) {

@@ -45,4 +45,10 @@ class SelectedStoreProvider extends ChangeNotifier {
       notifyListeners();
     } catch (_) {}
   }
+
+  /// 캐시를 무효화하여 다음 DashboardPage 진입 시 재로드하도록 강제
+  void invalidate() {
+    _isLoaded = false;
+    notifyListeners();
+  }
 }

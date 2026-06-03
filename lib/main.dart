@@ -204,8 +204,8 @@ class _AuthGateState extends State<_AuthGate> {
   Future<void> _onAuthStateChanged(firebase_auth.User? firebaseUser) async {
     final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    // 회원가입 진행 중이면 authStateChanges 무시
-    if (userProvider.isRegistering) return;
+    // 회원가입 또는 로그인 진행 중이면 authStateChanges 무시
+    if (userProvider.isRegistering || userProvider.isLoggingIn) return;
 
     if (firebaseUser == null) {
       await userProvider.clearUser();

@@ -340,6 +340,7 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   void _showNoStoreMessage() {
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("등록된 매장이 없습니다. 매장을 추가해주세요."),

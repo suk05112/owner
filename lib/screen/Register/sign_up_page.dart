@@ -624,7 +624,7 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
                           child: SizedBox(
                             width: 16,
                             height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFE7831)),
                           ),
                         )
                       : null,

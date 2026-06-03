@@ -327,7 +327,7 @@ class _SettingPageState extends State<SettingPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: const Center(child: CircularProgressIndicator()),
+            child: const Center(child: CircularProgressIndicator(color: Color(0xFFFE7831))),
           );
         } else if (snapshot.hasError) {
           return Container(

@@ -37,7 +37,7 @@ class _AccountManagementPageState extends State<AccountManagementPage> {
           return const Scaffold(
             appBar: CommonAppBar(title: "계좌관리"),
             backgroundColor: Colors.white,
-            body: Center(child: CircularProgressIndicator()),
+            body: const Center(child: CircularProgressIndicator(color: Color(0xFFFE7831))),
           );
         }
 

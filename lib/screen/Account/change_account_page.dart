@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/Account.dart';
+import 'package:owner/common/utils/account_number_formatter.dart';
 import 'package:owner/common/widget/bank_selector_sheet.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 
@@ -205,6 +206,7 @@ class _ChangeAccountPageState extends State<ChangeAccountPage> {
                             setState(() {
                               _bankName = name;
                               _bankCode = code;
+                              _accountController.clear();
                             });
                           });
                         },
@@ -244,9 +246,12 @@ class _ChangeAccountPageState extends State<ChangeAccountPage> {
                         controller: _accountController,
                         keyboardType: TextInputType.number,
                         inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly
+                          AccountNumberFormatter(bankCode: _bankCode),
+                          LengthLimitingTextInputFormatter(19),
                         ],
-                        decoration: _inputDecoration(hint: "- 없이 입력"),
+                        decoration: _inputDecoration(
+                          hint: _bankCode.isEmpty ? "은행 선택 후 입력해주세요" : "계좌번호를 입력해주세요",
+                        ),
                         style: const TextStyle(
                             fontSize: 14, color: Color(0xFF101010)),
                       ),
@@ -408,7 +413,7 @@ class _ChangeAccountPageState extends State<ChangeAccountPage> {
             child: Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(),
+                child: const CircularProgressIndicator(color: Color(0xFFFE7831)),
               ),
             ),
           ),

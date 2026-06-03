@@ -11,7 +11,6 @@ import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:owner/common/model/user.dart' as my_app;
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../common/widget/CommonWidget.dart';
 import '../../common/utils/phone_utils.dart';
@@ -270,151 +269,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                             _focusAndScroll(idWidgetKey, _idFocus);
                             return;
                           }
-
-                          Provider.of<UserProvider>(context, listen: false)
-                              .isRegistering = true;
-
-                          UserCredential? userCredential;
-                          bool didCreatePhoneAccount = false;
-
-                              // Step 1: 전화번호 계정 확보 + 이메일 링크
-                              try {
-                                User? phoneUser = FirebaseAuth.instance.currentUser;
-                                if (phoneUser == null) {
-                                  final result = await FirebaseAuth.instance
-                                      .signInWithCredential(phoneAuthCredential!);
-                                  phoneUser = result.user;
-                                  didCreatePhoneAccount = true;
-                                }
-
-                                final emailCredential =
-                                    EmailAuthProvider.credential(
-                                  email: PhoneUtils.formatEmailForServer(
-                                      email ?? ""),
-                                  password: password ?? "",
-                                );
-                                userCredential = await phoneUser!
-                                    .linkWithCredential(emailCredential);
-                                await userCredential.user!
-                                    .updateDisplayName("displayName");
-                              } on FirebaseAuthException catch (e) {
-                                print("Step1 FirebaseAuthException: ${e.code} - ${e.message}");
-                                // 이번 가입에서 새로 만든 전화번호 계정만 삭제, 기존 계정은 건드리지 않음
-                                if (didCreatePhoneAccount) {
-                                  await _deleteFirebaseAccount();
-                                } else {
-                                  await FirebaseAuth.instance.signOut();
-                                }
-                                if (!mounted) return;
-                                Provider.of<UserProvider>(context, listen: false)
-                                    .isRegistering = false;
-                                setState(() => _isLoading = false);
-                                String msg;
-                                if (e.code == 'email-already-in-use' ||
-                                    e.code == 'provider-already-linked') {
-                                  msg = "이미 사용 중인 아이디입니다.";
-                                } else if (e.code == 'credential-already-in-use') {
-                                  msg = "이미 다른 계정에 연결된 전화번호입니다.";
-                                } else if (e.code == 'weak-password') {
-                                  msg = "비밀번호는 6자 이상 입력해주세요.";
-                                } else {
-                                  msg = "잠시 후 다시 시도해주세요.";
-                                }
-                                CommonDialog.show(
-                                  context: context,
-                                  title: "회원가입 오류",
-                                  content: msg,
-                                  buttonText: "확인",
-                                  onPressed: () {},
-                                );
-                                return;
-                              } catch (e) {
-                                print("Step1 일반 오류: ${e.runtimeType} - $e");
-                                if (didCreatePhoneAccount) {
-                                  await _deleteFirebaseAccount();
-                                } else {
-                                  await FirebaseAuth.instance.signOut();
-                                }
-                                if (!mounted) return;
-                                Provider.of<UserProvider>(context, listen: false)
-                                    .isRegistering = false;
-                                setState(() => _isLoading = false);
-                                CommonDialog.show(
-                                  context: context,
-                                  title: "회원가입 오류",
-                                  content: "잠시 후 다시 시도해주세요.",
-                                  buttonText: "확인",
-                                  onPressed: () {},
-                                );
-                                return;
-                              }
-
-                              // Step 2: 서버 회원가입 API 호출
-                              try {
-                                final response = await Api()
-                                    .client
-                                    .registerOwner(OwnerRegisterPost(
-                                      uid: userCredential.user!.uid,
-                                      phone_number: PhoneUtils.formatForServer(
-                                          phone_number ?? ""),
-                                      name: name ?? "",
-                                      email: PhoneUtils.formatEmailForServer(
-                                          email ?? ""),
-                                    ));
-
-                                if (response == null ||
-                                    response.owner_id == null) {
-                                  await _deleteFirebaseAccount(userCredential);
-                                  if (!mounted) return;
-                                  Provider.of<UserProvider>(context, listen: false)
-                                      .isRegistering = false;
-                                  setState(() => _isLoading = false);
-                                  CommonDialog.show(
-                                    context: context,
-                                    title: "회원가입 실패",
-                                    content: "서버 오류: 잠시 후 다시 시도해주세요.",
-                                    buttonText: "확인",
-                                    onPressed: () {},
-                                  );
-                                  return;
-                                }
-
-                                if (!mounted) return;
-                                Provider.of<UserProvider>(context, listen: false)
-                                  ..isRegistering = false
-                                  ..setUser(my_app.User(
-                                    owner_id: response.owner_id!,
-                                    name: name ?? "",
-                                    email: email ?? "",
-                                    phone_number: phone_number ?? "",
-                                  ));
-
-                                setState(() => _isLoading = false);
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const SignUpCompletePage()));
-                              } catch (e) {
-                                await _deleteFirebaseAccount(userCredential);
-                                if (!mounted) return;
-                                Provider.of<UserProvider>(context, listen: false)
-                                    .isRegistering = false;
-                                setState(() => _isLoading = false);
-                                CommonDialog.show(
-                                  context: context,
-                                  title: "회원가입 오류",
-                                  content: ApiErrorUtils.toUserMessage(e),
-                                  buttonText: "확인",
-                                  onPressed: () {},
-                                );
-                          }
-
-                          // Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(
-                          //         builder: (context) =>
-                          //             DocumentInputPage()));
+                          _proceedSignUp();
                         },
                   child: _isLoading
                       ? const SizedBox(
@@ -422,8 +277,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
                       : const Text('확인'),
@@ -432,6 +286,102 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
             ),
           ],
         ));
+  }
+
+  Future<void> _proceedSignUp() async {
+    setState(() => _isLoading = true);
+    Provider.of<UserProvider>(context, listen: false).isRegistering = true;
+
+    UserCredential? userCredential;
+    bool didCreatePhoneAccount = false;
+
+    // Step 1: 전화번호 계정 확보 + 이메일 링크
+    try {
+      User? phoneUser = FirebaseAuth.instance.currentUser;
+      if (phoneUser == null) {
+        final result = await FirebaseAuth.instance.signInWithCredential(phoneAuthCredential!);
+        phoneUser = result.user;
+        didCreatePhoneAccount = true;
+      }
+      final emailCredential = EmailAuthProvider.credential(
+        email: PhoneUtils.formatEmailForServer(email ?? ""),
+        password: password ?? "",
+      );
+      userCredential = await phoneUser!.linkWithCredential(emailCredential);
+      await userCredential.user!.updateDisplayName("displayName");
+    } on FirebaseAuthException catch (e) {
+      print("Step1 FirebaseAuthException: ${e.code} - ${e.message}");
+      if (didCreatePhoneAccount) {
+        await _deleteFirebaseAccount();
+      } else {
+        await FirebaseAuth.instance.signOut();
+      }
+      if (!mounted) return;
+      Provider.of<UserProvider>(context, listen: false).isRegistering = false;
+      setState(() => _isLoading = false);
+      String msg;
+      if (e.code == 'email-already-in-use' || e.code == 'provider-already-linked') {
+        msg = "이미 사용 중인 아이디입니다.";
+      } else if (e.code == 'credential-already-in-use') {
+        msg = "이미 다른 계정에 연결된 전화번호입니다.";
+      } else if (e.code == 'weak-password') {
+        msg = "비밀번호는 6자 이상 입력해주세요.";
+      } else {
+        msg = "잠시 후 다시 시도해주세요.";
+      }
+      CommonDialog.show(context: context, title: "회원가입 오류", content: msg, buttonText: "확인", onPressed: () {});
+      return;
+    } catch (e) {
+      print("Step1 일반 오류: ${e.runtimeType} - $e");
+      if (didCreatePhoneAccount) {
+        await _deleteFirebaseAccount();
+      } else {
+        await FirebaseAuth.instance.signOut();
+      }
+      if (!mounted) return;
+      Provider.of<UserProvider>(context, listen: false).isRegistering = false;
+      setState(() => _isLoading = false);
+      CommonDialog.show(context: context, title: "회원가입 오류", content: "잠시 후 다시 시도해주세요.", buttonText: "확인", onPressed: () {});
+      return;
+    }
+
+    // Step 2: 서버 회원가입 API 호출
+    try {
+      final response = await Api().client.registerOwner(OwnerRegisterPost(
+        uid: userCredential.user!.uid,
+        phone_number: PhoneUtils.formatForServer(phone_number ?? ""),
+        name: name ?? "",
+        email: PhoneUtils.formatEmailForServer(email ?? ""),
+      ));
+
+      if (response == null || response.owner_id == null) {
+        await _deleteFirebaseAccount(userCredential);
+        if (!mounted) return;
+        Provider.of<UserProvider>(context, listen: false).isRegistering = false;
+        setState(() => _isLoading = false);
+        CommonDialog.show(context: context, title: "회원가입 실패", content: "서버 오류: 잠시 후 다시 시도해주세요.", buttonText: "확인", onPressed: () {});
+        return;
+      }
+
+      if (!mounted) return;
+      Provider.of<UserProvider>(context, listen: false)
+        ..isRegistering = false
+        ..setUser(my_app.User(
+          owner_id: response.owner_id!,
+          name: name ?? "",
+          email: email ?? "",
+          phone_number: phone_number ?? "",
+        ));
+
+      setState(() => _isLoading = false);
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpCompletePage()));
+    } catch (e) {
+      await _deleteFirebaseAccount(userCredential);
+      if (!mounted) return;
+      Provider.of<UserProvider>(context, listen: false).isRegistering = false;
+      setState(() => _isLoading = false);
+      CommonDialog.show(context: context, title: "회원가입 오류", content: ApiErrorUtils.toUserMessage(e), buttonText: "확인", onPressed: () {});
+    }
   }
 
   /// Firebase 계정 삭제 후 로그아웃. 실패해도 무시하고 계속 진행.

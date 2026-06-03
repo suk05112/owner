@@ -163,6 +163,11 @@ abstract class ApiClient {
     @Path('store_id') int storeId,
     @Body() Account account,
   );
+
+  @GET("/owner/terms/content")
+  Future<TermsContentResponse> getTermsContent(
+    @Query('term_type') String termType,
+  );
 }
 
 /// PUT /owner/account/{store_id} 응답 — 통장사본 있을 때 bank_book_put_url(S3 presigned) 반환
@@ -197,5 +202,25 @@ class UpdateAccountResponse {
     final data = json['data'];
     if (data is Map) return data[key] as String?;
     return null;
+  }
+}
+
+class TermsContentResponse {
+  final String content;
+  final String termType;
+  final String version;
+
+  TermsContentResponse({
+    required this.content,
+    required this.termType,
+    required this.version,
+  });
+
+  factory TermsContentResponse.fromJson(Map<String, dynamic> json) {
+    return TermsContentResponse(
+      content: json['content'] as String? ?? '',
+      termType: json['term_type'] as String? ?? '',
+      version: json['version'] as String? ?? '',
+    );
   }
 }

@@ -79,9 +79,10 @@ class _ApiClient implements ApiClient {
   }) async {
     final _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
-      if (email != null) 'email': email,
-      if (phoneNumber != null) 'phone_number': phoneNumber,
+      r'email': email,
+      r'phone_number': phoneNumber,
     };
+    queryParameters.removeWhere((k, v) => v == null);
     final _headers = <String, dynamic>{};
     const Map<String, dynamic>? _data = null;
     final _options = _setStreamType<CheckDuplicateResponse>(
@@ -744,6 +745,33 @@ class _ApiClient implements ApiClient {
     late UpdateAccountResponse _value;
     try {
       _value = UpdateAccountResponse.fromJson(_result.data!);
+    } on Object catch (e, s) {
+      errorLogger?.logError(e, s, _options);
+      rethrow;
+    }
+    return _value;
+  }
+
+  @override
+  Future<TermsContentResponse> getTermsContent(String termType) async {
+    final _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'term_type': termType};
+    final _headers = <String, dynamic>{};
+    const Map<String, dynamic>? _data = null;
+    final _options = _setStreamType<TermsContentResponse>(
+      Options(method: 'GET', headers: _headers, extra: _extra)
+          .compose(
+            _dio.options,
+            '/owner/terms/content',
+            queryParameters: queryParameters,
+            data: _data,
+          )
+          .copyWith(baseUrl: _combineBaseUrls(_dio.options.baseUrl, baseUrl)),
+    );
+    final _result = await _dio.fetch<Map<String, dynamic>>(_options);
+    late TermsContentResponse _value;
+    try {
+      _value = TermsContentResponse.fromJson(_result.data!);
     } on Object catch (e, s) {
       errorLogger?.logError(e, s, _options);
       rethrow;

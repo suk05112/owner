@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import 'package:owner/flavors.dart';
 
 import 'Register/sign_up_page.dart';
+import 'Register/terms_agreement_page.dart';
 import 'Register/find_password_page.dart';
 import 'Register/find_userId_page.dart';
 import 'home.dart';
@@ -288,8 +289,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            const BasicInfoInputPage()),
+                                      builder: (context) => TermsAgreementPage(
+                                        onAgreed: () {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const BasicInfoInputPage(),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
                                   );
                                 },
                                 style: TextButton.styleFrom(

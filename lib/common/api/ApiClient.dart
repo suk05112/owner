@@ -46,6 +46,12 @@ abstract class ApiClient {
     @Body() OwnerPushTokenPost pushToken,
   );
 
+  @DELETE("/owner/push-token/{owner_id}")
+  Future<void> deleteOwnerPushToken(
+    @Path('owner_id') int ownerId,
+    @Header('X-FCM-Token') String fcmToken,
+  );
+
   @GET("/store/info/{store_Id}")
   Future<StoreResponse> getStoreDetailInfo(
     @Path('store_Id') int storeId,

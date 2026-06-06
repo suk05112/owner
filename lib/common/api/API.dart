@@ -1,6 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:owner/common/api/ApiClient.dart';
 import 'package:owner/common/api/MockApiClient.dart';
 import 'package:owner/config.dart';
@@ -282,6 +285,20 @@ class Api {
     await setBaseClient(BASE_URL);
     // await setBaseClient(STAGING_URL_V2);
   }
+
+}
+
+Future<void> _deletePushTokenIfPossible() async {
+  try {
+    const storage = FlutterSecureStorage();
+    final userJson = await storage.read(key: 'user');
+    if (userJson == null) return;
+    final userMap = jsonDecode(userJson) as Map<String, dynamic>;
+    final ownerId = userMap['owner_id'] as int?;
+    if (ownerId == null) return;
+    final fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+    await Api().client.deleteOwnerPushToken(ownerId, fcmToken);
+  } catch (_) {}
 }
 
 class CustomLogInterceptor extends Interceptor {
@@ -366,6 +383,7 @@ class AuthInterceptor extends Interceptor {
         final user = FirebaseAuth.instance.currentUser;
         if (user == null) {
           print('[401 interceptor] Firebase 세션 없음 → 강제 로그아웃');
+          await _deletePushTokenIfPossible();
           await FirebaseAuth.instance.signOut(); // authStateChanges()가 null을 방출 → LoginScreen으로 전환
           handler.next(err);
           return;
@@ -404,6 +422,7 @@ class AuthInterceptor extends Interceptor {
       } on FirebaseAuthException catch (e) {
         // Refresh Token도 만료된 경우 → 강제 로그아웃
         print('[401 interceptor] Firebase 토큰 갱신 실패 ($e) → 강제 로그아웃');
+        await _deletePushTokenIfPossible();
         await FirebaseAuth.instance.signOut();
         handler.next(err);
       } on DioException catch (e) {

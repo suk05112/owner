@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/user.dart' as my_app;
@@ -106,6 +107,13 @@ class _DashboardPageState extends State<DashboardPage> {
   }
 
   Future<void> _logout() async {
+    final ownerId = Provider.of<UserProvider>(context, listen: false).user?.owner_id;
+    if (ownerId != null) {
+      try {
+        final fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+        await Api().client.deleteOwnerPushToken(ownerId, fcmToken);
+      } catch (_) {}
+    }
     await FirebaseAuth.instance.signOut();
     if (!mounted) return;
     Provider.of<UserProvider>(context, listen: false).clearUser();

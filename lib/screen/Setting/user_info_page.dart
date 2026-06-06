@@ -1,4 +1,7 @@
 import "package:flutter/material.dart";
+import 'package:firebase_auth/firebase_auth.dart' hide User;
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/common/provier/dashboard_stats_provider.dart';
 import 'package:owner/common/provier/selected_store_provider.dart';
@@ -87,7 +90,16 @@ class _UserInfoPageState extends State<UserInfoPage> {
                     _buildMenuButton(
                       icon: Icons.logout,
                       text: '로그아웃',
-                      onTap: () {
+                      onTap: () async {
+                        final ownerId = Provider.of<UserProvider>(context, listen: false).user?.owner_id;
+                        if (ownerId != null) {
+                          try {
+                            final fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+                            await Api().client.deleteOwnerPushToken(ownerId, fcmToken);
+                          } catch (_) {}
+                        }
+                        await FirebaseAuth.instance.signOut();
+                        if (!context.mounted) return;
                         Provider.of<UserProvider>(context, listen: false).clearUser();
                         Provider.of<SelectedStoreProvider>(context, listen: false).invalidate();
                         Provider.of<DashboardStatsProvider>(context, listen: false).clear();
@@ -104,7 +116,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       icon: Icons.person_remove,
                       text: '회원탈퇴',
                       textColor: Colors.red,
-                      onTap: () {
+                      onTap: () async {
                         CommonDialog.show(
                           context: context,
                           title: "탈퇴하기",
@@ -157,7 +169,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
   Widget _buildMenuButton({
     required IconData icon,
     required String text,
-    required VoidCallback onTap,
+    required Future<void> Function() onTap,
     Color? textColor,
   }) {
     return GestureDetector(

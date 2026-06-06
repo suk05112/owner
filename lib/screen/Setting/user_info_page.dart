@@ -1,5 +1,7 @@
 import "package:flutter/material.dart";
 import 'package:owner/common/model/user.dart';
+import 'package:owner/common/provier/dashboard_stats_provider.dart';
+import 'package:owner/common/provier/selected_store_provider.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/utils/phone_utils.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
@@ -48,7 +50,10 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   children: [
                     _buildInfoRow("이름", user?.name ?? "-"),
                     const SizedBox(height: 16),
-                    _buildInfoRow("아이디", user?.login_id ?? "-"),
+                    _buildInfoRow(
+                      "아이디",
+                      (user?.login_id ?? "-").replaceAll("@gifnut.com", ""),
+                    ),
                     const SizedBox(height: 16),
                     _buildInfoRow("이메일", user?.email ?? "-"),
                     const SizedBox(height: 16),
@@ -83,8 +88,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
                       icon: Icons.logout,
                       text: '로그아웃',
                       onTap: () {
-                        Provider.of<UserProvider>(context, listen: false)
-                            .clearUser();
+                        Provider.of<UserProvider>(context, listen: false).clearUser();
+                        Provider.of<SelectedStoreProvider>(context, listen: false).invalidate();
+                        Provider.of<DashboardStatsProvider>(context, listen: false).clear();
                         Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(

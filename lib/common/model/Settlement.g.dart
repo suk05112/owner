@@ -130,9 +130,12 @@ SettlementSummary _$SettlementSummaryFromJson(Map<String, dynamic> json) =>
       failure_reason: json['failure_reason'] as String?,
       base_fee_rate: (json['base_fee_rate'] as num?)?.toDouble(),
       promo_fee_rate: (json['promo_fee_rate'] as num?)?.toDouble(),
-      promo_discount_amount: _optionalIntFromJson(json['promo_discount_amount']),
-      supply_amount: json['supply_amount'] == null ? 0 : _numToInt(json['supply_amount']),
-      vat_amount: json['vat_amount'] == null ? 0 : _numToInt(json['vat_amount']),
+      promo_discount_amount:
+          _optionalIntFromJson(json['promo_discount_amount']),
+      supply_amount:
+          json['supply_amount'] == null ? 0 : _numToInt(json['supply_amount']),
+      vat_amount:
+          json['vat_amount'] == null ? 0 : _numToInt(json['vat_amount']),
     );
 
 Map<String, dynamic> _$SettlementSummaryToJson(SettlementSummary instance) =>
@@ -163,6 +166,7 @@ SettlementDetailResponse _$SettlementDetailResponseFromJson(
       details: (json['details'] as List<dynamic>)
           .map((e) => SettlementDetailItem.fromJson(e as Map<String, dynamic>))
           .toList(),
+      parseFailureCount: (json['parseFailureCount'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$SettlementDetailResponseToJson(
@@ -170,4 +174,5 @@ Map<String, dynamic> _$SettlementDetailResponseToJson(
     <String, dynamic>{
       'settlement': instance.settlement,
       'details': instance.details,
+      'parseFailureCount': instance.parseFailureCount,
     };

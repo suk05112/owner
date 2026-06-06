@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/model/user.dart' as my_app;
@@ -10,6 +11,7 @@ import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/flavors.dart';
 import 'package:owner/screen/Account/account_management_page.dart';
+import 'package:owner/screen/LoginPage.dart';
 import 'package:owner/screen/Settlement/settlement_page.dart';
 import 'package:owner/screen/Store/cafe_detail_page.dart';
 import 'package:owner/screen/Store/cafe_list_page.dart';
@@ -92,11 +94,27 @@ class _DashboardPageState extends State<DashboardPage> {
     } catch (e) {
       debugPrint("Error loading dashboard data: $e");
       if (e is DioException) {
+        if (e.response?.statusCode == 404 && mounted) {
+          await _logout();
+          return;
+        }
         if (mounted) setState(() => _hasNetworkError = true);
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
+    if (!mounted) return;
+    Provider.of<UserProvider>(context, listen: false).clearUser();
+    Provider.of<SelectedStoreProvider>(context, listen: false).invalidate();
+    Provider.of<DashboardStatsProvider>(context, listen: false).clear();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 
   String _formatNumber(int number) {

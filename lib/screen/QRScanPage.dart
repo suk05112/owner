@@ -87,9 +87,18 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
         var response =
             await Api().client.getOwnerStoreList(user?.owner_id ?? -1);
 
+        print("ownerStoreList raw: ${response.ownerStoreList}");
+        print("ownerStoreList type: ${response.ownerStoreList.runtimeType}");
+        if (response.ownerStoreList.isNotEmpty) {
+          print("first element type: ${response.ownerStoreList.first.runtimeType}");
+          print("first store_id type: ${response.ownerStoreList.first.store_id.runtimeType}");
+        }
+
         // 🔹 store_id 리스트 생성
-        List<int> storeIdList =
-            response.ownerStoreList.map((store) => store.store_id).toList();
+        List<int> storeIdList = <int>[];
+        for (final store in response.ownerStoreList) {
+          storeIdList.add(store.store_id);
+        }
 
         print("list: $storeIdList, scannedStoreId: $scannedStoreId");
         // 🔹 store_id 검사

@@ -4,13 +4,13 @@ part 'find_ownername_response.g.dart';
 
 @JsonSerializable()
 class FindOwnernameResponse {
-  int statusCode;
+  int? statusCode;
   int? owner_id;
   String? email;
   String? created_time;
   String? msg;
 
-  FindOwnernameResponse({required this.statusCode});
+  FindOwnernameResponse({this.statusCode});
 
   factory FindOwnernameResponse.fromJson(Map<String, dynamic> json) =>
       _$FindOwnernameResponseFromJson(json);

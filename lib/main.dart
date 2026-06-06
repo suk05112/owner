@@ -219,7 +219,7 @@ class _AuthGateState extends State<_AuthGate> {
 
     // 이메일 없는 전화번호 전용 계정 → 로그아웃
     if (firebaseUser.email == null) {
-      await FirebaseAuth.instance.signOut();
+      try { await FirebaseAuth.instance.signOut(); } catch (_) {}
       await userProvider.clearUser();
       if (mounted) {
         Provider.of<SelectedStoreProvider>(context, listen: false).invalidate();

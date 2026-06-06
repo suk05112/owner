@@ -33,6 +33,15 @@ class DashboardStatsProvider extends ChangeNotifier {
     }
   }
 
+  /// 로그아웃 시 모든 통계 초기화
+  void clear() {
+    _issuedCount = 0;
+    _usedCount = 0;
+    _unusedCount = 0;
+    _lastFetchedStoreId = null;
+    notifyListeners();
+  }
+
   /// 선택 매장이 바뀌었을 때, 다른 매장이면 표시용 카운트 초기화
   void clearIfDifferentStore(int? currentStoreId) {
     if (currentStoreId != null && currentStoreId != _lastFetchedStoreId) {

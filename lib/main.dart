@@ -209,7 +209,11 @@ class _AuthGateState extends State<_AuthGate> {
 
     if (firebaseUser == null) {
       await userProvider.clearUser();
-      if (mounted) setState(() => _isLoggedIn = false);
+      if (mounted) {
+        Provider.of<SelectedStoreProvider>(context, listen: false).invalidate();
+        Provider.of<DashboardStatsProvider>(context, listen: false).clear();
+        setState(() => _isLoggedIn = false);
+      }
       return;
     }
 
@@ -217,7 +221,11 @@ class _AuthGateState extends State<_AuthGate> {
     if (firebaseUser.email == null) {
       await FirebaseAuth.instance.signOut();
       await userProvider.clearUser();
-      if (mounted) setState(() => _isLoggedIn = false);
+      if (mounted) {
+        Provider.of<SelectedStoreProvider>(context, listen: false).invalidate();
+        Provider.of<DashboardStatsProvider>(context, listen: false).clear();
+        setState(() => _isLoggedIn = false);
+      }
       return;
     }
 

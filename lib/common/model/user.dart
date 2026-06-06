@@ -6,13 +6,15 @@ part 'user.g.dart';
 class User {
   int owner_id;
   String name;
-  String email;
+  String? login_id;
+  String? email;
   String phone_number;
 
   User({
     required this.owner_id,
     required this.name,
-    required this.email,
+    this.login_id,
+    this.email,
     required this.phone_number,
   });
 

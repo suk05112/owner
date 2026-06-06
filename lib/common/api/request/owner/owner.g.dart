@@ -9,6 +9,7 @@ part of 'owner.dart';
 OwnerRegisterPost _$OwnerRegisterPostFromJson(Map<String, dynamic> json) =>
     OwnerRegisterPost(
       name: json['name'] as String,
+      login_id: json['login_id'] as String,
       email: json['email'] as String,
       uid: json['uid'] as String,
       phone_number: json['phone_number'] as String,
@@ -17,6 +18,7 @@ OwnerRegisterPost _$OwnerRegisterPostFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$OwnerRegisterPostToJson(OwnerRegisterPost instance) =>
     <String, dynamic>{
       'name': instance.name,
+      'login_id': instance.login_id,
       'email': instance.email,
       'uid': instance.uid,
       'phone_number': instance.phone_number,
@@ -62,6 +64,8 @@ OwnerLoginResponse _$OwnerLoginResponseFromJson(Map<String, dynamic> json) =>
       statusCode: (json['statusCode'] as num?)?.toInt(),
       name: json['name'] as String,
       phone_number: json['phone_number'] as String,
+      login_id: json['login_id'] as String?,
+      email: json['email'] as String?,
     )
       ..owner_id = (json['owner_id'] as num?)?.toInt()
       ..msg = json['msg'] as String?;
@@ -72,6 +76,8 @@ Map<String, dynamic> _$OwnerLoginResponseToJson(OwnerLoginResponse instance) =>
       'owner_id': instance.owner_id,
       'name': instance.name,
       'phone_number': instance.phone_number,
+      'login_id': instance.login_id,
+      'email': instance.email,
       'msg': instance.msg,
     };
 

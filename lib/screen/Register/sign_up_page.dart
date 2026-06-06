@@ -64,6 +64,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   final formKey = GlobalKey<FormState>();
   final formKey2 = GlobalKey<FormState>();
   final idWidgetKey = GlobalKey<_IDVerificationWidgetState>();
+  final emailWidgetKey = GlobalKey<_EmailVerificationWidgetState>();
   final _scrollController = ScrollController();
 
   // 각 필드 섹션의 위치 추적용 GlobalKey
@@ -75,6 +76,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   // FocusNode
   final _nameFocus = FocusNode();
   final _idFocus = FocusNode();
+  final _emailFocus = FocusNode();
   final _pwConfirmFocus = FocusNode();
 
   @override
@@ -84,6 +86,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
     _scrollController.dispose();
     _nameFocus.dispose();
     _idFocus.dispose();
+    _emailFocus.dispose();
     _pwConfirmFocus.dispose();
     super.dispose();
   }
@@ -103,7 +106,8 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   }
 
   String? name;
-  String? email; // 이메일 값을 저장
+  String? email; // gifnut 아이디 (IDVerificationWidget에서)
+  String? userEmail; // 일반 이메일
   String? phone_number;
   String? password;
   String? confirmPassword; // 비밀번호 확인 값
@@ -156,6 +160,15 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                         });
                       },
                     ), //아이디
+                    EmailVerificationWidget(
+                      key: emailWidgetKey,
+                      focusNode: _emailFocus,
+                      onEmailChanged: (newEmail) {
+                        setState(() {
+                          userEmail = newEmail;
+                        });
+                      },
+                    ), //이메일
                     PasswordInputWidget(
                       key: _pwKey,
                       onPasswordChanged: (newPassword) {
@@ -259,7 +272,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                             return;
                           }
 
-                          // 6. 아이디 중복 체크 (마지막)
+                          // 6. 아이디/이메일 중복 체크
                           setState(() => _isLoading = true);
                           final idAvailable = await idWidgetKey.currentState!.checkDuplicateForSubmit();
                           if (!mounted) return;
@@ -267,6 +280,13 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                             setState(() => _isLoading = false);
                             formKey2.currentState!.validate();
                             _focusAndScroll(idWidgetKey, _idFocus);
+                            return;
+                          }
+                          final emailAvailable = await emailWidgetKey.currentState!.checkDuplicateForSubmit();
+                          if (!mounted) return;
+                          if (!emailAvailable) {
+                            setState(() => _isLoading = false);
+                            _focusAndScroll(emailWidgetKey, _emailFocus);
                             return;
                           }
                           _proceedSignUp();
@@ -351,7 +371,8 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
         uid: userCredential.user!.uid,
         phone_number: PhoneUtils.formatForServer(phone_number ?? ""),
         name: name ?? "",
-        email: PhoneUtils.formatEmailForServer(email ?? ""),
+        login_id: PhoneUtils.formatEmailForServer(email ?? ""),
+        email: userEmail ?? "",
       ));
 
       if (response == null || response.owner_id == null) {
@@ -369,7 +390,8 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
         ..setUser(my_app.User(
           owner_id: response.owner_id!,
           name: name ?? "",
-          email: email ?? "",
+          login_id: PhoneUtils.formatEmailForServer(email ?? ""),
+          email: userEmail,
           phone_number: phone_number ?? "",
         ));
 
@@ -694,6 +716,193 @@ class _IDVerificationWidgetState extends State<IDVerificationWidget> {
       borderSide: const BorderSide(color: Color(0xFFFF5252)),
     ),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  );
+}
+
+class EmailVerificationWidget extends StatefulWidget {
+  final Function(String) onEmailChanged;
+  final FocusNode? focusNode;
+
+  const EmailVerificationWidget({
+    super.key,
+    required this.onEmailChanged,
+    this.focusNode,
+  });
+
+  @override
+  State<EmailVerificationWidget> createState() => _EmailVerificationWidgetState();
+}
+
+class _EmailVerificationWidgetState extends State<EmailVerificationWidget> {
+  static const _domains = [
+    'gmail.com',
+    'naver.com',
+    'kakao.com',
+    'daum.net',
+    'hanmail.net',
+    'outlook.com',
+    '직접입력',
+  ];
+
+  final _localController = TextEditingController();
+  final _customDomainController = TextEditingController();
+  String? _selectedDomain;
+  bool? _emailAvailable;
+  bool _isChecking = false;
+
+  String get _fullEmail {
+    final local = _localController.text.trim();
+    final domain = _selectedDomain == '직접입력'
+        ? _customDomainController.text.trim()
+        : (_selectedDomain ?? '');
+    if (local.isEmpty || domain.isEmpty) return '';
+    return '$local@$domain';
+  }
+
+  @override
+  void dispose() {
+    _localController.dispose();
+    _customDomainController.dispose();
+    super.dispose();
+  }
+
+  Future<bool> checkDuplicateForSubmit() async {
+    final email = _fullEmail;
+    if (email.isEmpty || !RegExp(r'^[^@]+@[^@]+\.[^@]+$').hasMatch(email)) return false;
+    setState(() {
+      _isChecking = true;
+      _emailAvailable = null;
+    });
+    try {
+      final response = await Api().client.checkDuplicate(email: email);
+      final available = !response.emailExists;
+      if (mounted) setState(() => _emailAvailable = available);
+      return available;
+    } catch (e) {
+      print('[이메일 중복체크 에러] $e');
+      if (mounted) setState(() => _emailAvailable = null);
+      return true;
+    } finally {
+      if (mounted) setState(() => _isChecking = false);
+    }
+  }
+
+  void _onChanged() {
+    setState(() => _emailAvailable = null);
+    widget.onEmailChanged(_fullEmail);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 20),
+        const Text("이메일", style: TextAssset.header2),
+        const SizedBox(height: 8),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              flex: 4,
+              child: TextFormField(
+                controller: _localController,
+                focusNode: widget.focusNode,
+                keyboardType: TextInputType.emailAddress,
+                decoration: _boxDecoration.copyWith(hintText: "이메일 주소"),
+                onChanged: (_) => _onChanged(),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) return "이메일을 입력해주세요.";
+                  if (_selectedDomain == null) return "도메인을 선택해주세요.";
+                  if (_selectedDomain == '직접입력' && _customDomainController.text.trim().isEmpty) {
+                    return "도메인을 입력해주세요.";
+                  }
+                  if (_emailAvailable == false) return "이미 사용 중인 이메일입니다.";
+                  return null;
+                },
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 14),
+              child: Text("@", style: TextStyle(fontSize: 16, color: Color(0xFF444444))),
+            ),
+            Expanded(
+              flex: 5,
+              child: _isChecking
+                  ? Container(
+                      height: 50,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFDDDDDD)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFE7831)),
+                      ),
+                    )
+                  : DropdownButtonFormField<String>(
+                      value: _selectedDomain,
+                      isExpanded: true,
+                      dropdownColor: Colors.white,
+                      decoration: _boxDecoration.copyWith(hintText: "선택"),
+                      items: _domains
+                          .map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis)))
+                          .toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedDomain = value;
+                          _emailAvailable = null;
+                        });
+                        widget.onEmailChanged(_fullEmail);
+                      },
+                    ),
+            ),
+          ],
+        ),
+        if (_selectedDomain == '직접입력') ...[
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: _customDomainController,
+            keyboardType: TextInputType.emailAddress,
+            decoration: _boxDecoration.copyWith(hintText: "도메인 직접 입력 (예: example.com)"),
+            onChanged: (_) => _onChanged(),
+          ),
+        ],
+        if (_emailAvailable != null) ...[
+          const SizedBox(height: 8),
+          _RuleRow(
+            text: _emailAvailable! ? "사용 가능한 이메일입니다." : "이미 사용 중인 이메일입니다.",
+            satisfied: _emailAvailable,
+          ),
+        ],
+      ],
+    );
+  }
+
+  static InputDecoration get _boxDecoration => InputDecoration(
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFDDDDDD)),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFAAAAAA)),
+    ),
+    errorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFFF5252)),
+    ),
+    focusedErrorBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(8),
+      borderSide: const BorderSide(color: Color(0xFFFF5252)),
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
   );
 }
 

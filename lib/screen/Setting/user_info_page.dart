@@ -48,6 +48,8 @@ class _UserInfoPageState extends State<UserInfoPage> {
                   children: [
                     _buildInfoRow("이름", user?.name ?? "-"),
                     const SizedBox(height: 16),
+                    _buildInfoRow("아이디", user?.login_id ?? "-"),
+                    const SizedBox(height: 16),
                     _buildInfoRow("이메일", user?.email ?? "-"),
                     const SizedBox(height: 16),
                     _buildInfoRow(

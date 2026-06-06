@@ -43,7 +43,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true; // 비밀번호 숨김/표시
 
   my_app.User user = my_app.User(
-      owner_id: 0, name: 'name', email: 'email', phone_number: 'phone');
+      owner_id: 0, name: 'name', phone_number: 'phone');
 
   @override
   void initState() {
@@ -413,7 +413,7 @@ class _LoginScreenState extends State<LoginScreen> {
         await Future.delayed(const Duration(milliseconds: 500));
 
         // Keep consistency with fixture-based mock user.
-        final resolvedMockUser = await _resolveMockUser(user.email);
+        final resolvedMockUser = await _resolveMockUser(user.email ?? '');
         user.owner_id = resolvedMockUser.owner_id;
         user.phone_number = resolvedMockUser.phone_number;
         user.name = resolvedMockUser.name;
@@ -434,6 +434,8 @@ class _LoginScreenState extends State<LoginScreen> {
           user.owner_id = response.owner_id ?? 0;
           user.phone_number = response.phone_number;
           user.name = response.name;
+          user.login_id = response.login_id;
+          user.email = response.email;
 
           final userProvider = Provider.of<UserProvider>(context, listen: false);
           await userProvider.setUser(user);

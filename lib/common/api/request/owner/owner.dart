@@ -18,12 +18,14 @@ class CheckDuplicateResponse {
 @JsonSerializable()
 class OwnerRegisterPost {
   String name;
+  String login_id;
   String email;
   String uid;
   String phone_number;
 
   OwnerRegisterPost(
       {required this.name,
+      required this.login_id,
       required this.email,
       required this.uid,
       required this.phone_number});
@@ -75,12 +77,16 @@ class OwnerLoginResponse {
   int? owner_id;
   String name;
   String phone_number;
+  String? login_id;
+  String? email;
   String? msg;
 
   OwnerLoginResponse(
       {this.statusCode,
       required this.name,
-      required this.phone_number});
+      required this.phone_number,
+      this.login_id,
+      this.email});
 
   factory OwnerLoginResponse.fromJson(Map<String, dynamic> json) =>
       _$OwnerLoginResponseFromJson(json);

@@ -93,6 +93,7 @@ class UserProvider with ChangeNotifier {
       final userJson = jsonEncode({
         'owner_id': user.owner_id,
         'name': user.name,
+        'login_id': user.login_id,
         'email': user.email,
         'phone': user.phone_number,
       });
@@ -113,6 +114,7 @@ class UserProvider with ChangeNotifier {
         _user = User(
           owner_id: userMap['owner_id'],
           name: userMap['name'],
+          login_id: userMap['login_id'],
           email: userMap['email'],
           phone_number: userMap['phone'],
         );

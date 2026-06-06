@@ -357,6 +357,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                                   uid: userCredential.user!.uid,
                                   phone_number: formattedPhone,
                                   name: name ?? "",
+                                  login_id: email ?? "",
                                   email: formattedEmail);
 
                               try {

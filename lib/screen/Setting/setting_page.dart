@@ -220,7 +220,7 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _formatEmailToId(user.email),
+                      user.login_id ?? "",
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey[600],
@@ -238,17 +238,6 @@ class _SettingPageState extends State<SettingPage> {
         ),
       );
     }
-  }
-
-  String _formatEmailToId(String? email) {
-    if (email == null || email.isEmpty) {
-      return "id";
-    }
-    // @gifnut.com 부분 제거
-    if (email.contains("@gifnut.com")) {
-      return email.replaceAll("@gifnut.com", "");
-    }
-    return email;
   }
 
   Widget getsettingListView() {
@@ -327,7 +316,8 @@ class _SettingPageState extends State<SettingPage> {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: const Center(child: CircularProgressIndicator(color: Color(0xFFFE7831))),
+            child: const Center(
+                child: CircularProgressIndicator(color: Color(0xFFFE7831))),
           );
         } else if (snapshot.hasError) {
           return Container(
@@ -440,7 +430,7 @@ class _SettingPageState extends State<SettingPage> {
           ),
           SizedBox(height: 2),
           Text(
-            "주소: 서울특별시 강서구 강남대로 112길 47, 2층-661A호\n이메일: admin@502company.com \n고객센터: 02-3664-3338",
+            "주소: 서울특별시 강남대로 112길 47, 2층-661A호\n이메일: admin@502company.com \n고객센터: 02-3664-3338",
             style: TextStyle(
               fontSize: 10,
               color: Colors.grey,

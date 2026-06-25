@@ -377,7 +377,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
             ] else ...[
               _buildFeeRow(
                 label: '(B) $baseFeeLabel',
-                value: formatCurrency(totalFeeAmount),
+                value: formatCurrency(supplyAmount),
               ),
             ],
             const SizedBox(height: 10),

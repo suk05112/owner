@@ -105,7 +105,7 @@ class Api {
     return {
       'Content-Type': 'application/json; charset=UTF-8',
       'User-Agent': userAgent,
-      // 'X-API-KEY': 'app-id=loplat-go-android,signature=d8d6513401f6714cc98b72bc5bc7e2bfcca13b4fe89b22183f470537e57c040c',
+      'X-Firebase-Project': 'cafe-owner',
     };
   }
 
@@ -367,29 +367,16 @@ class AuthInterceptor extends Interceptor {
         return;
       }
 
-      // String? refreshToken = await LoplatSecureStorage.read(LoplatSecureStorage.keyRefreshToken);
-
-      // if (refreshToken == null) {
-      //   print('[401 interceptor] refresh token is null');
-      //   // TODO : 토큰이 없을 경우 => api를 콜한 위젯에서 로그인 페이지로 이동
-      //   handler.next(err);
-      // }
-
-      // print('[401 interceptor] refresh token $refreshToken');
-
-      // Firebase ID Token 강제 갱신 후 재요청
-      // 갱신 실패(세션 만료/삭제)이면 강제 로그아웃
       try {
         final user = FirebaseAuth.instance.currentUser;
         if (user == null) {
           print('[401 interceptor] Firebase 세션 없음 → 강제 로그아웃');
           await _deletePushTokenIfPossible();
-          await FirebaseAuth.instance.signOut(); // authStateChanges()가 null을 방출 → LoginScreen으로 전환
+          await FirebaseAuth.instance.signOut();
           handler.next(err);
           return;
         }
 
-        // forceRefresh: true 로 Firebase Refresh Token을 이용해 새 ID Token 발급
         final idToken = await user.getIdToken(true);
         print('[401 interceptor] Firebase ID Token 갱신 성공 → 재요청');
 
@@ -420,7 +407,6 @@ class AuthInterceptor extends Interceptor {
           queryParameters: requestOptions.queryParameters,
         ));
       } on FirebaseAuthException catch (e) {
-        // Refresh Token도 만료된 경우 → 강제 로그아웃
         print('[401 interceptor] Firebase 토큰 갱신 실패 ($e) → 강제 로그아웃');
         await _deletePushTokenIfPossible();
         await FirebaseAuth.instance.signOut();
@@ -429,6 +415,7 @@ class AuthInterceptor extends Interceptor {
         print('[401 interceptor] 재요청 실패: $e');
         handler.next(err);
       }
+      return;
     }
 
     handler.next(err);

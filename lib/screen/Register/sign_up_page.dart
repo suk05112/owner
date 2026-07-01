@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/api/ApiClient.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
@@ -18,7 +19,9 @@ import '../../common/utils/api_error_utils.dart';
 import 'SingUpCompletePage.dart';
 
 class BasicInfoInputPage extends StatefulWidget {
-  const BasicInfoInputPage({Key? key}) : super(key: key);
+  final List<TermAgreementItem> agreements;
+
+  const BasicInfoInputPage({Key? key, this.agreements = const []}) : super(key: key);
 
   @override
   State<BasicInfoInputPage> createState() => _BasicInfoInputPageState();
@@ -43,16 +46,18 @@ class _BasicInfoInputPageState extends State<BasicInfoInputPage>
           //FocusManager.instance.primaryFocus?.unfocus();
           FocusScope.of(context).unfocus();
         },
-        child: const Scaffold(
-          appBar: CommonAppBar(title: "가입하기"),
+        child: Scaffold(
+          appBar: const CommonAppBar(title: "가입하기"),
           backgroundColor: Colors.white,
-          body: BasicInfoFormWidget(),
+          body: BasicInfoFormWidget(agreements: widget.agreements),
         ));
   }
 }
 
 class BasicInfoFormWidget extends StatefulWidget {
-  const BasicInfoFormWidget({Key? key}) : super(key: key);
+  final List<TermAgreementItem> agreements;
+
+  const BasicInfoFormWidget({Key? key, this.agreements = const []}) : super(key: key);
 
   @override
   State<BasicInfoFormWidget> createState() => _BasicInfoFormWidgetState();
@@ -395,6 +400,8 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
           phone_number: phone_number ?? "",
         ));
 
+      _postTermsAgree(response.owner_id!).catchError((_) {});
+
       setState(() => _isLoading = false);
       Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpCompletePage()));
     } catch (e) {
@@ -404,6 +411,13 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
       setState(() => _isLoading = false);
       CommonDialog.show(context: context, title: "회원가입 오류", content: ApiErrorUtils.toUserMessage(e), buttonText: "확인", onPressed: () {});
     }
+  }
+
+  Future<void> _postTermsAgree(int ownerId) async {
+    final agreements = widget.agreements;
+    if (agreements.isEmpty) return;
+    final request = TermsAgreeRequest(ownerId: ownerId, agreements: agreements);
+    await Api().client.postTermsAgree(request);
   }
 
   /// Firebase 계정 삭제 후 로그아웃. 실패해도 무시하고 계속 진행.
@@ -846,9 +860,12 @@ class _EmailVerificationWidgetState extends State<EmailVerificationWidget> {
                       value: _selectedDomain,
                       isExpanded: true,
                       dropdownColor: Colors.white,
+                      menuMaxHeight: 280,
+                      borderRadius: BorderRadius.circular(8),
+                      elevation: 1,
                       decoration: _boxDecoration.copyWith(hintText: "선택"),
                       items: _domains
-                          .map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis)))
+                          .map((d) => DropdownMenuItem(value: d, child: Text(d, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w300))))
                           .toList(),
                       onChanged: (value) {
                         setState(() {

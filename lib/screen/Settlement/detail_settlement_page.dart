@@ -29,7 +29,9 @@ class DetailSettlementPage extends StatefulWidget {
 }
 
 class _DetailSettlementPageState extends State<DetailSettlementPage> {
-  late Future<SettlementDetailResponse> futureDetailSettlements;
+  bool _isLoading = false;
+  Object? _error;
+  SettlementDetailResponse? _data;
 
   @override
   void initState() {
@@ -37,98 +39,96 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
     _load();
   }
 
-  void _load() {
-    final settlementId = widget.settlement_id;
-    final storeId = widget.store_id;
-    if (settlementId != null) {
-      futureDetailSettlements = Api().client.getDetailSettlements(settlementId);
-    } else if (storeId != null) {
-      futureDetailSettlements = Api().client.getSettlementPreview(storeId);
-    } else {
-      futureDetailSettlements = Future.error('잘못된 접근입니다.');
+  Future<void> _load() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final settlementId = widget.settlement_id;
+      final storeId = widget.store_id;
+      SettlementDetailResponse result;
+      if (settlementId != null) {
+        result = await Api().client.getDetailSettlements(settlementId);
+      } else if (storeId != null) {
+        result = await Api().client.getSettlementPreview(storeId);
+      } else {
+        throw '잘못된 접근입니다.';
+      }
+      if (mounted) setState(() { _data = result; });
+    } catch (e) {
+      if (mounted) setState(() { _error = e; });
+    } finally {
+      if (mounted) setState(() { _isLoading = false; });
     }
   }
 
-  void _retry() {
-    setState(() => _load());
-  }
+  void _retry() => _load();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CommonAppBar(title: "상세 정산 내역"),
       backgroundColor: Colors.white,
-      body: FutureBuilder<SettlementDetailResponse>(
-        future: futureDetailSettlements,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: SizedBox(
-                width: 30,
-                height: 30,
-                child: const CircularProgressIndicator(color: Color(0xFFFE7831)),
-              ),
-            );
-          } else if (snapshot.hasError) {
-            return _buildErrorView(snapshot.error);
-          } else if (snapshot.hasData) {
-            final data = snapshot.data!;
-            final settlement = data.settlement;
-            final details = data.details;
-
-            int totalAmount = settlement.net_payout_amount;
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSettlementInfoCard(
-                    settlement.status,
-                    totalAmount,
-                    periodStart: settlement.period_start,
-                    periodEnd: settlement.period_end,
-                    failureReason: settlement.failure_reason,
-                    totalSalesAmount: settlement.total_sales_amount,
-                    totalFeeAmount: settlement.total_fee_amount,
-                    baseFeeRate: settlement.base_fee_rate,
-                    promoFeeRate: settlement.promo_fee_rate,
-                    promoDiscountAmount: settlement.promo_discount_amount,
-                    supplyAmount: settlement.supply_amount,
-                    vatAmount: settlement.vat_amount,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "주문 내역",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF101010),
-                      fontFamily: 'Inter',
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (data.parseFailureCount > 0)
-                    _buildParseFailureWarning(data.parseFailureCount),
-                  _buildDetailsList(details),
-                ],
-              ),
-            );
-          } else {
-            return const Center(
-              child: Text(
-                "정산내역 읽어오기 실패. 잠시 후 다시 시도해주세요.",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF808080),
-                  fontFamily: 'Inter',
-                ),
-              ),
-            );
-          }
-        },
-      ),
+      body: _buildBody(),
     );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(
+        child: SizedBox(
+          width: 30,
+          height: 30,
+          child: CircularProgressIndicator(color: Color(0xFFFE7831)),
+        ),
+      );
+    }
+    if (_error != null) {
+      return _buildErrorView(_error);
+    }
+    if (_data != null) {
+      final data = _data!;
+      final settlement = data.settlement;
+      final details = data.details;
+      return SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildSettlementInfoCard(
+              settlement.status,
+              settlement.net_payout_amount,
+              periodStart: settlement.period_start,
+              periodEnd: settlement.period_end,
+              failureReason: settlement.failure_reason,
+              totalSalesAmount: settlement.total_sales_amount,
+              totalFeeAmount: settlement.total_fee_amount,
+              baseFeeRate: settlement.base_fee_rate,
+              promoFeeRate: settlement.promo_fee_rate,
+              promoDiscountAmount: settlement.promo_discount_amount,
+              supplyAmount: settlement.supply_amount,
+              vatAmount: settlement.vat_amount,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "주문 내역",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF101010),
+                fontFamily: 'Inter',
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (data.parseFailureCount > 0)
+              _buildParseFailureWarning(data.parseFailureCount),
+            _buildDetailsList(details),
+          ],
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   String formatSettlementPeriod(

@@ -105,7 +105,7 @@ class Api {
     return {
       'Content-Type': 'application/json; charset=UTF-8',
       'User-Agent': userAgent,
-      'X-Firebase-Project': 'cafe-owner',
+      'X-Firebase-Project': 'owner',
     };
   }
 
@@ -362,6 +362,14 @@ class AuthInterceptor extends Interceptor {
       print('[401 interceptor] at ${err.requestOptions.path}');
 
       print('path : ${err.requestOptions.path}');
+
+      // 로그인 없이 호출하는 엔드포인트는 재시도 없이 에러 그대로 통과
+      const _unauthenticatedPaths = ['/owner/check-duplicate', '/owner/register'];
+      if (_unauthenticatedPaths.any((p) => err.requestOptions.path.contains(p))) {
+        handler.next(err);
+        return;
+      }
+
       if (err.requestOptions.path == 'auth/refresh') {
         handler.next(err);
         return;

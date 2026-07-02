@@ -291,12 +291,12 @@ class _LoginScreenState extends State<LoginScreen> {
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => TermsAgreementPage(
-                                        onAgreed: () {
+                                        onAgreed: (agreements) {
                                           Navigator.pushReplacement(
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) =>
-                                                  const BasicInfoInputPage(),
+                                                  BasicInfoInputPage(agreements: agreements),
                                             ),
                                           );
                                         },

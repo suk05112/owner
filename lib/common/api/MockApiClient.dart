@@ -189,6 +189,20 @@ class MockApiClient implements ApiClient {
         version: '260101',
       );
 
+  @override
+  Future<TermsCurrentResponse> getTermsCurrent() async => TermsCurrentResponse(
+        terms: [
+          TermItem(termId: 1, termVersionId: 1, termType: 'SERVICE', title: '서비스 이용약관', required: true, version: '260101'),
+          TermItem(termId: 2, termVersionId: 1, termType: 'FEE', title: '수수료 정책동의', required: true, version: '260101'),
+          TermItem(termId: 3, termVersionId: 1, termType: 'PRIVACY', title: '개인정보 수집 및 이용동의', required: true, version: '260101'),
+          TermItem(termId: 4, termVersionId: 1, termType: 'MARKETING', title: '마케팅 정보 수신 동의', required: false, version: '260101'),
+        ],
+      );
+
+  @override
+  Future<TermsAgreeResponse> postTermsAgree(TermsAgreeRequest request) async =>
+      TermsAgreeResponse(success: true, message: 'ok', agreedCount: request.agreements.length);
+
   // ── 문의 ──────────────────────────────────────────────────────────────────
 
   @override
@@ -199,4 +213,28 @@ class MockApiClient implements ApiClient {
   @override
   Future<InquiryListResponse> getInquiry(int ownerId) async =>
       InquiryListResponse(inquiryResponse: []);
+
+  @override
+  Future<NoticeListResponse> getNoticeList(int page, int limit) async =>
+      NoticeListResponse(
+        message: '공지사항 목록 조회 성공',
+        data: [
+          NoticeItem(id: 1, title: '서비스 점검 안내', createdAt: '2026-07-01T10:00:00'),
+          NoticeItem(id: 2, title: '앱 업데이트 안내', createdAt: '2026-06-15T09:00:00'),
+        ],
+        pagination: NoticePagination(total: 2, page: 1, limit: 20, totalPages: 1),
+      );
+
+  @override
+  Future<NoticeDetailResponse> getNoticeDetail(int noticeId) async =>
+      NoticeDetailResponse(
+        message: '공지사항 상세 조회 성공',
+        data: NoticeDetail(
+          id: noticeId,
+          title: '서비스 점검 안내',
+          content: '7월 5일 새벽 2시~4시 점검 예정입니다.',
+          createdAt: '2026-07-01T10:00:00',
+          updatedAt: '2026-07-01T10:00:00',
+        ),
+      );
 }

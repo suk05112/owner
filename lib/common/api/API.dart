@@ -214,6 +214,37 @@ class Api {
     return _cachedAppCheckToken;
   }
 
+  /// 인증 없이 App Check 토큰만 포함하는 공개 API 전용 클라이언트
+  Future<ApiClient> setPublicClient() async {
+    if (F.isMock) {
+      client = MockApiClient();
+      return client;
+    }
+    String? appCheckToken;
+    try {
+      appCheckToken = await _getAppCheckToken();
+    } catch (e) {
+      print('⚠️ App Check Token 획득 실패 (무시): $e');
+    }
+
+    final baseHeaders = await _getHeaders();
+    final headers = <String, dynamic>{
+      ...baseHeaders,
+      if (appCheckToken != null && appCheckToken.isNotEmpty)
+        "X-Firebase-AppCheck": appCheckToken,
+    };
+
+    final dio = Dio(BaseOptions(
+      baseUrl: BASE_URL,
+      headers: headers,
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+    ))..interceptors.add(CustomLogInterceptor());
+
+    return ApiClient(dio, baseUrl: BASE_URL);
+  }
+
   /// V2, 이외의 baseURL 이 필요할때 사용한다.
   Future<ApiClient> setTempClient(String baseUrl) async {
     final headers = await _getHeaders();

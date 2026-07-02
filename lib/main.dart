@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -29,10 +30,52 @@ import 'package:owner/common/api/API.dart';
 import 'package:owner/common/utils/network_utils.dart';
 import 'package:owner/config.dart';
 
+final FlutterLocalNotificationsPlugin _localNotifications =
+    FlutterLocalNotificationsPlugin();
+
+const AndroidNotificationChannel _channel = AndroidNotificationChannel(
+  'high_importance_channel',
+  '주요 알림',
+  description: '기프넛 오너 앱의 주요 알림입니다.',
+  importance: Importance.high,
+);
+
 // 백그라운드/종료 상태에서 FCM 메시지 수신 (top-level 함수 필수)
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('백그라운드 메시지 수신: ${message.messageId}');
+
+  final title = message.notification?.title ?? message.data['title'] as String?;
+  final body = message.notification?.body ?? message.data['body'] as String?;
+  if (title == null && body == null) return;
+
+  final plugin = FlutterLocalNotificationsPlugin();
+  await plugin.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/owner_logo'),
+      iOS: DarwinInitializationSettings(),
+    ),
+  );
+  await plugin
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(_channel);
+
+  await plugin.show(
+    message.messageId.hashCode,
+    title,
+    body,
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        _channel.id,
+        _channel.name,
+        channelDescription: _channel.description,
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/owner_logo',
+      ),
+    ),
+  );
 }
 
 FutureOr<void> main() async {
@@ -80,9 +123,22 @@ FutureOr<void> main() async {
 Future<void> initializeFCM() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+  // 안드로이드 local notification 초기화
+  await _localNotifications
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(_channel);
+
+  await _localNotifications.initialize(
+    const InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/owner_logo'),
+      iOS: DarwinInitializationSettings(),
+    ),
+  );
+
   final messaging = FirebaseMessaging.instance;
 
-  // iOS 알림 권한 요청
+  // iOS/Android 알림 권한 요청
   final settings = await messaging.requestPermission(
     alert: true,
     badge: true,
@@ -97,9 +153,28 @@ Future<void> initializeFCM() async {
     sound: true,
   );
 
-  // 포그라운드 메시지 수신
+  // 포그라운드 메시지 수신 — 안드로이드는 local notification으로 직접 표시
   FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-    print('포그라운드 메시지 수신: ${message.notification?.title}');
+    final title = message.notification?.title ?? message.data['title'] as String?;
+    final body = message.notification?.body ?? message.data['body'] as String?;
+    print('포그라운드 메시지 수신: $title');
+    if (title == null && body == null) return;
+
+    _localNotifications.show(
+      message.messageId.hashCode,
+      title,
+      body,
+      NotificationDetails(
+        android: AndroidNotificationDetails(
+          _channel.id,
+          _channel.name,
+          channelDescription: _channel.description,
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/owner_logo',
+        ),
+      ),
+    );
   });
 }
 

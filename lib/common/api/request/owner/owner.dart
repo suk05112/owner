@@ -17,22 +17,67 @@ class CheckDuplicateResponse {
 
 @JsonSerializable()
 class OwnerRegisterPost {
-  String name;
   String login_id;
   String email;
   String uid;
-  String phone_number;
+  String client_tx_id;
 
   OwnerRegisterPost(
-      {required this.name,
-      required this.login_id,
+      {required this.login_id,
       required this.email,
       required this.uid,
-      required this.phone_number});
+      required this.client_tx_id});
 
   factory OwnerRegisterPost.fromJson(Map<String, dynamic> json) =>
       _$OwnerRegisterPostFromJson(json);
   Map<String, dynamic> toJson() => _$OwnerRegisterPostToJson(this);
+}
+
+class MokClientInfoResponse {
+  final String mokReqClientInfo;
+  final String clientTxId;
+  final String returnUrl;
+
+  MokClientInfoResponse({
+    required this.mokReqClientInfo,
+    required this.clientTxId,
+    required this.returnUrl,
+  });
+
+  factory MokClientInfoResponse.fromJson(Map<String, dynamic> json) =>
+      MokClientInfoResponse(
+        mokReqClientInfo: json['MOKReqClientInfo'] as String,
+        clientTxId: json['clientTxId'] as String,
+        returnUrl: json['returnUrl'] as String,
+      );
+}
+
+class MokAuthResult {
+  final bool success;
+  final String? name;
+  final String? phone;
+  final String? birthdate;
+  final String? gender;
+  final String clientTxId;
+
+  MokAuthResult({
+    required this.success,
+    required this.clientTxId,
+    this.name,
+    this.phone,
+    this.birthdate,
+    this.gender,
+  });
+
+  factory MokAuthResult.fromJson(Map<String, dynamic> json, String clientTxId) =>
+      MokAuthResult(
+        success: json['success'] as bool? ?? false,
+        clientTxId: clientTxId,
+        name: json['name'] as String?,
+        phone: json['phone'] as String?,
+        birthdate: json['birthdate'] as String?,
+        gender: json['gender'] as String?,
+      );
 }
 
 @JsonSerializable()

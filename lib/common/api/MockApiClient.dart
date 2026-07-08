@@ -41,6 +41,13 @@ class MockApiClient implements ApiClient {
       CheckDuplicateResponse(emailExists: false, phoneExists: false);
 
   @override
+  Future<MokClientInfoResponse> mokClientInfo() async => MokClientInfoResponse(
+        mokReqClientInfo: 'mock_encrypted_client_info',
+        clientTxId: 'GFN-mock-client-tx-id',
+        returnUrl: 'https://www.502company.com/dev/owner/mok/return',
+      );
+
+  @override
   Future<OwnerPushTokenResponse> registerOwnerPushToken(
     int ownerId,
     OwnerPushTokenPost pushToken,

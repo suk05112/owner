@@ -8,20 +8,18 @@ part of 'owner.dart';
 
 OwnerRegisterPost _$OwnerRegisterPostFromJson(Map<String, dynamic> json) =>
     OwnerRegisterPost(
-      name: json['name'] as String,
       login_id: json['login_id'] as String,
       email: json['email'] as String,
       uid: json['uid'] as String,
-      phone_number: json['phone_number'] as String,
+      client_tx_id: json['client_tx_id'] as String,
     );
 
 Map<String, dynamic> _$OwnerRegisterPostToJson(OwnerRegisterPost instance) =>
     <String, dynamic>{
-      'name': instance.name,
       'login_id': instance.login_id,
       'email': instance.email,
       'uid': instance.uid,
-      'phone_number': instance.phone_number,
+      'client_tx_id': instance.client_tx_id,
     };
 
 OwnerRegisterResponse _$OwnerRegisterResponseFromJson(

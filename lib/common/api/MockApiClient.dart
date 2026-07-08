@@ -42,9 +42,14 @@ class MockApiClient implements ApiClient {
 
   @override
   Future<MokClientInfoResponse> mokClientInfo() async => MokClientInfoResponse(
-        mokReqClientInfo: 'mock_encrypted_client_info',
-        clientTxId: 'GFN-mock-client-tx-id',
+        serviceId: 'mock-service-id',
+        encryptReqClientInfo: 'mock_encrypted_client_info',
+        serviceType: 'telcoAuth',
+        usageCode: '01001',
+        retTransferType: 'MOKToken',
         returnUrl: 'https://www.502company.com/dev/owner/mok/return',
+        encryptVersion: 'V2',
+        clientTxId: 'GFN-mock-client-tx-id',
       );
 
   @override

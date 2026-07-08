@@ -34,21 +34,36 @@ class OwnerRegisterPost {
 }
 
 class MokClientInfoResponse {
-  final String mokReqClientInfo;
-  final String clientTxId;
+  final String serviceId;
+  final String encryptReqClientInfo;
+  final String serviceType;
+  final String usageCode;
+  final String retTransferType;
   final String returnUrl;
+  final String encryptVersion;
+  final String clientTxId;
 
   MokClientInfoResponse({
-    required this.mokReqClientInfo,
-    required this.clientTxId,
+    required this.serviceId,
+    required this.encryptReqClientInfo,
+    required this.serviceType,
+    required this.usageCode,
+    required this.retTransferType,
     required this.returnUrl,
+    required this.encryptVersion,
+    required this.clientTxId,
   });
 
   factory MokClientInfoResponse.fromJson(Map<String, dynamic> json) =>
       MokClientInfoResponse(
-        mokReqClientInfo: json['MOKReqClientInfo'] as String,
-        clientTxId: json['clientTxId'] as String,
+        serviceId: json['serviceId'] as String,
+        encryptReqClientInfo: json['encryptReqClientInfo'] as String,
+        serviceType: json['serviceType'] as String,
+        usageCode: json['usageCode'] as String,
+        retTransferType: json['retTransferType'] as String,
         returnUrl: json['returnUrl'] as String,
+        encryptVersion: json['encryptVersion'] as String,
+        clientTxId: json['clientTxId'] as String,
       );
 }
 

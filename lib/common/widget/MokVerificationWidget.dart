@@ -126,15 +126,20 @@ class _MokWebViewPageState extends State<_MokWebViewPage> {
   }
 
   String _buildAutoSubmitForm() {
-    final escaped = widget.clientInfo.mokReqClientInfo
-        .replaceAll('&', '&amp;')
-        .replaceAll('"', '&quot;');
+    final info = widget.clientInfo;
+    String esc(String v) => v.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
     return '''
 <!DOCTYPE html>
 <html>
 <body onload="document.forms[0].submit()">
   <form action="${AppConfig.mokStandardUrl}" method="post">
-    <input type="hidden" name="mokReqClientInfo" value="$escaped" />
+    <input type="hidden" name="serviceId" value="${esc(info.serviceId)}" />
+    <input type="hidden" name="encryptReqClientInfo" value="${esc(info.encryptReqClientInfo)}" />
+    <input type="hidden" name="serviceType" value="${esc(info.serviceType)}" />
+    <input type="hidden" name="usageCode" value="${esc(info.usageCode)}" />
+    <input type="hidden" name="retTransferType" value="${esc(info.retTransferType)}" />
+    <input type="hidden" name="returnUrl" value="${esc(info.returnUrl)}" />
+    <input type="hidden" name="encryptVersion" value="${esc(info.encryptVersion)}" />
   </form>
 </body>
 </html>

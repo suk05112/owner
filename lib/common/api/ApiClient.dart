@@ -191,6 +191,16 @@ abstract class ApiClient {
 
   @POST("/owner/terms/agree")
   Future<TermsAgreeResponse> postTermsAgree(@Body() TermsAgreeRequest request);
+
+  @GET("/owner/popups")
+  Future<PopupListResponse> getPopups(
+    @Query('owner_id') int? ownerId,
+  );
+
+  @POST("/owner/popups/hide")
+  Future<void> hidePopups(
+    @Query('owner_id') int? ownerId,
+  );
 }
 
 /// PUT /owner/account/{store_id} 응답 — 통장사본 있을 때 bank_book_put_url(S3 presigned) 반환
@@ -448,6 +458,53 @@ class NoticeDetail {
       content: json['content'] as String? ?? '',
       createdAt: json['created_at'] as String? ?? '',
       updatedAt: json['updated_at'] as String? ?? '',
+    );
+  }
+}
+
+class PopupItem {
+  final int id;
+  final String title;
+  final String imageUrl;
+  final String linkUrl;
+  final int displayOrder;
+
+  PopupItem({
+    required this.id,
+    required this.title,
+    required this.imageUrl,
+    required this.linkUrl,
+    required this.displayOrder,
+  });
+
+  factory PopupItem.fromJson(Map<String, dynamic> json) {
+    return PopupItem(
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      imageUrl: json['image_url'] as String? ?? '',
+      linkUrl: json['link_url'] as String? ?? '',
+      displayOrder: json['display_order'] as int? ?? 0,
+    );
+  }
+}
+
+class PopupListResponse {
+  final String message;
+  final List<PopupItem> data;
+
+  PopupListResponse({
+    required this.message,
+    required this.data,
+  });
+
+  factory PopupListResponse.fromJson(Map<String, dynamic> json) {
+    final items = (json['data'] as List<dynamic>? ?? [])
+        .map((e) => PopupItem.fromJson(e as Map<String, dynamic>))
+        .toList();
+    items.sort((a, b) => a.displayOrder.compareTo(b.displayOrder));
+    return PopupListResponse(
+      message: json['message'] as String? ?? '',
+      data: items,
     );
   }
 }

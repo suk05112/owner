@@ -33,74 +33,23 @@ class OwnerRegisterPost {
   Map<String, dynamic> toJson() => _$OwnerRegisterPostToJson(this);
 }
 
-class MokClientInfoResponse {
-  final String serviceId;
-  final String encryptReqClientInfo;
-  final String serviceType;
-  final String usageCode;
-  final String retTransferType;
-  final String returnUrl;
-  final String encryptVersion;
-  final String clientTxId;
-
-  MokClientInfoResponse({
-    required this.serviceId,
-    required this.encryptReqClientInfo,
-    required this.serviceType,
-    required this.usageCode,
-    required this.retTransferType,
-    required this.returnUrl,
-    required this.encryptVersion,
-    required this.clientTxId,
-  });
-
-  factory MokClientInfoResponse.fromJson(Map<String, dynamic> json) =>
-      MokClientInfoResponse(
-        serviceId: json['serviceId'] as String,
-        encryptReqClientInfo: json['encryptReqClientInfo'] as String,
-        serviceType: json['serviceType'] as String,
-        usageCode: json['usageCode'] as String,
-        retTransferType: json['retTransferType'] as String,
-        returnUrl: json['returnUrl'] as String,
-        encryptVersion: json['encryptVersion'] as String,
-        clientTxId: json['clientTxId'] as String,
-      );
-}
-
 class MokAuthResult {
   final bool success;
-  final String? name;
-  final String? phone;
-  final String? birthdate;
-  final String? gender;
   final String clientTxId;
 
   MokAuthResult({
     required this.success,
     required this.clientTxId,
-    this.name,
-    this.phone,
-    this.birthdate,
-    this.gender,
   });
-
-  factory MokAuthResult.fromJson(Map<String, dynamic> json, String clientTxId) =>
-      MokAuthResult(
-        success: json['success'] as bool? ?? false,
-        clientTxId: clientTxId,
-        name: json['name'] as String?,
-        phone: json['phone'] as String?,
-        birthdate: json['birthdate'] as String?,
-        gender: json['gender'] as String?,
-      );
 }
 
 @JsonSerializable()
 class OwnerRegisterResponse {
   int? statusCode;
   int? owner_id;
+  String? phone_number;
 
-  OwnerRegisterResponse({this.statusCode, this.owner_id});
+  OwnerRegisterResponse({this.statusCode, this.owner_id, this.phone_number});
 
   factory OwnerRegisterResponse.fromJson(Map<String, dynamic> json) =>
       _$OwnerRegisterResponseFromJson(json);

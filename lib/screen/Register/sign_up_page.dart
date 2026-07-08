@@ -113,7 +113,6 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   String? name;
   String? email; // gifnut 아이디 (IDVerificationWidget에서)
   String? userEmail; // 일반 이메일
-  String? phone_number;
   String? password;
   String? confirmPassword; // 비밀번호 확인 값
   String? clientTxId; // mobileOK 본인인증 거래 ID
@@ -150,7 +149,6 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                         successCallback: (mokResult) {
                       if (mokResult != null && mokResult.success) {
                         setState(() {
-                          phone_number = mokResult.phone;
                           clientTxId = mokResult.clientTxId;
                         });
                       } else {
@@ -254,7 +252,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                           }
 
                           // 4. 본인인증 완료 확인
-                          if (phone_number == null || clientTxId == null) {
+                          if (clientTxId == null) {
                             _scrollToKey(_phoneKey);
                             CommonDialog.show(
                               context: context,
@@ -380,7 +378,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
           name: name ?? "",
           login_id: PhoneUtils.formatEmailForServer(email ?? ""),
           email: userEmail,
-          phone_number: phone_number ?? "",
+          phone_number: response.phone_number ?? "",
         ));
 
       _postTermsAgree(response.owner_id!).catchError((_) {});

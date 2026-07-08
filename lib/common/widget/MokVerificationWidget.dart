@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
-import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
@@ -27,35 +26,19 @@ class _MokVerificationWidgetState extends State<MokVerificationWidget> {
 
   Future<void> _startVerification() async {
     setState(() => _isLoading = true);
-    try {
-      final clientInfo = await Api().client.mokClientInfo();
-      if (!mounted) return;
-      final result = await Navigator.push<MokAuthResult?>(
-        context,
-        MaterialPageRoute(
-          builder: (_) => _MokWebViewPage(clientInfo: clientInfo),
-        ),
-      );
-      if (!mounted) return;
-      setState(() {
-        _isLoading = false;
-        if (result != null && result.success) {
-          _result = result;
-        }
-      });
+    final result = await Navigator.push<MokAuthResult?>(
+      context,
+      MaterialPageRoute(builder: (_) => const _MokWebViewPage()),
+    );
+    if (!mounted) return;
+    setState(() {
+      _isLoading = false;
       if (result != null && result.success) {
-        widget.successCallback(result);
+        _result = result;
       }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-      CommonDialog.show(
-        context: context,
-        title: "본인인증 오류",
-        content: "본인인증 요청 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
-        buttonText: "확인",
-        onPressed: () {},
-      );
+    });
+    if (result != null && result.success) {
+      widget.successCallback(result);
     }
   }
 
@@ -91,7 +74,7 @@ class _MokVerificationWidgetState extends State<MokVerificationWidget> {
                     height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                   )
-                : Text(_result != null ? '본인인증 완료 (${_result!.name ?? ""})' : '본인인증 하기'),
+                : Text(_result != null ? '본인인증 완료' : '본인인증 하기'),
           ),
         ),
       ],
@@ -100,9 +83,7 @@ class _MokVerificationWidgetState extends State<MokVerificationWidget> {
 }
 
 class _MokWebViewPage extends StatefulWidget {
-  const _MokWebViewPage({required this.clientInfo});
-
-  final MokClientInfoResponse clientInfo;
+  const _MokWebViewPage();
 
   @override
   State<_MokWebViewPage> createState() => _MokWebViewPageState();
@@ -117,64 +98,30 @@ class _MokWebViewPageState extends State<_MokWebViewPage> {
     super.initState();
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: _onPageFinished,
-        ),
+      ..addJavaScriptChannel(
+        'MokChannel',
+        onMessageReceived: _onMokMessage,
       )
-      ..loadHtmlString(_buildAutoSubmitForm());
+      ..loadRequest(Uri.parse(AppConfig.mokTestPageUrl));
   }
 
-  String _buildAutoSubmitForm() {
-    final info = widget.clientInfo;
-    String esc(String v) => v.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
-    return '''
-<!DOCTYPE html>
-<html>
-<body onload="document.forms[0].submit()">
-  <form action="${AppConfig.mokStandardUrl}" method="post">
-    <input type="hidden" name="serviceId" value="${esc(info.serviceId)}" />
-    <input type="hidden" name="encryptReqClientInfo" value="${esc(info.encryptReqClientInfo)}" />
-    <input type="hidden" name="serviceType" value="${esc(info.serviceType)}" />
-    <input type="hidden" name="usageCode" value="${esc(info.usageCode)}" />
-    <input type="hidden" name="retTransferType" value="${esc(info.retTransferType)}" />
-    <input type="hidden" name="returnUrl" value="${esc(info.returnUrl)}" />
-    <input type="hidden" name="encryptVersion" value="${esc(info.encryptVersion)}" />
-  </form>
-</body>
-</html>
-''';
-  }
-
-  Future<void> _onPageFinished(String url) async {
+  void _onMokMessage(JavaScriptMessage message) {
     if (_resultHandled) return;
-    if (!url.startsWith(widget.clientInfo.returnUrl)) return;
-
     _resultHandled = true;
     try {
-      final raw = await _webViewController
-          .runJavaScriptReturningResult('document.body.innerText') as String;
-      final decoded = _decodeJsResult(raw);
-      final json = jsonDecode(decoded) as Map<String, dynamic>;
-      final result = MokAuthResult.fromJson(json, widget.clientInfo.clientTxId);
+      final json = jsonDecode(message.message) as Map<String, dynamic>;
+      final resultCode = json['resultCode'] as String?;
+      final clientTxId = json['clientTxId'] as String? ?? '';
+      final result = MokAuthResult(
+        success: resultCode == '2000',
+        clientTxId: clientTxId,
+      );
       if (!mounted) return;
       Navigator.pop(context, result);
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(
-        context,
-        MokAuthResult(success: false, clientTxId: widget.clientInfo.clientTxId),
-      );
+      Navigator.pop(context, MokAuthResult(success: false, clientTxId: ''));
     }
-  }
-
-  String _decodeJsResult(String raw) {
-    // runJavaScriptReturningResult는 문자열을 JSON 인코딩된 형태(양쪽 따옴표 포함)로 반환할 수 있음
-    var value = raw;
-    if (value.startsWith('"') && value.endsWith('"')) {
-      value = jsonDecode(value) as String;
-    }
-    return value;
   }
 
   @override
@@ -184,10 +131,7 @@ class _MokWebViewPageState extends State<_MokWebViewPage> {
       onPopInvokedWithResult: (didPop, result) {
         if (didPop || _resultHandled) return;
         _resultHandled = true;
-        Navigator.pop(
-          context,
-          MokAuthResult(success: false, clientTxId: widget.clientInfo.clientTxId),
-        );
+        Navigator.pop(context, MokAuthResult(success: false, clientTxId: ''));
       },
       child: Scaffold(
         appBar: const CommonAppBar(title: "본인인증"),

@@ -27,6 +27,7 @@ OwnerRegisterResponse _$OwnerRegisterResponseFromJson(
     OwnerRegisterResponse(
       statusCode: (json['statusCode'] as num?)?.toInt(),
       owner_id: (json['owner_id'] as num?)?.toInt(),
+      phone_number: json['phone_number'] as String?,
     );
 
 Map<String, dynamic> _$OwnerRegisterResponseToJson(
@@ -34,6 +35,7 @@ Map<String, dynamic> _$OwnerRegisterResponseToJson(
     <String, dynamic>{
       'statusCode': instance.statusCode,
       'owner_id': instance.owner_id,
+      'phone_number': instance.phone_number,
     };
 
 OwnerFind _$OwnerFindFromJson(Map<String, dynamic> json) => OwnerFind(

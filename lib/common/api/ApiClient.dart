@@ -40,9 +40,6 @@ abstract class ApiClient {
     @Query('phone_number') String? phoneNumber,
   });
 
-  @POST("/owner/mok/client-info")
-  Future<MokClientInfoResponse> mokClientInfo();
-
   @POST("/owner/push-token/{owner_id}")
   Future<OwnerPushTokenResponse> registerOwnerPushToken(
     @Path('owner_id') int ownerId,

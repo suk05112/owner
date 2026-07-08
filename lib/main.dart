@@ -8,7 +8,6 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/flavors.dart';
 
 import 'package:owner/common/model/user.dart';
@@ -24,6 +23,7 @@ import 'package:owner/common/provier/mock_dashboard_stats_provider.dart';
 import 'package:owner/common/provier/mock_account_provider.dart';
 import 'package:owner/common/provier/mock_gifticon_provider.dart';
 import 'package:owner/screen/home.dart';
+import 'package:owner/screen/splash_screen.dart';
 import 'package:owner/common/provier/store_provider.dart';
 import 'screen/LoginPage.dart';
 import 'package:owner/common/api/API.dart';
@@ -320,14 +320,7 @@ class _AuthGateState extends State<_AuthGate> {
   Widget build(BuildContext context) {
     if (_isLoggedIn == null) {
       return const MaterialApp(
-        home: Scaffold(
-          backgroundColor: Colors.white,
-          body: Center(
-            child: CircularProgressIndicator(
-              color: ColorAssset.mainColor,
-            ),
-          ),
-        ),
+        home: SplashScreen(),
         debugShowCheckedModeBanner: false,
       );
     }

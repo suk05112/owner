@@ -98,7 +98,10 @@ class _MokWebViewPageState extends State<_MokWebViewPage> {
       ..setNavigationDelegate(
         NavigationDelegate(onNavigationRequest: _onNavigationRequest),
       )
-      ..loadRequest(Uri.parse(AppConfig.mokTestPageUrl));
+      ..loadRequest(
+        Uri.parse(AppConfig.mokStartUrl),
+        headers: {'X-App-Client': 'GifnutOwner'},
+      );
   }
 
   NavigationDecision _onNavigationRequest(NavigationRequest request) {

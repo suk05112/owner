@@ -17,5 +17,5 @@ class AppConfig {
   }
 
   // mobileOK 본인인증 WebView가 로드할 서버 페이지 (JS SDK가 이 origin에서 동작)
-  static String get mokTestPageUrl => "$baseUrl/owner/mok/test-page";
+  static String get mokStartUrl => "$baseUrl/owner/mok/start";
 }

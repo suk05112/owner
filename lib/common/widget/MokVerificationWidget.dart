@@ -1,9 +1,6 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
-import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/config.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -98,30 +95,28 @@ class _MokWebViewPageState extends State<_MokWebViewPage> {
     super.initState();
     _webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..addJavaScriptChannel(
-        'MokChannel',
-        onMessageReceived: _onMokMessage,
+      ..setNavigationDelegate(
+        NavigationDelegate(onNavigationRequest: _onNavigationRequest),
       )
       ..loadRequest(Uri.parse(AppConfig.mokTestPageUrl));
   }
 
-  void _onMokMessage(JavaScriptMessage message) {
-    if (_resultHandled) return;
-    _resultHandled = true;
-    try {
-      final json = jsonDecode(message.message) as Map<String, dynamic>;
-      final resultCode = json['resultCode'] as String?;
-      final clientTxId = json['clientTxId'] as String? ?? '';
-      final result = MokAuthResult(
-        success: resultCode == '2000',
-        clientTxId: clientTxId,
-      );
-      if (!mounted) return;
-      Navigator.pop(context, result);
-    } catch (e) {
-      if (!mounted) return;
-      Navigator.pop(context, MokAuthResult(success: false, clientTxId: ''));
+  NavigationDecision _onNavigationRequest(NavigationRequest request) {
+    if (!request.url.contains('/owner/mok/result')) {
+      return NavigationDecision.navigate;
     }
+    if (_resultHandled) return NavigationDecision.prevent;
+    _resultHandled = true;
+
+    final uri = Uri.parse(request.url);
+    final clientTxId = uri.queryParameters['clientTxId'] ?? '';
+    final resultCode = uri.queryParameters['resultCode'];
+    final result = MokAuthResult(
+      success: resultCode == '2000',
+      clientTxId: clientTxId,
+    );
+    Navigator.pop(context, result);
+    return NavigationDecision.prevent;
   }
 
   @override

@@ -13,7 +13,10 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/api/ApiClient.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
+import 'package:owner/common/utils/link_handler.dart';
+import 'package:owner/common/widget/PopupCarouselDialog.dart';
 
 import 'QRScanPage.dart';
 import 'Store/cafe_detail_page.dart';
@@ -63,8 +66,37 @@ class _HomeState extends State<Home> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _retryPushTokenIfNeeded();
         _listenTokenRefresh();
+        _showPopupsIfAny();
       });
     }
+  }
+
+  Future<void> _showPopupsIfAny() async {
+    final ownerId = Provider.of<UserProvider>(context, listen: false).user?.owner_id;
+    List<PopupItem> popups;
+    try {
+      final response = await Api().client.getPopups(ownerId);
+      popups = response.data;
+    } catch (e) {
+      print('팝업 목록 조회 실패: $e');
+      return;
+    }
+    if (popups.isEmpty || !mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => PopupCarouselDialog(
+        popups: popups,
+        onTapLink: (popup) => handlePopupLink(context, popup.linkUrl, title: popup.title),
+        onHideToday: () async {
+          try {
+            await Api().client.hidePopups(ownerId);
+          } catch (e) {
+            print('팝업 숨기기 실패: $e');
+          }
+        },
+      ),
+    );
   }
 
   Future<void> _retryPushTokenIfNeeded() async {

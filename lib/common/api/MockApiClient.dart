@@ -237,4 +237,11 @@ class MockApiClient implements ApiClient {
           updatedAt: '2026-07-01T10:00:00',
         ),
       );
+
+  @override
+  Future<PopupListResponse> getPopups(int? ownerId) async =>
+      PopupListResponse(message: '팝업 목록 조회 성공', data: []);
+
+  @override
+  Future<void> hidePopups(int? ownerId) async {}
 }

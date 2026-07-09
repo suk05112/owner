@@ -34,7 +34,9 @@ class _TermsPageState extends State<TermsPage> {
       final response = await Api().client.getTermsCurrent();
       if (!mounted) return;
       setState(() {
-        _termItems = response.terms;
+        _termItems = response.terms
+            .where((term) => term.termType != 'PRIVACY_CONSENT')
+            .toList();
         _isLoading = false;
       });
     } catch (e) {

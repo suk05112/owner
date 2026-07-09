@@ -52,6 +52,8 @@ StoreUpdateResponse _$StoreUpdateResponseFromJson(Map<String, dynamic> json) =>
       store_photo_get_urls: (json['store_photo_get_urls'] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
+      store_logo_put_url: json['store_logo_put_url'] as String?,
+      business_put_url: json['business_put_url'] as String?,
     );
 
 Map<String, dynamic> _$StoreUpdateResponseToJson(
@@ -61,6 +63,8 @@ Map<String, dynamic> _$StoreUpdateResponseToJson(
       'msg': instance.msg,
       'store_photos': instance.store_photos,
       'store_photo_get_urls': instance.store_photo_get_urls,
+      'store_logo_put_url': instance.store_logo_put_url,
+      'business_put_url': instance.business_put_url,
     };
 
 PresignedUrl _$PresignedUrlFromJson(Map<String, dynamic> json) => PresignedUrl(

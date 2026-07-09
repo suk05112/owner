@@ -33,6 +33,8 @@ class Store {
   String? open_yn;
   String? created_at;
   String? updated_at;
+  bool logo_changed;
+  bool business_changed;
 
   Store(
       {this.owner_id = 0,
@@ -56,7 +58,9 @@ class Store {
       this.status,
       this.open_yn,
       this.created_at,
-      this.updated_at});
+      this.updated_at,
+      this.logo_changed = false,
+      this.business_changed = false});
 
   factory Store.fromJson(Map<String, dynamic> json) => _$StoreFromJson(json);
   Map<String, dynamic> toJson() => _$StoreToJson(this);

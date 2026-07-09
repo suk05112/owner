@@ -67,6 +67,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   File? _logoImage;
   List<File> _storeImage = []; //갤러리에서 가져온 매장 사진
   List<String>? savedStoreImage; //기존 저장된 매장 사진
+  File? _businessRegistration;
+  String? _uploadedBusinessRegistrationFilename;
   File? _imageFile;
   bool isClickedPhotoUploadPage = false;
   bool _isLoading = false;
@@ -115,6 +117,22 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
       });
     }
   }
+
+  Future<void> _pickBusinessRegistration() async {
+    final picker = ImagePicker();
+    final pickedImage = await picker.pickImage(source: ImageSource.gallery, imageQuality: 90);
+
+    if (pickedImage != null) {
+      setState(() {
+        _businessRegistration = File(pickedImage.path);
+        _uploadedBusinessRegistrationFilename = pickedImage.name;
+      });
+    }
+  }
+
+  // 심사가 승인 완료(APPROVED)되지 않은 매장만 로고·사업자등록증을 앱에서 직접 변경 가능
+  bool get _canEditLogoAndBusiness =>
+      _isRegister || _store?.inspection_status != 1;
 
   @override
   static const _labelStyle = TextStyle(
@@ -191,8 +209,8 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                       ),
                       const SizedBox(height: 20),
 
-                      // 로고 사진 (등록 모드 전용)
-                      if (_isRegister) ...[
+                      // 로고 사진 (등록 모드 또는 심사 미승인 매장 수정 모드)
+                      if (_canEditLogoAndBusiness) ...[
                         const Text("로고 사진", style: _labelStyle),
                         const SizedBox(height: 8),
                         Row(
@@ -209,9 +227,54 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
                                         height: 100,
                                       ),
                                     )
-                                  : _photoAddBox(),
+                                  : (!_isRegister && _store?.store_logo != null)
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(12),
+                                          child: StoreImage(
+                                            url: _store!.store_logo!,
+                                            width: 100,
+                                            height: 100,
+                                            fit: BoxFit.cover,
+                                            errorWidget: _imageErrorBox(),
+                                          ),
+                                        )
+                                      : _photoAddBox(),
                             ),
                           ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // 사업자 등록증 (등록 모드 또는 심사 미승인 매장 수정 모드)
+                        const Text("사업자 등록증", style: _labelStyle),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: _pickBusinessRegistration,
+                          child: Container(
+                            width: double.infinity,
+                            height: 56,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF7F7F7),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFE6E6E6)),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.add, color: Color(0xFF808080), size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _uploadedBusinessRegistrationFilename ?? "파일 추가",
+                                    style: const TextStyle(fontSize: 14, color: Color(0xFF808080)),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                         const SizedBox(height: 20),
                       ],
@@ -223,9 +286,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
                       if (!_isRegister) ...[
                         const SizedBox(height: 16),
-                        const Text(
-                          "매장 이름/주소/사업자 등록번호/로고 수정은 문의로만 변경 가능합니다.",
-                          style: TextStyle(fontSize: 12, color: Color(0xFF808080)),
+                        Text(
+                          _canEditLogoAndBusiness
+                              ? "매장 이름/주소/사업자 등록번호 수정은 문의로만 변경 가능합니다."
+                              : "매장 이름/주소/사업자 등록번호/로고 수정은 문의로만 변경 가능합니다.",
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF808080)),
                         ),
                       ],
                     ],
@@ -434,6 +499,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     _store!.store_telephone = telePhoneController.text;
     _store!.store_description = introController.text;
     _store!.image_count = isClickedPhotoUploadPage ? _storeImage.length : null;
+    _store!.logo_changed = _logoImage != null;
+    _store!.business_changed = _businessRegistration != null;
+    if (_businessRegistration != null) {
+      _store!.business_registration = _businessRegistration;
+    }
 
     try {
       final response =
@@ -448,6 +518,13 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         for (final url in response.store_photo_get_urls) {
           await CachedNetworkImage.evictFromCache(url);
         }
+      }
+
+      if (response.store_logo_put_url != null) {
+        await uploadLogoImage(response.store_logo_put_url);
+      }
+      if (response.business_put_url != null) {
+        await uploadBusinessRegistrationImage(response.business_put_url!);
       }
 
       final updatedStore = Store.fromJson(_store!.toJson())
@@ -526,6 +603,27 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         if (mounted) setState(() => _uploadedCount++);
       }
     }));
+  }
+
+  //사업자등록증 업로드 (매장 수정 화면 전용)
+  Future<void> uploadBusinessRegistrationImage(String businessPutUrl) async {
+    if (_businessRegistration == null) return;
+    try {
+      // 업로드 직전 리사이즈/압축 (긴 변 1280px, JPEG 85%)
+      final uploadFile = await prepareUploadImage(_businessRegistration!.path);
+      final response = await http.put(
+        Uri.parse(businessPutUrl),
+        body: await uploadFile.readAsBytes(),
+      );
+
+      if (response.statusCode == 200) {
+        print('BusinessRegistration image uploaded successfully.');
+      } else {
+        print('BusinessRegistration upload failed. Status code: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error: $e');
+    }
   }
 
   //통장사본, 사업자등록증 업로드

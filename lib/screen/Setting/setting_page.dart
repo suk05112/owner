@@ -33,31 +33,25 @@ class _SettingPageState extends State<SettingPage> {
       appBar: const CommonAppBar(title: "더보기"),
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          getUserInfo(),
-                          const SizedBox(height: 24),
-                          getsettingListView(),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
+                    getUserInfo(),
+                    const SizedBox(height: 24),
+                    getsettingListView(),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-            ),
-            businessInformation(),
-          ],
+              businessInformation(),
+            ],
+          ),
         ),
       ),
     );

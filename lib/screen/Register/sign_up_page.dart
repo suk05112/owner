@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
-import 'package:owner/common/api/ApiClient.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
@@ -359,6 +358,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
         login_id: PhoneUtils.formatEmailForServer(email ?? ""),
         email: userEmail ?? "",
         client_tx_id: clientTxId ?? "",
+        agreements: widget.agreements,
       ));
 
       if (response == null || response.owner_id == null) {
@@ -381,8 +381,6 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
           phone_number: response.phone_number ?? "",
         ));
 
-      _postTermsAgree(response.owner_id!).catchError((_) {});
-
       setState(() => _isLoading = false);
       Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpCompletePage()));
     } catch (e) {
@@ -392,13 +390,6 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
       setState(() => _isLoading = false);
       CommonDialog.show(context: context, title: "회원가입 오류", content: ApiErrorUtils.toUserMessage(e), buttonText: "확인", onPressed: () {});
     }
-  }
-
-  Future<void> _postTermsAgree(int ownerId) async {
-    final agreements = widget.agreements;
-    if (agreements.isEmpty) return;
-    final request = TermsAgreeRequest(ownerId: ownerId, agreements: agreements);
-    await Api().client.postTermsAgree(request);
   }
 
   /// Firebase 계정 삭제 후 로그아웃. 실패해도 무시하고 계속 진행.

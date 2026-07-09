@@ -8,6 +8,7 @@ import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/model/user.dart';
 import 'package:owner/screen/LoginPage.dart';
+import 'package:owner/screen/Setting/terms_page.dart';
 import 'package:owner/oss_licenses.dart';
 
 class SettingPage extends StatefulWidget {
@@ -32,31 +33,25 @@ class _SettingPageState extends State<SettingPage> {
       appBar: const CommonAppBar(title: "더보기"),
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          getUserInfo(),
-                          const SizedBox(height: 24),
-                          getsettingListView(),
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
+                    getUserInfo(),
+                    const SizedBox(height: 24),
+                    getsettingListView(),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
-            ),
-            businessInformation(),
-          ],
+              businessInformation(),
+            ],
+          ),
         ),
       ),
     );
@@ -68,6 +63,7 @@ class _SettingPageState extends State<SettingPage> {
       "공지사항",
       "문의하기",
       "자주묻는 질문",
+      "약관 보기",
       "라이선스",
       "버전",
     ];
@@ -81,6 +77,7 @@ class _SettingPageState extends State<SettingPage> {
       Icons.contact_support_outlined,
       Icons.help_outline,
       Icons.description_outlined,
+      Icons.description_outlined,
       Icons.info_outline,
     ];
   }
@@ -91,6 +88,7 @@ class _SettingPageState extends State<SettingPage> {
       const NoticePage(),
       const InquiryPage(),
       const FAQPage(),
+      const TermsPage(),
       OssLicensesPage(),
     ];
     return items;
@@ -260,7 +258,7 @@ class _SettingPageState extends State<SettingPage> {
       child: Column(
         children: [
           for (int index = 0; index < allItems.length; index++)
-            if (index == 5)
+            if (index == 6)
               version()
             else
               GestureDetector(

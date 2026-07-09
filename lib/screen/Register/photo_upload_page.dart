@@ -2,15 +2,12 @@ import 'dart:io';
 
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:reorderable_grid_view/reorderable_grid_view.dart';
 import 'package:http/http.dart' as http;
-import 'package:image/image.dart' as img;
-import 'package:exif/exif.dart';
 
 
 class PhotoUploadePage extends StatefulWidget {
@@ -31,17 +28,14 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
   final picker = ImagePicker();
 
   List<File> selectedImages = []; // List of selected image
-  late var userImage = [];
-  final data = [1, 2, 3, 4, 5];
 
-  bool isInit = false;
-  bool isLoading = false; // Track loading state
+  bool isLoading = false; // Track loading state (사진 선택 중)
+  bool _isInitLoading = true; // 저장된 이미지 최초 로딩 중
 
   @override
   void initState() {
     super.initState();
-    selectedImages = widget.storeImage;
-    _initRetrieval();
+    _loadSavedImages();
   }
 
   @override
@@ -51,51 +45,19 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
     super.dispose();
   }
 
-  Future<void> _initRetrieval() async {
-    // selectedImages = widget.savedImage;
-    // widget.savedImageUrl.asMap().forEach((idx, url) async {
-    //   selectedImages.add(await getImageFileFromUrl(url, idx));
-    // });
-
-    // await Future.wait(widget.savedImageUrl.asMap().entries.map((e) async {
-    // var idx = e.key;
-    // var url = e.value;
-
-    // var imageFile = await getImageFileFromUrl(url, idx);
-    // var resizedImage = await resizeImage(imageFile, 500, 500);
-    // selectedImages.add(resizedImage);
-    // selectedImages = selectedImages;
-    // setState(() {}); // UI 업데이트
-
-    selectedImages = await Future.wait(
+  /// 저장된 매장 사진 URL을 파일로 1회만 내려받는다.
+  /// (build()에서 매 리빌드마다 재다운로드하던 문제를 제거)
+  Future<void> _loadSavedImages() async {
+    final images = await Future.wait(
       widget.savedImageUrl.asMap().entries.map((e) async {
-        var idx = e.key;
-        var url = e.value;
-        return await getImageFileFromUrl(url, idx);
+        return await getImageFileFromUrl(e.value, e.key);
       }),
     );
-
-    setState(() {}); // 최종 UI 갱신
-
-    // selectedImages.add(await getImageFileFromUrl(url, idx));
-    // setState(() async {
-    // });
-    // }
-    // )
-    // );
-
-    print("photo upload page:: init state 실행");
-    print(selectedImages);
-  }
-
-  Future<List<File>> _loadImages() async {
-    List<File> images = [];
-    await Future.wait(widget.savedImageUrl.asMap().entries.map((e) async {
-      var idx = e.key;
-      var url = e.value;
-      images.add(await getImageFileFromUrl(url, idx));
-    }));
-    return images;
+    if (!mounted) return;
+    setState(() {
+      selectedImages = images;
+      _isInitLoading = false;
+    });
   }
 
   Future<File> getImageFileFromUrl(String imageUrl, int idx) async {
@@ -137,7 +99,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
         );
       }
       for (var xfile in limited) {
-        selectedImages.add(await fixExifRotation(xfile.path));
+        selectedImages.add(File(xfile.path));
       }
       setState(() {
         isLoading = false;
@@ -149,58 +111,6 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('Nothing is selected')));
     }
-  }
-
-  Future<File> fixExifRotation(String imagePath) async {
-    final originalFile = File(imagePath);
-    List<int> imageBytes = await originalFile.readAsBytes();
-
-    final originalImage = img.decodeImage(Uint8List.fromList(imageBytes));
-
-    final height = originalImage!.height;
-    final width = originalImage.width;
-
-    // Let's check for the image size
-    // This will be true also for upside-down photos but it's ok for me
-    if (height >= width) {
-      // I'm interested in portrait photos so
-      // I'll just return here
-      return originalFile;
-    }
-
-    // We'll use the exif package to read exif data
-    // This is map of several exif properties
-    // Let's check 'Image Orientation'
-    final exifData = await readExifFromBytes(imageBytes);
-
-    img.Image fixedImage = img.copyRotate(originalImage, angle: 0);
-
-    if (exifData.containsKey('Image Orientation')) {
-      final orientation = exifData['Image Orientation']!.printable;
-      print("Image Orientation: $orientation");
-    }
-
-    if (height < width) {
-      print('Rotating image necessary');
-      // rotate
-      if (exifData['Image Orientation']!.printable.contains('Horizontal')) {
-        // fixedImage = img.copyRotate(originalImage, angle: 90);
-      } else if (exifData['Image Orientation']!.printable.contains('180')) {
-        // fixedImage = img.copyRotate(originalImage, angle: -90);
-      } else if (exifData['Image Orientation']!.printable.contains('CW')) {
-        fixedImage = img.copyRotate(originalImage, angle: -90);
-      } else {
-        fixedImage = img.copyRotate(originalImage, angle: 0);
-      }
-    }
-
-    // Here you can select whether you'd like to save it as png
-    // or jpg with some compression
-    // I choose jpg with 100% quality
-    final fixedFile =
-        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 100));
-
-    return fixedFile;
   }
 
   @override
@@ -286,16 +196,9 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                 ),
                 const SizedBox(height: 20),
                 Expanded(
-                  child: FutureBuilder<List<File>>(
-                    future: _loadImages(),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        print("connection done");
-                      }
-                      if ((snapshot.connectionState ==
-                                  ConnectionState.waiting &&
-                              isInit == false) ||
-                          (isLoading == true)) {
+                  child: Builder(
+                    builder: (context) {
+                      if (_isInitLoading || isLoading) {
                         return Center(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -315,39 +218,7 @@ class _PhotoUploadePageState extends State<PhotoUploadePage> {
                             ],
                           ),
                         );
-                      } else if (snapshot.hasError) {
-                        return Center(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.error_outline,
-                                  size: 48, color: Colors.grey[400]),
-                              const SizedBox(height: 16),
-                              Text(
-                                '오류가 발생했습니다: ${snapshot.error}',
-                                style: TextStyle(color: Colors.grey[600]),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        );
                       } else {
-                        isInit = true;
-
-                        selectedImages = isInit == false
-                            ? (snapshot.data ?? [])
-                                .map((file) => file.path)
-                                .toSet()
-                                .map((path) => File(path))
-                                .toList()
-                            : selectedImages
-                                .map((file) => file.path)
-                                .toSet()
-                                .map((path) => File(path))
-                                .toList();
-
-                        print(
-                            "build:: ${selectedImages.map((file) => file.path).toList()}");
                         return ReorderableGridView.count(
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,

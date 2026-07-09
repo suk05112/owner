@@ -1,20 +1,19 @@
 import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
+import 'package:owner/common/utils/image_util.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/common/widget/store_image.dart';
 import '../../common/api/response/menu.dart';
 
 import 'package:http/http.dart' as http;
-import 'package:image/image.dart' as img;
-import 'package:exif/exif.dart';
 
 
 class EditMenuPage extends StatefulWidget {
@@ -35,7 +34,6 @@ class _EditMenuPageState extends State<EditMenuPage> {
   TextEditingController menuPriceInputController = TextEditingController();
   File? _image;
   bool _imageRemoved = false;
-  bool _isMenuImageLoading = false;
   bool _isSubmitting = false;
 
   final _formKey = GlobalKey<FormState>();
@@ -238,6 +236,10 @@ class _EditMenuPageState extends State<EditMenuPage> {
                         if (_image != null && !_imageRemoved) {
                           await uploadMenuImage(response.menu_put_url);
                           newMenu.menu_image_url = response.menu_get_url;
+                          // 이미지를 교체한 경우, 같은 URL 재사용 시에도 새 이미지가
+                          // 보이도록 캐시를 무효화한다.
+                          await CachedNetworkImage.evictFromCache(
+                              response.menu_get_url);
                         } else if (_imageRemoved) {
                           newMenu.menu_image_url = null;
                         } else {
@@ -423,13 +425,9 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
     if (pickedImage != null) {
       print("pick image is not null");
+      // 선택 시엔 원본을 그대로 미리보기로 사용 (무거운 처리는 업로드 직전 1회)
       setState(() {
-        _isMenuImageLoading = true; // 로딩 상태 시작
-      });
-      final fixedImage = await fixExifRotation(pickedImage.path);
-      setState(() {
-        _image = fixedImage;
-        _isMenuImageLoading = false; // 로딩 상태 종료
+        _image = File(pickedImage.path);
       });
     } else {
       print("pick image is null");
@@ -445,9 +443,11 @@ class _EditMenuPageState extends State<EditMenuPage> {
       return;
     }
     try {
+      // 업로드 직전 리사이즈/압축 (긴 변 1280px, JPEG 85%)
+      final uploadFile = await prepareUploadImage(_image!.path);
       http.Response response = await http.put(
         Uri.parse(menuUploadUrl),
-        body: await _image?.readAsBytes(),
+        body: await uploadFile.readAsBytes(),
         headers: {
           // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
         },
@@ -463,57 +463,5 @@ class _EditMenuPageState extends State<EditMenuPage> {
     } catch (e) {
       print('Error: $e');
     }
-  }
-
-  Future<File> fixExifRotation(String imagePath) async {
-    final originalFile = File(imagePath);
-    List<int> imageBytes = await originalFile.readAsBytes();
-
-    final originalImage = img.decodeImage(Uint8List.fromList(imageBytes));
-
-    final height = originalImage!.height;
-    final width = originalImage.width;
-
-    // Let's check for the image size
-    // This will be true also for upside-down photos but it's ok for me
-    if (height >= width) {
-      // I'm interested in portrait photos so
-      // I'll just return here
-      return originalFile;
-    }
-
-    // We'll use the exif package to read exif data
-    // This is map of several exif properties
-    // Let's check 'Image Orientation'
-    final exifData = await readExifFromBytes(imageBytes);
-
-    img.Image fixedImage = img.copyRotate(originalImage, angle: 0);
-
-    if (exifData.containsKey('Image Orientation')) {
-      final orientation = exifData['Image Orientation']!.printable;
-      print("Image Orientation: $orientation");
-    }
-
-    if (height < width) {
-      print('Rotating image necessary');
-      // rotate
-      if (exifData['Image Orientation']!.printable.contains('Horizontal')) {
-        // fixedImage = img.copyRotate(originalImage, angle: 90);
-      } else if (exifData['Image Orientation']!.printable.contains('180')) {
-        // fixedImage = img.copyRotate(originalImage, angle: -90);
-      } else if (exifData['Image Orientation']!.printable.contains('CW')) {
-        fixedImage = img.copyRotate(originalImage, angle: -90);
-      } else {
-        fixedImage = img.copyRotate(originalImage, angle: 0);
-      }
-    }
-
-    // Here you can select whether you'd like to save it as png
-    // or jpg with some compression
-    // I choose jpg with 100% quality
-    final fixedFile =
-        await originalFile.writeAsBytes(img.encodeJpg(fixedImage, quality: 90));
-
-    return fixedFile;
   }
 }

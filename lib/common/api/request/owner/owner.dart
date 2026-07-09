@@ -2,6 +2,24 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'owner.g.dart';
 
+class TermAgreementItem {
+  final int termId;
+  final int termVersionId;
+  final bool agreed;
+
+  TermAgreementItem({
+    required this.termId,
+    required this.termVersionId,
+    required this.agreed,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'term_id': termId,
+        'term_version_id': termVersionId,
+        'agreed': agreed,
+      };
+}
+
 class CheckDuplicateResponse {
   final bool emailExists;
   final bool phoneExists;
@@ -21,16 +39,22 @@ class OwnerRegisterPost {
   String email;
   String uid;
   String client_tx_id;
+  @JsonKey(includeToJson: false, includeFromJson: false)
+  List<TermAgreementItem> agreements;
 
   OwnerRegisterPost(
       {required this.login_id,
       required this.email,
       required this.uid,
-      required this.client_tx_id});
+      required this.client_tx_id,
+      this.agreements = const []});
 
   factory OwnerRegisterPost.fromJson(Map<String, dynamic> json) =>
       _$OwnerRegisterPostFromJson(json);
-  Map<String, dynamic> toJson() => _$OwnerRegisterPostToJson(this);
+  Map<String, dynamic> toJson() => {
+        ..._$OwnerRegisterPostToJson(this),
+        'agreements': agreements.map((e) => e.toJson()).toList(),
+      };
 }
 
 class MokAuthResult {

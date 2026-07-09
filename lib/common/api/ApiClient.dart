@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:owner/common/api/request/owner/owner.dart';
-export 'package:owner/common/api/request/owner/owner.dart' show CheckDuplicateResponse, MokAuthResult;
+export 'package:owner/common/api/request/owner/owner.dart' show CheckDuplicateResponse, MokAuthResult, TermAgreementItem;
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
@@ -298,24 +298,6 @@ class TermsCurrentResponse {
       terms: list.map((e) => TermItem.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
-}
-
-class TermAgreementItem {
-  final int termId;
-  final int termVersionId;
-  final bool agreed;
-
-  TermAgreementItem({
-    required this.termId,
-    required this.termVersionId,
-    required this.agreed,
-  });
-
-  Map<String, dynamic> toJson() => {
-        'term_id': termId,
-        'term_version_id': termVersionId,
-        'agreed': agreed,
-      };
 }
 
 class TermsAgreeRequest {

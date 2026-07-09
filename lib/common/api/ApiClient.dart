@@ -201,6 +201,11 @@ abstract class ApiClient {
   Future<void> hidePopups(
     @Query('owner_id') int? ownerId,
   );
+
+  @POST("/owner/ping")
+  Future<OwnerPingResponse> ping(
+    @Query('owner_id') int ownerId,
+  );
 }
 
 /// PUT /owner/account/{store_id} 응답 — 통장사본 있을 때 bank_book_put_url(S3 presigned) 반환
@@ -466,6 +471,18 @@ class PopupItem {
       imageUrl: json['image_url'] as String? ?? '',
       linkUrl: json['link_url'] as String? ?? '',
       displayOrder: json['display_order'] as int? ?? 0,
+    );
+  }
+}
+
+class OwnerPingResponse {
+  final String message;
+
+  OwnerPingResponse({required this.message});
+
+  factory OwnerPingResponse.fromJson(Map<String, dynamic> json) {
+    return OwnerPingResponse(
+      message: json['message'] as String? ?? '',
     );
   }
 }

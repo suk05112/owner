@@ -17,30 +17,39 @@ class CheckDuplicateResponse {
 
 @JsonSerializable()
 class OwnerRegisterPost {
-  String name;
   String login_id;
   String email;
   String uid;
-  String phone_number;
+  String client_tx_id;
 
   OwnerRegisterPost(
-      {required this.name,
-      required this.login_id,
+      {required this.login_id,
       required this.email,
       required this.uid,
-      required this.phone_number});
+      required this.client_tx_id});
 
   factory OwnerRegisterPost.fromJson(Map<String, dynamic> json) =>
       _$OwnerRegisterPostFromJson(json);
   Map<String, dynamic> toJson() => _$OwnerRegisterPostToJson(this);
 }
 
+class MokAuthResult {
+  final bool success;
+  final String clientTxId;
+
+  MokAuthResult({
+    required this.success,
+    required this.clientTxId,
+  });
+}
+
 @JsonSerializable()
 class OwnerRegisterResponse {
   int? statusCode;
   int? owner_id;
+  String? phone_number;
 
-  OwnerRegisterResponse({this.statusCode, this.owner_id});
+  OwnerRegisterResponse({this.statusCode, this.owner_id, this.phone_number});
 
   factory OwnerRegisterResponse.fromJson(Map<String, dynamic> json) =>
       _$OwnerRegisterResponseFromJson(json);

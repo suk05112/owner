@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:owner/common/api/request/owner/owner.dart';
-export 'package:owner/common/api/request/owner/owner.dart' show CheckDuplicateResponse;
+export 'package:owner/common/api/request/owner/owner.dart' show CheckDuplicateResponse, MokAuthResult;
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';

@@ -9,11 +9,11 @@ import 'package:owner/common/api/ApiClient.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/provier/user_provider.dart';
 import 'package:owner/common/widget/CommonDialog.dart';
+import 'package:owner/common/widget/MokVerificationWidget.dart';
 import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:provider/provider.dart';
 import 'package:owner/common/model/user.dart' as my_app;
 
-import '../../common/widget/CommonWidget.dart';
 import '../../common/utils/phone_utils.dart';
 import '../../common/utils/api_error_utils.dart';
 import 'SingUpCompletePage.dart';
@@ -113,10 +113,9 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
   String? name;
   String? email; // gifnut 아이디 (IDVerificationWidget에서)
   String? userEmail; // 일반 이메일
-  String? phone_number;
   String? password;
   String? confirmPassword; // 비밀번호 확인 값
-  PhoneAuthCredential? phoneAuthCredential; // 전화번호 인증 credential 저장
+  String? clientTxId; // mobileOK 본인인증 거래 ID
   bool _isLoading = false; // API 요청 중 로딩 상태
 
   @override
@@ -145,16 +144,17 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                         });
                       },
                     ),
-                    PhoneNumberVerificationWidget(
+                    MokVerificationWidget(
                         key: _phoneKey,
-                        successCallback: (phoneAuthResult) {
-                      if (phoneAuthResult != null) {
-                        phone_number = phoneAuthResult.phoneNumber;
-                        phoneAuthCredential = phoneAuthResult.credential;
+                        successCallback: (mokResult) {
+                      if (mokResult != null && mokResult.success) {
+                        setState(() {
+                          clientTxId = mokResult.clientTxId;
+                        });
                       } else {
-                        phoneAuthCredential = null;
+                        clientTxId = null;
                       }
-                    }), //전화번호
+                    }), //본인인증 (mobileOK)
                     IDVerificationWidget(
                       key: idWidgetKey,
                       formKey: formKey2,
@@ -251,13 +251,13 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
                             return;
                           }
 
-                          // 4. 전화번호 인증 완료 확인
-                          if (phone_number == null || phoneAuthCredential == null) {
+                          // 4. 본인인증 완료 확인
+                          if (clientTxId == null) {
                             _scrollToKey(_phoneKey);
                             CommonDialog.show(
                               context: context,
-                              title: "전화번호를 확인할 수 없습니다.",
-                              content: "전화번호 인증을 완료해주세요.",
+                              title: "본인인증을 확인할 수 없습니다.",
+                              content: "본인인증을 완료해주세요.",
                               buttonText: "확인",
                               onPressed: () {},
                             );
@@ -318,37 +318,23 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
     Provider.of<UserProvider>(context, listen: false).isRegistering = true;
 
     UserCredential? userCredential;
-    bool didCreatePhoneAccount = false;
 
-    // Step 1: 전화번호 계정 확보 + 이메일 링크
+    // Step 1: Firebase 이메일/비밀번호 계정 생성 (본인인증은 mobileOK로 완료됨)
     try {
-      User? phoneUser = FirebaseAuth.instance.currentUser;
-      if (phoneUser == null) {
-        final result = await FirebaseAuth.instance.signInWithCredential(phoneAuthCredential!);
-        phoneUser = result.user;
-        didCreatePhoneAccount = true;
-      }
-      final emailCredential = EmailAuthProvider.credential(
+      userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: PhoneUtils.formatEmailForServer(email ?? ""),
         password: password ?? "",
       );
-      userCredential = await phoneUser!.linkWithCredential(emailCredential);
       await userCredential.user!.updateDisplayName("displayName");
     } on FirebaseAuthException catch (e) {
       print("Step1 FirebaseAuthException: ${e.code} - ${e.message}");
-      if (didCreatePhoneAccount) {
-        await _deleteFirebaseAccount();
-      } else {
-        await FirebaseAuth.instance.signOut();
-      }
+      await _deleteFirebaseAccount();
       if (!mounted) return;
       Provider.of<UserProvider>(context, listen: false).isRegistering = false;
       setState(() => _isLoading = false);
       String msg;
-      if (e.code == 'email-already-in-use' || e.code == 'provider-already-linked') {
+      if (e.code == 'email-already-in-use') {
         msg = "이미 사용 중인 아이디입니다.";
-      } else if (e.code == 'credential-already-in-use') {
-        msg = "이미 다른 계정에 연결된 전화번호입니다.";
       } else if (e.code == 'weak-password') {
         msg = "비밀번호는 6자 이상 입력해주세요.";
       } else {
@@ -358,11 +344,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
       return;
     } catch (e) {
       print("Step1 일반 오류: ${e.runtimeType} - $e");
-      if (didCreatePhoneAccount) {
-        await _deleteFirebaseAccount();
-      } else {
-        await FirebaseAuth.instance.signOut();
-      }
+      await _deleteFirebaseAccount();
       if (!mounted) return;
       Provider.of<UserProvider>(context, listen: false).isRegistering = false;
       setState(() => _isLoading = false);
@@ -374,10 +356,9 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
     try {
       final response = await Api().client.registerOwner(OwnerRegisterPost(
         uid: userCredential.user!.uid,
-        phone_number: PhoneUtils.formatForServer(phone_number ?? ""),
-        name: name ?? "",
         login_id: PhoneUtils.formatEmailForServer(email ?? ""),
         email: userEmail ?? "",
+        client_tx_id: clientTxId ?? "",
       ));
 
       if (response == null || response.owner_id == null) {
@@ -397,7 +378,7 @@ class _BasicInfoFormWidgetState extends State<BasicInfoFormWidget> {
           name: name ?? "",
           login_id: PhoneUtils.formatEmailForServer(email ?? ""),
           email: userEmail,
-          phone_number: phone_number ?? "",
+          phone_number: response.phone_number ?? "",
         ));
 
       _postTermsAgree(response.owner_id!).catchError((_) {});

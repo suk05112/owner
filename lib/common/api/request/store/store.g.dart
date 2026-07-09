@@ -36,6 +36,8 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
       open_yn: json['open_yn'] as String?,
       created_at: json['created_at'] as String?,
       updated_at: json['updated_at'] as String?,
+      logo_changed: json['logo_changed'] as bool? ?? false,
+      business_changed: json['business_changed'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
@@ -63,6 +65,8 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'open_yn': instance.open_yn,
       'created_at': instance.created_at,
       'updated_at': instance.updated_at,
+      'logo_changed': instance.logo_changed,
+      'business_changed': instance.business_changed,
     };
 
 Body2 _$Body2FromJson(Map<String, dynamic> json) => Body2(

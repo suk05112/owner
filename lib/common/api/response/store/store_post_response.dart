@@ -45,12 +45,16 @@ class StoreUpdateResponse {
   String msg;
   List<StorePhoto> store_photos;
   List<String> store_photo_get_urls;
+  String? store_logo_put_url;
+  String? business_put_url;
 
   StoreUpdateResponse(
       {required this.statusCode,
       required this.msg,
       required this.store_photos,
-      required this.store_photo_get_urls});
+      required this.store_photo_get_urls,
+      this.store_logo_put_url,
+      this.business_put_url});
 
   factory StoreUpdateResponse.fromJson(Map<String, dynamic> json) =>
       _$StoreUpdateResponseFromJson(json);

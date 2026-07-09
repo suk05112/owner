@@ -51,6 +51,10 @@ class MockApiClient implements ApiClient {
   Future<void> deleteOwnerPushToken(int ownerId, String fcmToken) async {}
 
   @override
+  Future<OwnerPingResponse> ping(int ownerId) async =>
+      OwnerPingResponse(message: 'ok');
+
+  @override
   Future<FindOwnernameResponse> findOwnerId(OwnerFind ownerFind) async =>
       FindOwnernameResponse(statusCode: 200);
 

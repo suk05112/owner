@@ -312,6 +312,9 @@ class _AuthGateState extends State<_AuthGate> {
       await FirebaseAuth.instance.signOut();
       setState(() => _isLoggedIn = false);
     } else {
+      Api().client.ping(userProvider.user!.owner_id).catchError((e) {
+        print('ping 실패 (무시): $e');
+      });
       setState(() => _isLoggedIn = true);
     }
   }

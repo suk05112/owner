@@ -56,8 +56,12 @@ class Api {
   // Flavor에 따른 BASE_URL 반환 (dev: /dev, prod: /prod)
   static String get BASE_URL => AppConfig.baseUrl;
 
-  /// User-Agent를 생성하는 함수
+  // User-Agent 캐싱 (앱 실행 중 값이 바뀌지 않으므로 최초 1회만 생성)
+  static String? _cachedUserAgent;
+
+  /// User-Agent를 생성하는 함수 (최초 1회 생성 후 캐시 반환)
   static Future<String> _getUserAgent() async {
+    if (_cachedUserAgent != null) return _cachedUserAgent!;
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       // HTTP 헤더는 ASCII만 허용하므로 "Gifnut Owner"로 고정 (공백은 하이픈으로 변경)
@@ -89,9 +93,11 @@ class Api {
 
       // User-Agent 형식: AppName/Version (Platform; OS Version; Device Model)
       // 모든 값이 ASCII 문자만 포함하도록 보장
-      return '$appName/$appVersion ($platform; $osVersion; $deviceModel)';
+      _cachedUserAgent =
+          '$appName/$appVersion ($platform; $osVersion; $deviceModel)';
+      return _cachedUserAgent!;
     } catch (e) {
-      // 에러 발생 시 기본값 반환
+      // 에러 발생 시 기본값 반환 (실패값은 캐시하지 않아 다음 요청에서 재시도)
       print('User-Agent 생성 오류: $e');
       return F.appFlavor == Flavor.dev
           ? 'Gifnut-Owner-Dev/1.0.0 (${Platform.operatingSystem})'

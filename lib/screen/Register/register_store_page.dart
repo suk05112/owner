@@ -14,6 +14,8 @@ import 'package:owner/common/widget/common_app_bar.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/api/APIDioClient.dart';
 import 'package:owner/common/api/request/store/store.dart';
+import 'package:owner/common/utils/image_util.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:owner/common/model/Account.dart';
 import 'package:owner/common/model/Settlement.dart';
 // import 'package:owner/common/api/response/store/store.dart';
@@ -441,6 +443,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
       if (isClickedPhotoUploadPage) {
         await uploadStoreImages(storePhotoPutUrls);
+        // 사진을 교체한 경우, 서버가 같은 URL을 재사용해도 새 이미지가 보이도록
+        // 해당 URL들의 이미지 캐시를 무효화한다.
+        for (final url in response.store_photo_get_urls) {
+          await CachedNetworkImage.evictFromCache(url);
+        }
       }
 
       final updatedStore = Store.fromJson(_store!.toJson())
@@ -470,10 +477,13 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
 
   //매장 로고 업로드
   Future<void> uploadLogoImage(storeLogoUrl) async {
+    if (_logoImage == null) return;
     try {
+      // 업로드 직전 리사이즈/압축 (긴 변 1280px, JPEG 85%)
+      final uploadFile = await prepareUploadImage(_logoImage!.path);
       http.Response response = await http.put(
         Uri.parse(storeLogoUrl),
-        body: await _logoImage?.readAsBytes(),
+        body: await uploadFile.readAsBytes(),
         headers: {
           // 'Content-Type': 'image/jpeg', // 이미지 파일 형식에 맞게 변경
         },
@@ -501,9 +511,11 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
     final entries = storePhotoUrls.asMap().entries.toList();
     await Future.wait(entries.map((e) async {
       try {
+        // 업로드 직전 리사이즈/압축 (긴 변 1280px, JPEG 85%)
+        final uploadFile = await prepareUploadImage(_storeImage[e.key].path);
         final response = await http.put(
           Uri.parse(e.value as String),
-          body: await _storeImage[e.key].readAsBytes(),
+          body: await uploadFile.readAsBytes(),
         );
         if (response.statusCode != 200) {
           print('store_photo upload failed. Status code: ${response.statusCode}');
@@ -519,14 +531,22 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
   //통장사본, 사업자등록증 업로드
   Future<void> uploadBusinessImage(bankbookPutUrl, businessPutUrl) async {
     try {
+      // 업로드 직전 리사이즈/압축 (긴 변 1280px, JPEG 85%)
+      final bankbookFile = _store?.bank_book != null
+          ? await prepareUploadImage(_store!.bank_book!.path)
+          : null;
+      final businessFile = _store?.business_registration != null
+          ? await prepareUploadImage(_store!.business_registration!.path)
+          : null;
+
       http.Response response = await http.put(
         Uri.parse(bankbookPutUrl),
-        body: await _store?.bank_book?.readAsBytes(),
+        body: await bankbookFile?.readAsBytes(),
       );
 
       http.Response response2 = await http.put(
         Uri.parse(businessPutUrl),
-        body: await _store?.business_registration?.readAsBytes(),
+        body: await businessFile?.readAsBytes(),
       );
 
       if (response.statusCode == 200 && response2.statusCode == 200) {

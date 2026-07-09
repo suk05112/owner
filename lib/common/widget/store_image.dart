@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 /// URL이 "asset:" 접두어로 시작하면 AssetImage로, 아니면 NetworkImage로 로드합니다.
@@ -37,12 +38,12 @@ class StoreImage extends StatelessWidget {
         errorBuilder: (_, __, ___) => _fallback(),
       );
     } else {
-      image = Image.network(
-        url,
+      image = CachedNetworkImage(
+        imageUrl: url,
         width: width,
         height: height,
         fit: fit,
-        errorBuilder: (_, __, ___) => _fallback(),
+        errorWidget: (_, __, ___) => _fallback(),
       );
     }
 

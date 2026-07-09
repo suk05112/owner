@@ -69,11 +69,6 @@
 	<string>주변 매장을 지도에서 확인하기 위해 위치 접근 권한이 필요합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>매장 사진 및 메뉴 이미지를 등록하고 수정하기 위해 사진 접근 권한이 필요합니다.</string>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Paperlogy-9Black.ttf</string>
-		<string>Paperlogy-8ExtraBold.ttf</string>
-	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -95,6 +90,10 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Paperlogy-9Black.ttf</string>
+	</array>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

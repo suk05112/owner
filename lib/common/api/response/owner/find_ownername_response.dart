@@ -7,6 +7,7 @@ class FindOwnernameResponse {
   int? statusCode;
   int? owner_id;
   String? email;
+  String? login_id;
   String? created_time;
   String? msg;
 

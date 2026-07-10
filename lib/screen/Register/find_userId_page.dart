@@ -151,7 +151,7 @@ class _FindUserIDPageState extends State<FindUserIDPage> {
           context,
           MaterialPageRoute(
             builder: (context) => RegisterdIDPage(
-              email: response.email,
+              email: response.login_id ?? response.email,
               created_time: response.created_time,
             ),
           ),

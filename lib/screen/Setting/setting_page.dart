@@ -94,6 +94,11 @@ class _SettingPageState extends State<SettingPage> {
     return items;
   }
 
+  String _formatLoginId(String? loginId) {
+    if (loginId == null || loginId.isEmpty) return "";
+    return loginId.replaceAll("@gifnut.com", "");
+  }
+
   Widget getUserInfo() {
     User? user = Provider.of<UserProvider>(context).user;
 
@@ -218,7 +223,7 @@ class _SettingPageState extends State<SettingPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      user.login_id ?? "",
+                      _formatLoginId(user.login_id),
                       style: TextStyle(
                         fontSize: 13,
                         color: Colors.grey[600],

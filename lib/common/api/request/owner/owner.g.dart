@@ -49,14 +49,28 @@ Map<String, dynamic> _$OwnerFindToJson(OwnerFind instance) => <String, dynamic>{
     };
 
 OwnerFindPw _$OwnerFindPwFromJson(Map<String, dynamic> json) => OwnerFindPw(
-      email: json['email'] as String,
+      login_id: json['login_id'] as String,
       phone_number: json['phone_number'] as String,
     );
 
 Map<String, dynamic> _$OwnerFindPwToJson(OwnerFindPw instance) =>
     <String, dynamic>{
-      'email': instance.email,
+      'login_id': instance.login_id,
       'phone_number': instance.phone_number,
+    };
+
+OwnerResetPassword _$OwnerResetPasswordFromJson(Map<String, dynamic> json) =>
+    OwnerResetPassword(
+      login_id: json['login_id'] as String,
+      phone_number: json['phone_number'] as String,
+      encrypted_password: json['encrypted_password'] as String,
+    );
+
+Map<String, dynamic> _$OwnerResetPasswordToJson(OwnerResetPassword instance) =>
+    <String, dynamic>{
+      'login_id': instance.login_id,
+      'phone_number': instance.phone_number,
+      'encrypted_password': instance.encrypted_password,
     };
 
 OwnerLoginResponse _$OwnerLoginResponseFromJson(Map<String, dynamic> json) =>

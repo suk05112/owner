@@ -61,6 +61,14 @@ class MockApiClient implements ApiClient {
   @override
   Future<String> findOwnerPw(OwnerFindPw ownerFind) async => 'ok';
 
+  @override
+  Future<ResetPasswordPublicKeyResponse> getResetPasswordPublicKey() async =>
+      ResetPasswordPublicKeyResponse(publicKey: '');
+
+  @override
+  Future<String> resetPassword(OwnerResetPassword resetPassword) async =>
+      jsonEncode({'msg': 'success'});
+
   // ── 매장 ──────────────────────────────────────────────────────────────────
 
   @override

@@ -445,6 +445,11 @@ class _LoginScreenState extends State<LoginScreen> {
           _registerPushToken(response.owner_id!).catchError((error) {
             print('Push token 등록 실패 (무시): $error');
           });
+
+          // 로그인 성공 ping (백그라운드에서 실행, 실패해도 로그인은 계속 진행)
+          Api().client.ping(response.owner_id!).catchError((e) {
+            print('ping 실패 (무시): $e');
+          });
         } else {
           // owner_id가 null인 경우
           if (mounted) {

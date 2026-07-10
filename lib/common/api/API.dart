@@ -375,7 +375,22 @@ class AuthInterceptor extends Interceptor {
   void onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
-  ) {
+  ) async {
+    // 매 요청마다 fresh Firebase ID 토큰을 주입한다.
+    // (client 생성 시점에 헤더로 박제된 토큰이 만료되는 문제 해결)
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        // force refresh 아님 — SDK가 만료 임박 시에만 자동 갱신, 아니면 캐시 반환
+        final idToken = await user.getIdToken();
+        if (idToken != null && idToken.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $idToken';
+        }
+      }
+    } catch (e) {
+      // 토큰 획득 실패해도 요청은 막지 않는다 (401 시 onError가 재시도)
+      print('[AuthInterceptor.onRequest] ID Token 주입 실패 (무시): $e');
+    }
     handler.next(options);
   }
 

@@ -7,6 +7,7 @@ import 'package:owner/common/Style/ColorAsset.dart';
 import 'package:owner/common/Style/TextAsset.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/utils/phone_utils.dart';
+import 'package:owner/common/utils/rsa_utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/provier/user_provider.dart';
@@ -207,10 +208,24 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
     userProvider.isRegistering = true; // authStateChanges 개입 차단
 
     try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) throw Exception('인증 정보를 확인할 수 없습니다.');
+      final loginId = PhoneUtils.formatEmailForServer(_idController.text.trim());
+      final phone = PhoneUtils.formatForServer(_phoneController.text.trim());
 
-      await user.updatePassword(_pwController.text);
+      final keyResponse = await Api().client.getResetPasswordPublicKey();
+      final encryptedPassword =
+          RsaUtils.encryptPassword(_pwController.text, keyResponse.publicKey);
+
+      final response = await Api().client.resetPassword(
+            OwnerResetPassword(
+              login_id: loginId,
+              phone_number: phone,
+              encrypted_password: encryptedPassword,
+            ),
+          );
+      final data = jsonDecode(response) as Map<String, dynamic>;
+      if (data['msg'] != 'success') throw Exception('비밀번호 변경에 실패했습니다.');
+
+      await FirebaseAuth.instance.currentUser?.delete();
 
       if (!mounted) return;
       setState(() => _isLoading = false);
@@ -223,8 +238,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           userProvider.isRegistering = false;
           // OKBtn이 onPressed() 실행 후 dialogContext.pop()을 호출하므로,
           // pushAndRemoveUntil은 다음 프레임에 실행해 충돌을 방지
-          WidgetsBinding.instance.addPostFrameCallback((_) async {
-            await FirebaseAuth.instance.signOut();
+          WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             Navigator.pushAndRemoveUntil(
               context,
@@ -234,21 +248,22 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
           });
         },
       );
-    } on FirebaseAuthException catch (e) {
+    } on DioException catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
       userProvider.isRegistering = false;
+      final code = e.response?.statusCode;
       String msg;
-      switch (e.code) {
-        case 'weak-password':
-          msg = '비밀번호는 6자 이상 입력해주세요.';
-          break;
-        case 'invalid-verification-code':
-          msg = '인증이 만료되었습니다. 처음부터 다시 시도해주세요.';
+      switch (code) {
+        case 404:
+          msg = '일치하는 계정이 없습니다. 처음부터 다시 시도해주세요.';
           setState(() => _step = _Step.inputInfo);
           break;
+        case 400:
+          msg = '비밀번호 처리에 실패했습니다. 다시 시도해주세요.';
+          break;
         default:
-          msg = e.message ?? '비밀번호 변경에 실패했습니다.';
+          msg = '비밀번호 변경에 실패했습니다. 잠시 후 다시 시도해주세요.';
       }
       _showSnack(msg);
     } catch (e) {
@@ -284,7 +299,7 @@ class _FindPasswordPageState extends State<FindPasswordPage> {
   Future<bool> _checkEmailExists(String email, String phone) async {
     try {
       final response = await Api().client.findOwnerPw(
-            OwnerFindPw(email: email, phone_number: phone),
+            OwnerFindPw(login_id: email, phone_number: phone),
           );
       final data = jsonDecode(response) as Map<String, dynamic>;
       if (data['msg'] == 'success') return true;

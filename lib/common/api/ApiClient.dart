@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:owner/common/api/request/owner/owner.dart';
-export 'package:owner/common/api/request/owner/owner.dart' show CheckDuplicateResponse, MokAuthResult, TermAgreementItem;
+export 'package:owner/common/api/request/owner/owner.dart' show CheckDuplicateResponse, MokAuthResult, TermAgreementItem, ResetPasswordPublicKeyResponse;
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/api/response/menu.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
@@ -82,6 +82,14 @@ abstract class ApiClient {
   @POST("/owner/find_ownerPw")
   Future<String> findOwnerPw(
     @Body() OwnerFindPw ownerFind,
+  );
+
+  @GET("/owner/reset-password/public-key")
+  Future<ResetPasswordPublicKeyResponse> getResetPasswordPublicKey();
+
+  @POST("/owner/reset-password")
+  Future<String> resetPassword(
+    @Body() OwnerResetPassword resetPassword,
   );
 
   @GET("/menu/list/{store_Id}")

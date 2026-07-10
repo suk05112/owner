@@ -94,14 +94,40 @@ class OwnerFind {
 
 @JsonSerializable()
 class OwnerFindPw {
-  String email;
+  String login_id;
   String phone_number;
 
-  OwnerFindPw({required this.email, required this.phone_number});
+  OwnerFindPw({required this.login_id, required this.phone_number});
 
   factory OwnerFindPw.fromJson(Map<String, dynamic> json) =>
       _$OwnerFindPwFromJson(json);
   Map<String, dynamic> toJson() => _$OwnerFindPwToJson(this);
+}
+
+class ResetPasswordPublicKeyResponse {
+  final String publicKey;
+
+  ResetPasswordPublicKeyResponse({required this.publicKey});
+
+  factory ResetPasswordPublicKeyResponse.fromJson(Map<String, dynamic> json) =>
+      ResetPasswordPublicKeyResponse(publicKey: json['public_key'] as String);
+}
+
+@JsonSerializable()
+class OwnerResetPassword {
+  String login_id;
+  String phone_number;
+  String encrypted_password;
+
+  OwnerResetPassword({
+    required this.login_id,
+    required this.phone_number,
+    required this.encrypted_password,
+  });
+
+  factory OwnerResetPassword.fromJson(Map<String, dynamic> json) =>
+      _$OwnerResetPasswordFromJson(json);
+  Map<String, dynamic> toJson() => _$OwnerResetPasswordToJson(this);
 }
 
 @JsonSerializable()

@@ -628,6 +628,7 @@ class _DocumentInputPageState extends State<DocumentInputPage> {
                       _store.store_address = "${addrController.text} ${detailAddrController.text}";
                       _store.store_telephone = telePhoneController.text;
                       _store.store_description = introController.text;
+                      _store.business_number = businessNumberController.text.replaceAll('-', '');
                       _store.business_registration = _businessRegistration;
 
                       Navigator.push(

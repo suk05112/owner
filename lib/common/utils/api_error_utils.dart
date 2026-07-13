@@ -42,6 +42,10 @@ class ApiErrorUtils {
   }
 
   static String _mapDetail(String detail) {
+    // 서버가 이미 한글 사용자용 메시지를 내려준 경우 그대로 사용
+    if (RegExp(r'[가-힣]').hasMatch(detail)) {
+      return detail;
+    }
     final lower = detail.toLowerCase();
     if (lower.contains('duplicate entry') && lower.contains('uk_email')) {
       return '이미 가입된 이메일입니다. 다른 이메일을 사용하거나 로그인해주세요.';

@@ -23,6 +23,7 @@ Store _$StoreFromJson(Map<String, dynamic> json) => Store(
       store_lng: (json['store_lng'] as num?)?.toDouble() ?? 0,
       region_code: json['region_code'] as String?,
       district_code: json['district_code'] as String?,
+      business_number: json['business_number'] as String?,
       business_registration:
           Store._fileFromJson(json['business_registration'] as String?),
       bank_book: Store._fileFromJson(json['bank_book'] as String?),
@@ -54,6 +55,7 @@ Map<String, dynamic> _$StoreToJson(Store instance) => <String, dynamic>{
       'store_lng': instance.store_lng,
       'region_code': instance.region_code,
       'district_code': instance.district_code,
+      'business_number': instance.business_number,
       'updated_time': instance.updated_time?.toIso8601String(),
       'business_registration':
           Store._fileToJson(instance.business_registration),

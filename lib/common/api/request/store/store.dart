@@ -18,6 +18,7 @@ class Store {
   double store_lat, store_lng;
   String? region_code;
   String? district_code;
+  String? business_number;
   // @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
   DateTime? updated_time;
 
@@ -50,6 +51,7 @@ class Store {
       this.store_lng = 0,
       this.region_code,
       this.district_code,
+      this.business_number,
       this.business_registration,
       this.bank_book,
       this.updated_time,

@@ -527,12 +527,10 @@ class _RegisterStorePageState extends State<RegisterStorePage> {
         await uploadBusinessRegistrationImage(response.business_put_url!);
       }
 
-      final updatedStore = Store.fromJson(_store!.toJson())
-        ..store_telephone = telePhoneController.text
-        ..store_description = introController.text
-        ..store_photo_urls = response.store_photo_get_urls;
+      final latestStoreResponse =
+          await Api().client.getStoreDetailInfo(_store!.store_id);
 
-      if (mounted) Navigator.pop(context, updatedStore);
+      if (mounted) Navigator.pop(context, latestStoreResponse.store);
     } catch (error) {
       if (error is DioException) {
         print('DioError: ${error.message}');

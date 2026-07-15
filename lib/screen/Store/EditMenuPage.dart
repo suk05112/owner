@@ -230,16 +230,21 @@ class _EditMenuPageState extends State<EditMenuPage> {
 
                       if (isUpdated) {
                         if (_imageRemoved) newMenu.delete_image = true;
+                        if (_image != null && !_imageRemoved) {
+                          newMenu.change_image = true;
+                        }
                         final response = await Api()
                             .client
                             .updateMenu(newMenu.menu_id, newMenu);
-                        if (_image != null && !_imageRemoved) {
-                          await uploadMenuImage(response.menu_put_url);
+                        if (_image != null &&
+                            !_imageRemoved &&
+                            response.menu_put_url != null) {
+                          await uploadMenuImage(response.menu_put_url!);
                           newMenu.menu_image_url = response.menu_get_url;
                           // 이미지를 교체한 경우, 같은 URL 재사용 시에도 새 이미지가
                           // 보이도록 캐시를 무효화한다.
                           await CachedNetworkImage.evictFromCache(
-                              response.menu_get_url);
+                              response.menu_get_url!);
                         } else if (_imageRemoved) {
                           newMenu.menu_image_url = null;
                         } else {

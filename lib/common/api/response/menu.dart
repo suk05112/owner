@@ -37,14 +37,14 @@ class MenuPostResponse {
 class MenuUpdateResponse {
   int? statusCode;
   String? msg;
-  String menu_put_url;
-  String menu_get_url;
+  String? menu_put_url;
+  String? menu_get_url;
 
   MenuUpdateResponse(
       {this.statusCode,
       this.msg,
-      required this.menu_put_url,
-      required this.menu_get_url});
+      this.menu_put_url,
+      this.menu_get_url});
 
   factory MenuUpdateResponse.fromJson(Map<String, dynamic> json) =>
       _$MenuUpdateResponseFromJson(json);
@@ -77,6 +77,8 @@ class Menu {
   String status;
   @JsonKey(includeFromJson: false, includeToJson: false)
   bool? delete_image;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  bool? change_image;
 
   Menu(
       {required this.menu_id,
@@ -86,12 +88,14 @@ class Menu {
       this.menu_image_url,
       required this.description,
       this.status = 'ACTIVE',
-      this.delete_image});
+      this.delete_image,
+      this.change_image});
 
   factory Menu.fromJson(Map<String, dynamic> json) => _$MenuFromJson(json);
   Map<String, dynamic> toJson() {
     final map = _$MenuToJson(this);
     if (delete_image == true) map['delete_image'] = true;
+    if (change_image == true) map['change_image'] = true;
     return map;
   }
 }

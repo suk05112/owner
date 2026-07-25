@@ -105,10 +105,12 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
               totalSalesAmount: settlement.total_sales_amount,
               totalFeeAmount: settlement.total_fee_amount,
               baseFeeRate: settlement.base_fee_rate,
-              promoFeeRate: settlement.promo_fee_rate,
-              promoDiscountAmount: settlement.promo_discount_amount,
-              supplyAmount: settlement.supply_amount,
-              vatAmount: settlement.vat_amount,
+              appliedFeeRate: settlement.applied_fee_rate,
+              appliedPromoId: settlement.applied_promo_id,
+              originalFeeSupply: settlement.original_fee_supply,
+              originalFeeVat: settlement.original_fee_vat,
+              promoFeeSupply: settlement.promo_fee_supply,
+              promoFeeVat: settlement.promo_fee_vat,
             ),
             const SizedBox(height: 16),
             const Text(
@@ -192,10 +194,12 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
     int totalSalesAmount = 0,
     int totalFeeAmount = 0,
     double? baseFeeRate,
-    double? promoFeeRate,
-    int? promoDiscountAmount,
-    int supplyAmount = 0,
-    int vatAmount = 0,
+    double? appliedFeeRate,
+    int? appliedPromoId,
+    int? originalFeeSupply,
+    int? originalFeeVat,
+    int? promoFeeSupply,
+    int? promoFeeVat,
   }) {
     String periodText = '정산 기간';
     if (periodStart != null && periodEnd != null) {
@@ -207,11 +211,16 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
       } catch (_) {}
     }
 
-    final hasPromo = promoFeeRate != null && promoDiscountAmount != null;
+    final hasPromo = appliedPromoId != null &&
+        promoFeeSupply != null &&
+        promoFeeVat != null;
     final baseFeeLabel = baseFeeRate != null
         ? '수수료(${baseFeeRate.toStringAsFixed(1)}%)'
         : '수수료';
-    final baseFeeTotal = supplyAmount + (promoDiscountAmount ?? 0);
+    final baseFeeTotal = (originalFeeSupply ?? 0) + (originalFeeVat ?? 0);
+    final supplyAmount = hasPromo ? promoFeeSupply : (originalFeeSupply ?? 0);
+    final vatAmount = hasPromo ? promoFeeVat : (originalFeeVat ?? 0);
+    final promoDiscountAmount = hasPromo ? baseFeeTotal - (supplyAmount + vatAmount) : 0;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -329,7 +338,7 @@ class _DetailSettlementPageState extends State<DetailSettlementPage> {
                 children: [
                   const SizedBox(width: 24),
                   Text(
-                    '프로모션 할인(${(baseFeeRate! - promoFeeRate).toStringAsFixed(1)}%)',
+                    '프로모션 할인(${(baseFeeRate - (appliedFeeRate ?? baseFeeRate)).toStringAsFixed(1)}%)',
                     style: const TextStyle(
                       fontSize: 13,
                       color: Color(0xFF34C759),

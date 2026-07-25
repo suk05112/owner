@@ -160,14 +160,24 @@ class SettlementSummary {
   String? failure_reason;
   @JsonKey(name: 'base_fee_rate')
   double? base_fee_rate;
-  @JsonKey(name: 'promo_fee_rate')
-  double? promo_fee_rate;
-  @JsonKey(name: 'promo_discount_amount', fromJson: _optionalIntFromJson)
-  int? promo_discount_amount;
-  @JsonKey(name: 'supply_amount', fromJson: _numToInt)
-  int supply_amount;
-  @JsonKey(name: 'vat_amount', fromJson: _numToInt)
-  int vat_amount;
+  @JsonKey(name: 'applied_fee_rate')
+  double? applied_fee_rate;
+  @JsonKey(name: 'applied_promo_id')
+  int? applied_promo_id;
+  @JsonKey(name: 'applied_promo_title')
+  String? applied_promo_title;
+  @JsonKey(name: 'original_fee_supply', fromJson: _optionalIntFromJson)
+  int? original_fee_supply;
+  @JsonKey(name: 'original_fee_vat', fromJson: _optionalIntFromJson)
+  int? original_fee_vat;
+  @JsonKey(name: 'original_fee_amount', fromJson: _optionalIntFromJson)
+  int? original_fee_amount;
+  @JsonKey(name: 'promo_fee_supply', fromJson: _optionalIntFromJson)
+  int? promo_fee_supply;
+  @JsonKey(name: 'promo_fee_vat', fromJson: _optionalIntFromJson)
+  int? promo_fee_vat;
+  @JsonKey(name: 'promo_fee_amount', fromJson: _optionalIntFromJson)
+  int? promo_fee_amount;
 
   SettlementSummary({
     this.settlement_id,
@@ -182,10 +192,15 @@ class SettlementSummary {
     this.payout_date,
     this.failure_reason,
     this.base_fee_rate,
-    this.promo_fee_rate,
-    this.promo_discount_amount,
-    this.supply_amount = 0,
-    this.vat_amount = 0,
+    this.applied_fee_rate,
+    this.applied_promo_id,
+    this.applied_promo_title,
+    this.original_fee_supply,
+    this.original_fee_vat,
+    this.original_fee_amount,
+    this.promo_fee_supply,
+    this.promo_fee_vat,
+    this.promo_fee_amount,
   });
 
   factory SettlementSummary.fromJson(Map<String, dynamic> json) =>

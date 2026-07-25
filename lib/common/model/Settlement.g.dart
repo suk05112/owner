@@ -129,13 +129,15 @@ SettlementSummary _$SettlementSummaryFromJson(Map<String, dynamic> json) =>
       payout_date: json['payout_date'] as String?,
       failure_reason: json['failure_reason'] as String?,
       base_fee_rate: (json['base_fee_rate'] as num?)?.toDouble(),
-      promo_fee_rate: (json['promo_fee_rate'] as num?)?.toDouble(),
-      promo_discount_amount:
-          _optionalIntFromJson(json['promo_discount_amount']),
-      supply_amount:
-          json['supply_amount'] == null ? 0 : _numToInt(json['supply_amount']),
-      vat_amount:
-          json['vat_amount'] == null ? 0 : _numToInt(json['vat_amount']),
+      applied_fee_rate: (json['applied_fee_rate'] as num?)?.toDouble(),
+      applied_promo_id: (json['applied_promo_id'] as num?)?.toInt(),
+      applied_promo_title: json['applied_promo_title'] as String?,
+      original_fee_supply: _optionalIntFromJson(json['original_fee_supply']),
+      original_fee_vat: _optionalIntFromJson(json['original_fee_vat']),
+      original_fee_amount: _optionalIntFromJson(json['original_fee_amount']),
+      promo_fee_supply: _optionalIntFromJson(json['promo_fee_supply']),
+      promo_fee_vat: _optionalIntFromJson(json['promo_fee_vat']),
+      promo_fee_amount: _optionalIntFromJson(json['promo_fee_amount']),
     );
 
 Map<String, dynamic> _$SettlementSummaryToJson(SettlementSummary instance) =>
@@ -152,10 +154,15 @@ Map<String, dynamic> _$SettlementSummaryToJson(SettlementSummary instance) =>
       'payout_date': instance.payout_date,
       'failure_reason': instance.failure_reason,
       'base_fee_rate': instance.base_fee_rate,
-      'promo_fee_rate': instance.promo_fee_rate,
-      'promo_discount_amount': instance.promo_discount_amount,
-      'supply_amount': instance.supply_amount,
-      'vat_amount': instance.vat_amount,
+      'applied_fee_rate': instance.applied_fee_rate,
+      'applied_promo_id': instance.applied_promo_id,
+      'applied_promo_title': instance.applied_promo_title,
+      'original_fee_supply': instance.original_fee_supply,
+      'original_fee_vat': instance.original_fee_vat,
+      'original_fee_amount': instance.original_fee_amount,
+      'promo_fee_supply': instance.promo_fee_supply,
+      'promo_fee_vat': instance.promo_fee_vat,
+      'promo_fee_amount': instance.promo_fee_amount,
     };
 
 SettlementDetailResponse _$SettlementDetailResponseFromJson(

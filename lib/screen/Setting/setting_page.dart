@@ -10,6 +10,7 @@ import 'package:owner/common/model/user.dart';
 import 'package:owner/screen/LoginPage.dart';
 import 'package:owner/screen/Setting/terms_page.dart';
 import 'package:owner/oss_licenses.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class SettingPage extends StatefulWidget {
   const SettingPage({Key? key}) : super(key: key);
@@ -402,15 +403,8 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Future<String> getVersion() async {
-    // package_info_plus가 없으면 하드코딩된 버전 반환
-    try {
-      // package_info_plus 패키지가 있다면 사용
-      // final packageInfo = await PackageInfo.fromPlatform();
-      // return packageInfo.version;
-      return "1.0.0";
-    } catch (e) {
-      return "1.0.0";
-    }
+    final packageInfo = await PackageInfo.fromPlatform();
+    return packageInfo.version;
   }
 
   Widget businessInformation() {

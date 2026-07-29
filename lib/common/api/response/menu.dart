@@ -73,7 +73,7 @@ class Menu {
   int price;
   @JsonKey(name: 'menu_photo')
   String? menu_image_url;
-  String description;
+  String? description;
   String status;
   @JsonKey(includeFromJson: false, includeToJson: false)
   bool? delete_image;
@@ -86,7 +86,7 @@ class Menu {
       required this.name,
       required this.price,
       this.menu_image_url,
-      required this.description,
+      this.description,
       this.status = 'ACTIVE',
       this.delete_image,
       this.change_image});

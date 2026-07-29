@@ -47,7 +47,7 @@ class _EditMenuPageState extends State<EditMenuPage> {
     if (widget.menu != null) {
       menuNameInputController.text = widget.menu!.name;
       menuPriceInputController.text = widget.menu!.price.toString();
-      menuDescInputController.text = widget.menu!.description;
+      menuDescInputController.text = widget.menu!.description ?? '';
     }
   }
 

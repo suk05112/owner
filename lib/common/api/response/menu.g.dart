@@ -70,7 +70,7 @@ Menu _$MenuFromJson(Map<String, dynamic> json) => Menu(
       name: json['name'] as String,
       price: (json['price'] as num).toInt(),
       menu_image_url: json['menu_photo'] as String?,
-      description: json['description'] as String,
+      description: json['description'] as String?,
       status: json['status'] as String? ?? 'ACTIVE',
     );
 

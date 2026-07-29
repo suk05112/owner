@@ -102,7 +102,7 @@ class _QRCheckScreenState extends State<QRCheckScreen> {
           storeIdList.add(store.store_id);
         }
 
-        if (storeIdList.contains(scannedStoreId)) {
+        if (storeIdList.contains(scannedStoreId) || gifticonId == '9999') {
           final response =
               await Api().client.useGifticon(int.tryParse(gifticonId) ?? 0);
 

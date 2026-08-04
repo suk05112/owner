@@ -14,13 +14,14 @@ class CommonDialog {
     required VoidCallback onPressed,
     bool cancel = false,
     Widget? icon,
+    bool preventPop = false, // true면 뒤로가기/확인 클릭으로 다이얼로그가 닫히지 않음
   }) {
     showDialog(
       context: context,
       barrierDismissible: false,
       barrierColor: Colors.black38,
       builder: (BuildContext context) {
-        return AlertDialog(
+        final dialog = AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
@@ -58,23 +59,34 @@ class CommonDialog {
                 ),
               ),
               const SizedBox(height: 24),
-              if (cancel) WithCancelBtn(context, onPressed, buttonText) else OKBtn(context, onPressed, buttonText),
+              if (cancel)
+                WithCancelBtn(context, onPressed, buttonText)
+              else
+                OKBtn(context, onPressed, buttonText, preventPop),
             ],
           ),
           actions: const [],
         );
+
+        if (preventPop) {
+          return PopScope(canPop: false, child: dialog);
+        }
+        return dialog;
       },
     );
   }
 
-  static Widget OKBtn(BuildContext context, VoidCallback onPressed, String buttonText) {
+  static Widget OKBtn(BuildContext context, VoidCallback onPressed, String buttonText,
+      [bool preventPop = false]) {
     return SizedBox(
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
         onPressed: () {
           onPressed();
-          Navigator.of(context).pop();
+          if (!preventPop) {
+            Navigator.of(context).pop();
+          }
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: _primary,

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:owner/flavors.dart';
 
 import 'package:owner/common/model/user.dart';
@@ -28,6 +30,8 @@ import 'package:owner/common/provier/store_provider.dart';
 import 'screen/LoginPage.dart';
 import 'package:owner/common/api/API.dart';
 import 'package:owner/common/utils/network_utils.dart';
+import 'package:owner/common/utils/version_compare.dart';
+import 'package:owner/common/widget/CommonDialog.dart';
 import 'package:owner/config.dart';
 
 final FlutterLocalNotificationsPlugin _localNotifications =
@@ -269,11 +273,83 @@ class _AuthGate extends StatefulWidget {
 class _AuthGateState extends State<_AuthGate> {
   // null = 아직 확인 중, true = 로그인, false = 로그아웃
   bool? _isLoggedIn;
+  bool _forceUpdateShown = false;
+  final GlobalKey<NavigatorState> _splashNavigatorKey = GlobalKey<NavigatorState>();
 
   @override
   void initState() {
     super.initState();
-    FirebaseAuth.instance.authStateChanges().listen(_onAuthStateChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final shown = await _checkForceUpdate();
+      if (!mounted) return;
+      if (shown) {
+        setState(() => _forceUpdateShown = true);
+        return;
+      }
+      FirebaseAuth.instance.authStateChanges().listen(_onAuthStateChanged);
+    });
+  }
+
+  /// 서버에 등록된 강제 업데이트 버전을 체크하고, 대상이면 다이얼로그를 띄운다.
+  /// 다이얼로그를 띄운 경우(이후 로직 중단이 필요한 경우) true를 반환한다.
+  Future<bool> _checkForceUpdate() async {
+    final platform = Platform.isIOS
+        ? 'ios'
+        : Platform.isAndroid
+            ? 'android'
+            : null;
+    if (platform == null) return false;
+
+    try {
+      final response = await Api().client.getAppVersion(platform, 'owner');
+      if (response.version == null || !response.isForceUpdate) {
+        return false;
+      }
+
+      final packageInfo = await PackageInfo.fromPlatform();
+      if (!isNewerVersion(response.version!, packageInfo.version)) {
+        return false;
+      }
+
+      final dialogContext = _splashNavigatorKey.currentContext;
+      if (dialogContext == null) return true;
+      CommonDialog.show(
+        context: dialogContext,
+        title: '최신 버전 업데이트',
+        content: '최신버전 앱으로 업데이트를 위해\n스토어로 이동합니다.',
+        buttonText: '확인',
+        cancel: false,
+        preventPop: true,
+        onPressed: () {
+          _openStore(platform);
+        },
+      );
+      return true;
+    } catch (e) {
+      print('[ForceUpdate] 체크 실패(무시): $e');
+      return false;
+    }
+  }
+
+  Future<void> _openStore(String platform) async {
+    if (platform == 'android') {
+      final marketUri = Uri.parse('market://details?id=com.gifnut.owner');
+      if (await canLaunchUrl(marketUri)) {
+        await launchUrl(marketUri, mode: LaunchMode.externalApplication);
+        return;
+      }
+      await launchUrl(
+        Uri.parse(
+            'https://play.google.com/store/apps/details?id=com.gifnut.owner'),
+        mode: LaunchMode.externalApplication,
+      );
+      return;
+    }
+
+    await launchUrl(
+      Uri.parse('https://apps.apple.com/app/id6777555229'),
+      mode: LaunchMode.externalApplication,
+    );
   }
 
   Future<void> _onAuthStateChanged(firebase_auth.User? firebaseUser) async {
@@ -321,9 +397,10 @@ class _AuthGateState extends State<_AuthGate> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoggedIn == null) {
-      return const MaterialApp(
-        home: SplashScreen(),
+    if (_forceUpdateShown || _isLoggedIn == null) {
+      return MaterialApp(
+        navigatorKey: _splashNavigatorKey,
+        home: const SplashScreen(),
         debugShowCheckedModeBanner: false,
       );
     }

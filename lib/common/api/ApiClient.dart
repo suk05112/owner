@@ -4,6 +4,7 @@ import 'package:owner/common/api/request/owner/owner.dart';
 export 'package:owner/common/api/request/owner/owner.dart' show CheckDuplicateResponse, MokAuthResult, TermAgreementItem, ResetPasswordPublicKeyResponse;
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/api/response/menu.dart';
+import 'package:owner/common/api/response/app_version_response.dart';
 import 'package:owner/common/api/response/owner/find_ownername_response.dart';
 // import 'package:owner/common/api/response/store/store.dart';
 import 'package:owner/common/api/response/store/store_post_response.dart';
@@ -213,6 +214,12 @@ abstract class ApiClient {
   @POST("/owner/ping")
   Future<OwnerPingResponse> ping(
     @Query('owner_id') int ownerId,
+  );
+
+  @GET("/common/app-version")
+  Future<AppVersionResponse> getAppVersion(
+    @Query('platform') String platform,
+    @Query('app_type') String appType,
   );
 }
 

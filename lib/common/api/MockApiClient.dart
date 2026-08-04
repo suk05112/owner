@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:owner/common/api/ApiClient.dart';
+import 'package:owner/common/api/response/app_version_response.dart';
 import 'package:owner/common/api/request/owner/owner.dart';
 import 'package:owner/common/api/request/store/store.dart';
 import 'package:owner/common/api/response/GifticonResponse.dart';
@@ -256,4 +257,8 @@ class MockApiClient implements ApiClient {
 
   @override
   Future<void> hidePopups(int? ownerId) async {}
+
+  @override
+  Future<AppVersionResponse> getAppVersion(String platform, String appType) async =>
+      AppVersionResponse(version: null, isForceUpdate: false);
 }

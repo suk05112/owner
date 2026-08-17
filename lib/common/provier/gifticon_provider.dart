@@ -47,7 +47,7 @@ class GifticonProvider extends ChangeNotifier {
     return response.store;
   }
 
-  useGifticon(int gifticonId) async {
-    return await Api().client.useGifticon(gifticonId);
+  useGifticon(int gifticonId, Map<String, dynamic> body) async {
+    return await Api().client.useGifticon(gifticonId, body);
   }
 }

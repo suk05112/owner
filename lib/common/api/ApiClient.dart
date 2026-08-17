@@ -118,6 +118,7 @@ abstract class ApiClient {
   @PATCH("/gifticon/use/{gifticon_id}")
   Future<GifticonPatchResponse> useGifticon(
     @Path('gifticon_id') int gifticonId,
+    @Body() Map<String, dynamic> body,
   );
 
   @POST("/owner/inquiry/{owner_id}")

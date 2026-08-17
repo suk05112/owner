@@ -139,7 +139,8 @@ class MockApiClient implements ApiClient {
   // ── 기프티콘 ──────────────────────────────────────────────────────────────
 
   @override
-  Future<GifticonPatchResponse> useGifticon(int gifticonId) async =>
+  Future<GifticonPatchResponse> useGifticon(
+          int gifticonId, Map<String, dynamic> body) async =>
       GifticonPatchResponse(result: 0);
 
   @override

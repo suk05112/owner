@@ -39,7 +39,8 @@ class MockGifticonProvider extends ChangeNotifier {
     return response.store;
   }
 
-  Future<GifticonPatchResponse> useGifticon(int gifticonId) async {
+  Future<GifticonPatchResponse> useGifticon(
+      int gifticonId, Map<String, dynamic> body) async {
     // mock: 항상 성공(result=0) 반환
     return GifticonPatchResponse(result: 0);
   }
